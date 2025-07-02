@@ -8,7 +8,7 @@ from django.contrib.messages import get_messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Avg, F
 import json
 
 def login_view(request):
@@ -88,8 +88,17 @@ def lista_dias_evento(request):
     dias = DiaEvento.objects.annotate(
         total_presentes=Count('presenca', filter=Q(presenca__presente=True))
     ).order_by('-data')
-    
-    return render(request, 'checkin/lista_dias.html', {'dias': dias})
+
+    if dias.exists():
+        soma_presentes = sum(dia.total_presentes for dia in dias)
+        media_presentes = soma_presentes / len(dias)
+    else:
+        media_presentes = 0
+
+    return render(request, 'checkin/lista_dias.html', {
+        'dias': dias,
+        'media_presentes': media_presentes,
+    })
 
 
 @login_required
