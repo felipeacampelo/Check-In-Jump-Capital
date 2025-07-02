@@ -9,6 +9,12 @@
   <span class="badge bg-primary">{{ total_adolescentes }}</span>
 </p>
 
+<div class="d-flex justify-content-between mt-3">
+  <a href="{% url 'criar_adolescente' %}" class="btn btn-primary">Adicionar Adolescente</a>
+  <a href="{% url 'exportar_adolescentes_csv' %}" class="btn btn-outline-secondary">Exportar CSV</a>
+</div>
+
+
 <!-- Filtros e busca -->
 <form method="get" id="filtroForm" class="mb-4">
   <div class="row g-2 align-items-end">

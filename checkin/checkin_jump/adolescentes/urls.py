@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from .views import login_view, logout_view, listar_adolescentes
+from .views import exportar_adolescentes_csv, exportar_presencas_csv
 
 urlpatterns = [
     # Autenticação
@@ -26,5 +27,9 @@ urlpatterns = [
     path('pgs/', views.lista_pgs, name='lista_pgs'),
     path('pgs/adicionar/', views.adicionar_pg, name='adicionar_pg'),
     path('pgs/<int:pg_id>/', views.detalhes_pg, name='detalhes_pg'),
+
+    #Exportar CSV
+    path('exportar/adolescentes/', exportar_adolescentes_csv, name='exportar_adolescentes_csv'),
+    path('exportar/presencas/', exportar_presencas_csv, name='exportar_presencas_csv'),
 ]
 

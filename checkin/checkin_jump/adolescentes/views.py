@@ -10,6 +10,8 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.db.models import Count, Q, Avg, F
 from django.db.models import Prefetch
+import csv
+from django.http import HttpResponse
 
 import json
 
@@ -249,3 +251,41 @@ def detalhes_pg(request, pg_id):
     pg = get_object_or_404(PequenoGrupo, id=pg_id)
     adolescentes = Adolescente.objects.filter(pg=pg)
     return render(request, 'pgs/pg.html', {'pg': pg, 'adolescentes': adolescentes})
+
+
+def exportar_adolescentes_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="adolescentes.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Nome', 'Sobrenome', 'Data de Nascimento', 'Gênero', 'PG', 'Império'])
+
+    for adolescente in Adolescente.objects.select_related('pg', 'imperio').all():
+        writer.writerow([
+            adolescente.nome,
+            adolescente.sobrenome,
+            adolescente.data_nascimento,
+            adolescente.get_genero_display(),
+            adolescente.pg.nome if adolescente.pg else '',
+            adolescente.imperio.nome if adolescente.imperio else ''
+        ])
+
+    return response
+
+def exportar_presencas_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="presencas.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Data', 'Nome', 'Presente'])
+
+    presencas = Presenca.objects.select_related('adolescente', 'dia').all().order_by('-dia__data')
+
+    for presenca in presencas:
+        writer.writerow([
+            presenca.dia.data.strftime('%d/%m/%Y'),
+            f'{presenca.adolescente.nome} {presenca.adolescente.sobrenome}',
+            'Sim' if presenca.presente else 'Não'
+        ])
+
+    return response

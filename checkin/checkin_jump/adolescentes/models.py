@@ -40,6 +40,6 @@ class DiaEvento(models.Model):
         return self.data.strftime('%d/%m/%Y')
 
 class Presenca(models.Model):
-    adolescente = models.ForeignKey(Adolescente, on_delete=models.CASCADE, related_name='presencas')
+    adolescente = models.ForeignKey(Adolescente, on_delete=models.CASCADE)
     dia = models.ForeignKey(DiaEvento, on_delete=models.CASCADE)
     presente = models.BooleanField(default=False)
