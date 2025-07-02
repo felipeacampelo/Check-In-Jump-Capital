@@ -27,7 +27,11 @@
     <tbody>
         {% for adolescente in adolescentes %}
         <tr>
-            <td>{{ adolescente.nome }}</td>
+            <td>
+                <span style="cursor: pointer; color: inherit;" data-bs-toggle="modal" data-bs-target="#modal{{ adolescente.id }}">
+                    {{ adolescente.nome }}
+                  </span>                  
+            </td>
             <td>{{ adolescente.sobrenome }}</td>
             <td>{{ adolescente.genero }}</td>
             <td>{{ adolescente.data_nascimento }}</td>
@@ -45,6 +49,32 @@
                 <a href="{% url 'excluir_adolescente' adolescente.id %}" class="btn btn-danger">Excluir</a>
             </td>
         </tr>
+
+        <!-- Modal do Adolescente -->
+        <div class="modal fade" id="modal{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalLabel{{ adolescente.id }}" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel{{ adolescente.id }}">Detalhes de {{ adolescente.nome }} {{ adolescente.sobrenome }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+              </div>
+              <div class="modal-body">
+                <p><strong>Nome Completo:</strong> {{ adolescente.nome }} {{ adolescente.sobrenome }}</p>
+                <p><strong>Gênero:</strong> {{ adolescente.get_genero_display }}</p>
+                <p><strong>Data de Nascimento:</strong> {{ adolescente.data_nascimento|date:"d/m/Y" }}</p>
+                <p><strong>Pequeno Grupo (PG):</strong> {{ adolescente.pg }}</p>
+                <p><strong>Império:</strong> {{ adolescente.imperio }}</p>
+                {% if adolescente.foto %}
+                  <p><strong>Foto:</strong></p>
+                  <img src="{{ adolescente.foto.url }}" class="img-fluid" alt="Foto de {{ adolescente.nome }}">
+                {% endif %}
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+              </div>
+            </div>
+          </div>
+        </div>
         {% endfor %}
     </tbody>
 </table>
