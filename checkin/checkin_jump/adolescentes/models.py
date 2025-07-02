@@ -7,6 +7,12 @@ class PequenoGrupo(models.Model):
     def __str__(self):
         return self.nome
 
+class Imperio(models.Model):
+    nome = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.nome
+
 class Adolescente(models.Model):
     nome = models.CharField(max_length=100)
     sobrenome = models.CharField(max_length=100)
@@ -18,6 +24,7 @@ class Adolescente(models.Model):
     ]
     genero = models.CharField(max_length=1, choices=GENERO_CHOICES, blank=True, null=False)
     pg = models.ForeignKey(PequenoGrupo, on_delete=models.SET_NULL, blank=True, null=True, related_name='adolescentes')
+    imperio = models.ForeignKey(Imperio, on_delete=models.SET_NULL, null=True, blank=True)
     data_inicio = models.DateField(blank=True, null=True)
 
     def __str__(self):

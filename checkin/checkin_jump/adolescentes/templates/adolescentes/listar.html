@@ -20,6 +20,7 @@
             <th>Data de Nascimento</th>
             <th>Foto</th>
             <th>PG</th>
+            <th>Império</th>
             <th>Ações</th>
         </tr>
     </thead>
@@ -38,6 +39,7 @@
                 {% endif %}
             </td>
             <td>{{ adolescente.pg }}</td>
+            <td>{{ adolescente.imperio }}</td>
             <td>
                 <a href="{% url 'editar_adolescente' adolescente.id %}" class="btn btn-secondary">Editar</a>
                 <a href="{% url 'excluir_adolescente' adolescente.id %}" class="btn btn-danger">Excluir</a>
