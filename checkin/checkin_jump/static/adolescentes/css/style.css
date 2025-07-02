@@ -1,47 +1,272 @@
-/* Tema Claro (Padrão) */
+/* ---------- Estilos Gerais ---------- */
+
 body {
-    background-color: #ffffff;
-    color: #000000;
+    background-color: #f8f9fa; /* fundo claro mais suave */
+    color: #343a40; /* texto cinza escuro */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     transition: background-color 0.3s, color 0.3s;
+    padding-top: 70px; /* espaço para o nav fixo */
+    min-height: 100vh;
+    margin: 0;
 }
 
-/* Tema Escuro */
+/* Links padrão */
+a {
+    color: #0d6efd;
+    text-decoration: none;
+}
+a:hover, a:focus {
+    color: #0a58ca;
+    text-decoration: underline;
+}
+
+/* ---------- Navbar / Header ---------- */
+
+nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #d7600b;
+    color: white;
+    padding: 10px 20px;
+    z-index: 1050;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav h1 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+nav div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+nav a.btn {
+    color: white !important;
+    border: 1.5px solid transparent;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+nav a.btn:hover {
+    background-color: rgba(255,255,255,0.2);
+    border-color: white !important;
+    color: white !important;
+}
+
+nav span {
+    font-weight: 600;
+    margin-right: 10px;
+}
+
+/* ---------- Botão Modo Escuro ---------- */
+
+#dark-mode-toggle {
+    position: fixed;
+    top: 10px;
+    right: 290px; /* afastado do botão sair */
+    padding: 8px 14px;
+    border: none;
+    background: #444;
+    color: white;
+    cursor: pointer;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: background-color 0.3s;
+    z-index: 1100;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+#dark-mode-toggle:hover {
+    background-color: #666;
+}
+
+/* ---------- Cards ---------- */
+
+.card {
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+}
+
+.card-title {
+    font-weight: 700;
+}
+
+/* ---------- Botões ---------- */
+
+.btn-primary {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #004494;
+    border-color: #004494;
+}
+
+/* Botões secundários */
+.btn-secondary {
+    font-weight: 600;
+}
+
+/* ---------- Tabelas ---------- */
+
+.table {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.12);
+    border-collapse: separate !important;
+    border-spacing: 0 8px;
+    overflow: hidden;
+}
+
+.table thead tr th {
+    background-color: #e9ecef;
+    font-weight: 700;
+    color: #495057;
+    border: none;
+    padding: 12px 20px;
+}
+
+.table tbody tr {
+    background: #fff;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
+}
+
+.table tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+.table tbody tr td {
+    vertical-align: middle;
+    padding: 12px 20px;
+    border: none;
+}
+
+/* ---------- Inputs e Select ---------- */
+
+input[type="text"], select.form-select {
+    border-radius: 6px;
+    border: 1.5px solid #ced4da;
+    padding: 8px 12px;
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus, select.form-select:focus {
+    border-color: #0d6efd;
+    outline: none;
+    box-shadow: 0 0 8px rgba(13,110,253,0.25);
+}
+
+/* ---------- Modais ---------- */
+
+.modal-content {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* ---------- Tema Escuro ---------- */
+
 body.dark-mode {
     background-color: #121212;
-    color: #ffffff;
+    color: #e1e1e1;
 }
 
-/* Ajustes no cabeçalho no modo escuro */
 body.dark-mode nav {
     background-color: #1e1e1e;
+    box-shadow: 0 2px 6px rgba(255,255,255,0.1);
 }
 
-body.dark-mode h1,
-body.dark-mode nav span,
-body.dark-mode nav a {
-    color: #ffffff;
+body.dark-mode nav a.btn {
+    color: #ddd !important;
+    border-color: transparent !important;
 }
 
-/* Botão "Sair" no modo escuro */
+body.dark-mode nav a.btn:hover {
+    background-color: rgba(255,255,255,0.15);
+    border-color: #ddd !important;
+}
+
+body.dark-mode nav span {
+    color: #ddd;
+}
+
 body.dark-mode .btn-danger {
     background-color: #bb2d3b;
     border-color: #bb2d3b;
 }
 
-/* Estilizar o botão de alternância */
-#dark-mode-toggle {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    padding: 10px;
-    border: none;
-    background: #444;
-    color: white;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: background 0.3s;
+body.dark-mode .table {
+    background-color: #1c1c1c;
+    box-shadow: none;
 }
 
-#dark-mode-toggle:hover {
-    background: #666;
+body.dark-mode .table thead tr th {
+    background-color: #2c2c2c;
+    color: #ddd;
+}
+
+body.dark-mode .table tbody tr {
+    background-color: #252525;
+}
+
+body.dark-mode .table tbody tr:hover {
+    background-color: #333333;
+}
+
+body.dark-mode input[type="text"], 
+body.dark-mode select.form-select {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #eee;
+}
+
+body.dark-mode input[type="text"]:focus, 
+body.dark-mode select.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 8px rgba(13,110,253,0.25);
+}
+
+/* Botão modo escuro fica igual, só muda background e texto */
+
+body.dark-mode #dark-mode-toggle {
+    background: #222;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(255,255,255,0.3);
+}
+
+/* ---------- Outros Ajustes ---------- */
+
+/* Espaçamento dos filtros */
+.form-label {
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+/* Espaço extra para badges */
+.badge {
+    font-size: 0.85rem;
+    padding: 0.3em 0.6em;
+    border-radius: 12px;
+}
+
+/* Imagens pequenas */
+img {
+    border-radius: 6px;
+}
+
+/* Scroll suave para modais (Bootstrap já faz isso, mas fica aqui pra referência) */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
 }
