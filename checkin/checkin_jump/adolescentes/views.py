@@ -8,6 +8,7 @@ from django.contrib.messages import get_messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.db.models import Count, Q
 import json
 
 def login_view(request):
@@ -31,7 +32,11 @@ def logout_view(request):
 @login_required
 def listar_adolescentes(request):
     adolescentes = Adolescente.objects.all()
-    return render(request, 'adolescentes/listar.html', {'adolescentes': adolescentes})
+    total_adolescentes = adolescentes.count()
+    return render(request, 'adolescentes/listar.html', {
+        'adolescentes': adolescentes,
+        'total_adolescentes': total_adolescentes
+    })
 
 @login_required
 def pagina_checkin(request):
@@ -80,8 +85,12 @@ def excluir_adolescente(request, id):
 
 @login_required
 def lista_dias_evento(request):
-    dias = DiaEvento.objects.all().order_by('-data')
+    dias = DiaEvento.objects.annotate(
+        total_presentes=Count('presenca', filter=Q(presenca__presente=True))
+    ).order_by('-data')
+    
     return render(request, 'checkin/lista_dias.html', {'dias': dias})
+
 
 @login_required
 @permission_required('checkin.add_diaevento', raise_exception=True)

@@ -1,6 +1,16 @@
 {% extends 'adolescentes/base.html' %}
 {% block content %}
-<a href="{% url 'criar_adolescente' %}" class="btn btn-primary">Adicionar Adolescente</a>
+
+<h2>Lista de Adolescentes</h2>
+
+<!-- Mostra o total de adolescentes cadastrados -->
+<p class="mt-2">
+  <strong>Total cadastrados:</strong>
+  <span class="badge bg-primary">{{ total_adolescentes }}</span>
+</p>
+
+<a href="{% url 'criar_adolescente' %}" class="btn btn-primary mt-3">Adicionar Adolescente</a>
+
 <table class="table mt-3">
     <thead>
         <tr>
@@ -36,4 +46,5 @@
         {% endfor %}
     </tbody>
 </table>
+
 {% endblock %}

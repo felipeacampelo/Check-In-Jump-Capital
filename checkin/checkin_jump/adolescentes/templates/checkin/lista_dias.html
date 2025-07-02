@@ -10,13 +10,12 @@
 
 <ul class="list-group">
     {% for dia in dias %}
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-        <a href="{% url 'checkin_dia' dia.id %}">
-            {{ dia.data|date:"d/m/Y" }}
-        </a>
-    </li>
-    {% empty %}
-    <li class="list-group-item">Nenhum dia cadastrado ainda.</li>
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <a href="{% url 'checkin_dia' dia.id %}">{{ dia.data|date:"d/m/Y" }}</a>
+        <span class="badge bg-success rounded-pill">
+          {{ dia.total_presentes }} presentes
+        </span>
+      </li>
     {% endfor %}
-</ul>
+  </ul>  
 {% endblock %}
