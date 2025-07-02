@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo
+from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio
 from .forms import AdolescenteForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -33,9 +33,31 @@ def logout_view(request):
 def listar_adolescentes(request):
     adolescentes = Adolescente.objects.all()
     total_adolescentes = adolescentes.count()
+
+    # Filtros
+    pg_id = request.GET.get('pg')
+    genero = request.GET.get('genero')
+    imperio_id = request.GET.get('imperio')
+    busca = request.GET.get('busca')
+
+    if busca:
+        adolescentes = adolescentes.filter(nome__icontains=busca)
+    if pg_id:
+        adolescentes = adolescentes.filter(pg_id=pg_id)
+    if genero:
+        adolescentes = adolescentes.filter(genero=genero)
+    if imperio_id:
+        adolescentes = adolescentes.filter(imperio_id=imperio_id)
+
+    # 🔧 Adicione os dados necessários para os filtros aparecerem
+    pgs = PequenoGrupo.objects.all()
+    imperios = Imperio.objects.all()
+
     return render(request, 'adolescentes/listar.html', {
         'adolescentes': adolescentes,
-        'total_adolescentes': total_adolescentes
+        'total_adolescentes': total_adolescentes,
+        'pgs': pgs,
+        'imperios': imperios,
     })
 
 @login_required

@@ -3,80 +3,141 @@
 
 <h2>Lista de Adolescentes</h2>
 
-<!-- Mostra o total de adolescentes cadastrados -->
+<!-- Total de cadastrados -->
 <p class="mt-2">
   <strong>Total cadastrados:</strong>
   <span class="badge bg-primary">{{ total_adolescentes }}</span>
 </p>
 
-<a href="{% url 'criar_adolescente' %}" class="btn btn-primary mt-3">Adicionar Adolescente</a>
+<!-- Filtros e busca -->
+<form method="get" id="filtroForm" class="mb-4">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label for="busca" class="form-label">Buscar por nome:</label>
+      <input type="text" name="busca" id="buscaInput" class="form-control" value="{{ request.GET.busca }}">
+    </div>
 
+    <div class="col-md-2">
+      <label for="pg" class="form-label">PG:</label>
+      <select name="pg" id="pg" class="form-select">
+        <option value="">Todos</option>
+        {% for pg in pgs %}
+          <option value="{{ pg.id }}" {% if request.GET.pg == pg.id|stringformat:"s" %}selected{% endif %}>{{ pg.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label for="genero" class="form-label">Gênero:</label>
+      <select name="genero" id="genero" class="form-select">
+        <option value="">Todos</option>
+        <option value="M" {% if request.GET.genero == "M" %}selected{% endif %}>Masculino</option>
+        <option value="F" {% if request.GET.genero == "F" %}selected{% endif %}>Feminino</option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label for="imperio" class="form-label">Império:</label>
+      <select name="imperio" id="imperio" class="form-select">
+        <option value="">Todos</option>
+        {% for imperio in imperios %}
+          <option value="{{ imperio.id }}" {% if request.GET.imperio == imperio.id|stringformat:"s" %}selected{% endif %}>{{ imperio.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+  </div>
+</form>
+
+<!-- Botão adicionar adolescente -->
+<div class="text-start mt-3">
+    <a href="{% url 'criar_adolescente' %}" class="btn btn-primary">Adicionar Adolescente</a>
+  </div>
+  
+
+<!-- Tabela -->
 <table class="table mt-3">
-    <thead>
-        <tr>
-            <th>Nome</th>
-            <th>Sobrenome</th>
-            <th>Gênero</th>
-            <th>Data de Nascimento</th>
-            <th>Foto</th>
-            <th>PG</th>
-            <th>Império</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for adolescente in adolescentes %}
-        <tr>
-            <td>
-                <span style="cursor: pointer; color: inherit;" data-bs-toggle="modal" data-bs-target="#modal{{ adolescente.id }}">
-                    {{ adolescente.nome }}
-                  </span>                  
-            </td>
-            <td>{{ adolescente.sobrenome }}</td>
-            <td>{{ adolescente.genero }}</td>
-            <td>{{ adolescente.data_nascimento }}</td>
-            <td>
-                {% if adolescente.foto %}
-                <img src="{{ adolescente.foto.url }}" width="70">
-                {% else %}
-                Sem foto
-                {% endif %}
-            </td>
-            <td>{{ adolescente.pg }}</td>
-            <td>{{ adolescente.imperio }}</td>
-            <td>
-                <a href="{% url 'editar_adolescente' adolescente.id %}" class="btn btn-secondary">Editar</a>
-                <a href="{% url 'excluir_adolescente' adolescente.id %}" class="btn btn-danger">Excluir</a>
-            </td>
-        </tr>
+  <thead>
+    <tr>
+      <th>Nome</th>
+      <th>Sobrenome</th>
+      <th>Gênero</th>
+      <th>Data de Nascimento</th>
+      <th>Foto</th>
+      <th>PG</th>
+      <th>Império</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for adolescente in adolescentes %}
+    <tr>
+      <td>
+        <span style="cursor: pointer; color: inherit;" data-bs-toggle="modal" data-bs-target="#modal{{ adolescente.id }}">
+          {{ adolescente.nome }}
+        </span>
+      </td>
+      <td>{{ adolescente.sobrenome }}</td>
+      <td>{{ adolescente.genero }}</td>
+      <td>{{ adolescente.data_nascimento }}</td>
+      <td>
+        {% if adolescente.foto %}
+          <img src="{{ adolescente.foto.url }}" width="70">
+        {% else %}
+          Sem foto
+        {% endif %}
+      </td>
+      <td>{{ adolescente.pg }}</td>
+      <td>{{ adolescente.imperio }}</td>
+      <td>
+        <a href="{% url 'editar_adolescente' adolescente.id %}" class="btn btn-secondary">Editar</a>
+        <a href="{% url 'excluir_adolescente' adolescente.id %}" class="btn btn-danger">Excluir</a>
+      </td>
+    </tr>
 
-        <!-- Modal do Adolescente -->
-        <div class="modal fade" id="modal{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalLabel{{ adolescente.id }}" aria-hidden="true">
-          <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="modalLabel{{ adolescente.id }}">Detalhes de {{ adolescente.nome }} {{ adolescente.sobrenome }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-              </div>
-              <div class="modal-body">
-                <p><strong>Nome Completo:</strong> {{ adolescente.nome }} {{ adolescente.sobrenome }}</p>
-                <p><strong>Gênero:</strong> {{ adolescente.get_genero_display }}</p>
-                <p><strong>Data de Nascimento:</strong> {{ adolescente.data_nascimento|date:"d/m/Y" }}</p>
-                <p><strong>Pequeno Grupo (PG):</strong> {{ adolescente.pg }}</p>
-                <p><strong>Império:</strong> {{ adolescente.imperio }}</p>
-                {% if adolescente.foto %}
-                  <p><strong>Foto:</strong></p>
-                  <img src="{{ adolescente.foto.url }}" class="img-fluid" alt="Foto de {{ adolescente.nome }}">
-                {% endif %}
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-              </div>
-            </div>
+    <!-- Modal -->
+    <div class="modal fade" id="modal{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalLabel{{ adolescente.id }}" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="modalLabel{{ adolescente.id }}">Detalhes de {{ adolescente.nome }} {{ adolescente.sobrenome }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Nome Completo:</strong> {{ adolescente.nome }} {{ adolescente.sobrenome }}</p>
+            <p><strong>Gênero:</strong> {{ adolescente.get_genero_display }}</p>
+            <p><strong>Data de Nascimento:</strong> {{ adolescente.data_nascimento|date:"d/m/Y" }}</p>
+            <p><strong>Pequeno Grupo (PG):</strong> {{ adolescente.pg }}</p>
+            <p><strong>Império:</strong> {{ adolescente.imperio }}</p>
+            {% if adolescente.foto %}
+              <p><strong>Foto:</strong></p>
+              <img src="{{ adolescente.foto.url }}" class="img-fluid" alt="Foto de {{ adolescente.nome }}">
+            {% endif %}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
           </div>
         </div>
-        {% endfor %}
-    </tbody>
+      </div>
+    </div>
+    {% endfor %}
+  </tbody>
 </table>
+
+<!-- Script para submissão automática ao digitar -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const buscaInput = document.getElementById("buscaInput");
+    buscaInput.addEventListener("input", function () {
+      clearTimeout(buscaInput.dataset.timer);
+      buscaInput.dataset.timer = setTimeout(() => {
+        document.getElementById("filtroForm").submit();
+      }, 500);
+    });
+  });
+</script>
 
 {% endblock %}
