@@ -6,6 +6,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.messages import get_messages
 from django.contrib.auth.decorators import login_required, permission_required
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+import json
 
 def login_view(request):
     if request.method == "POST":
@@ -18,7 +21,6 @@ def login_view(request):
             return redirect("listar_adolescentes")  # Redireciona para a lista após login
         else:
             messages.error(request, "Usuário ou senha inválidos. Por favor, verifique suas credenciais e tente novamente.")
-
 
     return render(request, "adolescentes/login.html")
 
@@ -131,6 +133,48 @@ def checkin_dia(request, dia_id):
         'presentes_ids': presentes_ids,
         'filtro': filtro,
     })
+
+@login_required
+@require_http_methods(["POST"])
+def atualizar_presenca(request):
+    try:
+        # Parse do JSON enviado pelo JavaScript
+        data = json.loads(request.body)
+        adolescente_id = data.get('adolescente_id')
+        dia_id = data.get('dia_id')
+        presente = data.get('presente')
+        
+        # Validação dos dados
+        if not all([adolescente_id, dia_id, presente is not None]):
+            return JsonResponse({
+                'error': 'Dados incompletos'
+            }, status=400)
+        
+        # Busca os objetos
+        adolescente = get_object_or_404(Adolescente, id=adolescente_id)
+        dia = get_object_or_404(DiaEvento, id=dia_id)
+        
+        # Atualiza ou cria a presença
+        presenca, created = Presenca.objects.update_or_create(
+            adolescente=adolescente,
+            dia=dia,
+            defaults={'presente': presente}
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Presença atualizada com sucesso',
+            'created': created
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'error': 'JSON inválido'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'error': str(e)
+        }, status=500)
 
 @login_required
 def adicionar_pg(request):

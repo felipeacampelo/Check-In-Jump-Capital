@@ -8,20 +8,113 @@
   <a href="?filtro=ausentes" class="btn btn-outline-secondary {% if filtro == 'ausentes' %}active{% endif %}">Somente Ausentes</a>
 </div>
 
+<div class="mb-3">
+  <input type="text" id="searchInput" class="form-control" placeholder="Buscar adolescente...">
+</div>
+
 <form method="post">
   {% csrf_token %}
   <ul class="list-group mb-3">
     {% for adolescente in adolescentes %}
       <li class="list-group-item">
         <label class="form-check-label d-flex align-items-center">
-          <input type="checkbox" name="presentes" value="{{ adolescente.id }}"
-                 {% if adolescente.id in presentes_ids %}checked{% endif %}
-                 class="form-check-input me-2">
+          <input type="checkbox" 
+                 class="form-check-input me-2 presenca-checkbox"
+                 data-adolescente-id="{{ adolescente.id }}"
+                 {% if adolescente.id in presentes_ids %}checked{% endif %}>
           {{ adolescente.nome }} {{ adolescente.sobrenome }}
         </label>
       </li>
     {% endfor %}
   </ul>
-  <button type="submit" class="btn btn-success">Salvar Check-in</button>
 </form>
+
+<script>
+  // Função para pegar o CSRF token do cookie
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const diaId = parseInt('{{ dia.id|escapejs }}');
+    
+    // Atualizar presença automaticamente ao marcar checkbox
+    document.querySelectorAll('.presenca-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', function(event) {
+        const adolescenteId = parseInt(event.target.dataset.adolescenteId);
+        const presente = event.target.checked;
+        
+        event.target.disabled = true;
+        
+        fetch("{% url 'atualizar_presenca' %}", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+          },
+          body: JSON.stringify({
+            adolescente_id: adolescenteId,
+            dia_id: diaId,
+            presente: presente
+          })
+        })
+        .then(function(response) {
+          if (!response.ok) {
+            if (response.status === 403) {
+              alert('Erro de permissão. Verifique se você tem autorização.');
+            } else if (response.status === 404) {
+              alert('Recurso não encontrado.');
+            } else {
+              alert('Erro ao salvar presença (status: ' + response.status + ')');
+            }
+            event.target.checked = !presente;
+            throw new Error('Response not ok');
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          console.log('Presença atualizada com sucesso');
+        })
+        .catch(function(error) {
+          console.error('Erro:', error);
+          if (error.message !== 'Response not ok') {
+            alert('Erro de rede ao salvar presença');
+            event.target.checked = !presente;
+          }
+        })
+        .finally(function() {
+          event.target.disabled = false;
+        });
+      });
+    });
+
+    // Filtrar lista conforme o texto digitado na barra de busca
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', () => {
+      const filter = searchInput.value.toLowerCase();
+      const listItems = document.querySelectorAll('.list-group-item');
+
+      listItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(filter)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>
+
 {% endblock %}
