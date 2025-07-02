@@ -123,7 +123,7 @@ def checkin_dia(request, dia_id):
                 presente=str(adol.id) in presencas_ids
             )
         messages.success(request, "Check-in realizado com sucesso!")
-        return redirect('pagina_checkin')
+        return redirect('checkin_dia', dia_id=dia.id)
 
     return render(request, 'checkin/checkin_dia.html', {
         'dia': dia,
