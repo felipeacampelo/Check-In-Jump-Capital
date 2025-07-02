@@ -9,6 +9,8 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.db.models import Count, Q, Avg, F
+from django.db.models import Prefetch
+
 import json
 
 def login_view(request):
@@ -31,33 +33,39 @@ def logout_view(request):
 
 @login_required
 def listar_adolescentes(request):
-    adolescentes = Adolescente.objects.all()
-    total_adolescentes = adolescentes.count()
-
-    # Filtros
+    busca = request.GET.get('busca', '')
     pg_id = request.GET.get('pg')
     genero = request.GET.get('genero')
     imperio_id = request.GET.get('imperio')
-    busca = request.GET.get('busca')
 
+    adolescentes = Adolescente.objects.all()
     if busca:
         adolescentes = adolescentes.filter(nome__icontains=busca)
     if pg_id:
-        adolescentes = adolescentes.filter(pg_id=pg_id)
+        adolescentes = adolescentes.filter(pg__id=pg_id)
     if genero:
         adolescentes = adolescentes.filter(genero=genero)
     if imperio_id:
-        adolescentes = adolescentes.filter(imperio_id=imperio_id)
+        adolescentes = adolescentes.filter(imperio__id=imperio_id)
 
-    # 🔧 Adicione os dados necessários para os filtros aparecerem
+    total_adolescentes = adolescentes.count()
     pgs = PequenoGrupo.objects.all()
     imperios = Imperio.objects.all()
+
+    # Pré-carrega presenças para cada adolescente
+    adolescentes = adolescentes.prefetch_related(
+        Prefetch('presenca_set', queryset=Presenca.objects.select_related('dia').order_by('-dia__data'))
+    )
 
     return render(request, 'adolescentes/listar.html', {
         'adolescentes': adolescentes,
         'total_adolescentes': total_adolescentes,
         'pgs': pgs,
         'imperios': imperios,
+        'busca': busca,
+        'pg_selecionado': pg_id,
+        'genero_selecionado': genero,
+        'imperio_selecionado': imperio_id
     })
 
 @login_required

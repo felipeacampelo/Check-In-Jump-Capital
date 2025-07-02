@@ -29,6 +29,9 @@ class Adolescente(models.Model):
 
     def __str__(self):
         return f"{self.nome} {self.sobrenome}"
+    
+    def ultimas_presencas(self):
+        return self.presenca_set.order_by('-dia__data')[:5]
 
 class DiaEvento(models.Model):
     data = models.DateField(unique=True)
