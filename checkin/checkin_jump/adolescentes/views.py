@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.db.models import Count, Q, Avg, F
 from django.db.models import Prefetch
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import csv
 from django.http import HttpResponse
 
@@ -39,6 +40,10 @@ def listar_adolescentes(request):
     pg_id = request.GET.get('pg')
     genero = request.GET.get('genero')
     imperio_id = request.GET.get('imperio')
+    
+    # Parâmetros de ordenação
+    ordenar_por = request.GET.get('ordenar_por', 'nome')  # Padrão: ordenar por nome
+    direcao = request.GET.get('direcao', 'asc')  # Padrão: ascendente
 
     adolescentes = Adolescente.objects.all()
     if busca:
@@ -50,6 +55,23 @@ def listar_adolescentes(request):
     if imperio_id:
         adolescentes = adolescentes.filter(imperio__id=imperio_id)
 
+    # Aplicar ordenação
+    if ordenar_por == 'nome':
+        adolescentes = adolescentes.order_by('nome' if direcao == 'asc' else '-nome')
+    elif ordenar_por == 'sobrenome':
+        adolescentes = adolescentes.order_by('sobrenome' if direcao == 'asc' else '-sobrenome')
+    elif ordenar_por == 'genero':
+        adolescentes = adolescentes.order_by('genero' if direcao == 'asc' else '-genero')
+    elif ordenar_por == 'data_nascimento':
+        adolescentes = adolescentes.order_by('data_nascimento' if direcao == 'asc' else '-data_nascimento')
+    elif ordenar_por == 'pg':
+        adolescentes = adolescentes.order_by('pg__nome' if direcao == 'asc' else '-pg__nome')
+    elif ordenar_por == 'imperio':
+        adolescentes = adolescentes.order_by('imperio__nome' if direcao == 'asc' else '-imperio__nome')
+    else:
+        # Padrão: ordenar por nome
+        adolescentes = adolescentes.order_by('nome')
+
     total_adolescentes = adolescentes.count()
     pgs = PequenoGrupo.objects.all()
     imperios = Imperio.objects.all()
@@ -59,15 +81,30 @@ def listar_adolescentes(request):
         Prefetch('presenca_set', queryset=Presenca.objects.select_related('dia').order_by('-dia__data'))
     )
 
+    # Paginação
+    paginator = Paginator(adolescentes, 25)  # 25 registros por página
+    page = request.GET.get('page')
+    
+    try:
+        adolescentes_paginados = paginator.page(page)
+    except PageNotAnInteger:
+        # Se a página não for um número, mostrar a primeira página
+        adolescentes_paginados = paginator.page(1)
+    except EmptyPage:
+        # Se a página estiver fora do range, mostrar a última página
+        adolescentes_paginados = paginator.page(paginator.num_pages)
+
     return render(request, 'adolescentes/listar.html', {
-        'adolescentes': adolescentes,
+        'adolescentes': adolescentes_paginados,
         'total_adolescentes': total_adolescentes,
         'pgs': pgs,
         'imperios': imperios,
         'busca': busca,
         'pg_selecionado': pg_id,
         'genero_selecionado': genero,
-        'imperio_selecionado': imperio_id
+        'imperio_selecionado': imperio_id,
+        'ordenar_por': ordenar_por,
+        'direcao': direcao
     })
 
 @login_required
@@ -273,19 +310,40 @@ def exportar_adolescentes_csv(request):
     return response
 
 def exportar_presencas_csv(request):
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="presencas.csv"'
+    dia_id = request.GET.get('dia_id')
+    
+    if dia_id:
+        # Exportar presenças de um dia específico
+        try:
+            dia = DiaEvento.objects.get(id=dia_id)
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = f'attachment; filename="presencas_{dia.data.strftime("%d_%m_%Y")}.csv"'
 
-    writer = csv.writer(response)
-    writer.writerow(['Data', 'Nome', 'Presente'])
+            writer = csv.writer(response)
+            writer.writerow(['Data', 'Nome', 'Presente'])
 
-    presencas = Presenca.objects.select_related('adolescente', 'dia').all().order_by('-dia__data')
+            presencas = Presenca.objects.filter(dia=dia).select_related('adolescente').order_by('adolescente__nome')
 
-    for presenca in presencas:
-        writer.writerow([
-            presenca.dia.data.strftime('%d/%m/%Y'),
-            f'{presenca.adolescente.nome} {presenca.adolescente.sobrenome}',
-            'Sim' if presenca.presente else 'Não'
-        ])
+            for presenca in presencas:
+                writer.writerow([
+                    dia.data.strftime('%d/%m/%Y'),
+                    f'{presenca.adolescente.nome} {presenca.adolescente.sobrenome}',
+                    'Sim' if presenca.presente else 'Não'
+                ])
 
-    return response
+            return response
+        except DiaEvento.DoesNotExist:
+            messages.error(request, "Dia não encontrado.")
+            return redirect('lista_dias_evento')
+    else:
+        # Redirecionar para a página de seleção de dia
+        return redirect('selecionar_dia_exportar')
+
+def selecionar_dia_exportar(request):
+    dias = DiaEvento.objects.annotate(
+        total_presentes=Count('presenca', filter=Q(presenca__presente=True))
+    ).order_by('-data')
+    
+    return render(request, 'checkin/selecionar_dia_exportar.html', {
+        'dias': dias
+    })

@@ -5,9 +5,52 @@
     {% if adolescentes %}
         <ul class="list-group">
             {% for adolescente in adolescentes %}
-            <li class="list-group-item">
+            <li class="list-group-item" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modal{{ adolescente.id }}">
                 {{ adolescente.nome }} {{ adolescente.sobrenome }}
             </li>
+
+            <!-- Modal do Adolescente -->
+            <div class="modal fade" id="modal{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalLabel{{ adolescente.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="modalLabel{{ adolescente.id }}">Detalhes de {{ adolescente.nome }} {{ adolescente.sobrenome }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p><strong>Nome Completo:</strong> {{ adolescente.nome }} {{ adolescente.sobrenome }}</p>
+                            <p><strong>Gênero:</strong> {{ adolescente.get_genero_display }}</p>
+                            <p><strong>Data de Nascimento:</strong> {{ adolescente.data_nascimento|date:"d/m/Y" }}</p>
+                            <p><strong>Pequeno Grupo (PG):</strong> {{ adolescente.pg }}</p>
+                            <p><strong>Império:</strong> {{ adolescente.imperio }}</p>
+                            {% if adolescente.foto %}
+                                <p><strong>Foto:</strong></p>
+                                <img src="{{ adolescente.foto.url }}" class="img-fluid" alt="Foto de {{ adolescente.nome }}">
+                            {% endif %}
+
+                            <hr>
+                            <h6>Histórico de Presenças:</h6>
+                            <ul class="list-group">
+                                {% for presenca in adolescente.ultimas_presencas %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ presenca.dia.data|date:"d/m/Y" }}
+                                        {% if presenca.presente %}
+                                            <span class="badge bg-success">Presente</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Ausente</span>
+                                        {% endif %}
+                                    </li>
+                                {% empty %}
+                                    <li class="list-group-item">Nenhum registro de presença.</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {% endfor %}
         </ul>
     {% else %}
