@@ -32,5 +32,8 @@ urlpatterns = [
     path('exportar/adolescentes/', exportar_adolescentes_csv, name='exportar_adolescentes_csv'),
     path('exportar/presencas/', exportar_presencas_csv, name='exportar_presencas_csv'),
     path('exportar/presencas/selecionar-dia/', selecionar_dia_exportar, name='selecionar_dia_exportar'),
+
+    # Dashboard
+    path("dashboard/", views.dashboard, name="dashboard"),
 ]
 

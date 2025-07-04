@@ -347,3 +347,159 @@ def selecionar_dia_exportar(request):
     return render(request, 'checkin/selecionar_dia_exportar.html', {
         'dias': dias
     })
+
+@login_required
+def dashboard(request):
+    """Dashboard com estatísticas e gráficos"""
+    from datetime import timedelta
+    
+    # Filtros de data
+    data_inicio = request.GET.get('data_inicio')
+    data_fim = request.GET.get('data_fim')
+    dia_especifico = request.GET.get('dia_especifico')
+    
+    # Estatísticas básicas
+    total_adolescentes = Adolescente.objects.count()
+    total_pgs = PequenoGrupo.objects.count()
+    total_imperios = Imperio.objects.count()
+    total_eventos = DiaEvento.objects.count()
+    
+    # Filtrar eventos por período se especificado
+    eventos_query = DiaEvento.objects.all()
+    if dia_especifico:
+        try:
+            dia = DiaEvento.objects.get(data=dia_especifico)
+            eventos_query = DiaEvento.objects.filter(data=dia_especifico)
+        except DiaEvento.DoesNotExist:
+            eventos_query = DiaEvento.objects.none()
+    elif data_inicio and data_fim:
+        eventos_query = DiaEvento.objects.filter(data__range=[data_inicio, data_fim])
+    
+    # Presença média por evento no período
+    if eventos_query.exists():
+        total_presencas = Presenca.objects.filter(
+            dia__in=eventos_query, 
+            presente=True
+        ).count()
+        media_presenca = round(total_presencas / eventos_query.count(), 1)
+    else:
+        media_presenca = 0
+    
+    # Distribuição por gênero
+    generos = Adolescente.objects.values('genero').annotate(
+        total=Count('id')
+    ).order_by('genero')
+    
+    genero_labels = []
+    genero_data = []
+    for genero in generos:
+        genero_labels.append(genero['genero'])
+        genero_data.append(genero['total'])
+    
+    # Presença média por PG (top 5)
+    if eventos_query.exists():
+        presenca_por_pg = PequenoGrupo.objects.annotate(
+            total_presentes=Count('adolescentes__presenca', 
+                filter=Q(adolescentes__presenca__presente=True, 
+                        adolescentes__presenca__dia__in=eventos_query)),
+            total_eventos=Count('adolescentes__presenca__dia', 
+                filter=Q(adolescentes__presenca__dia__in=eventos_query), 
+                distinct=True)
+        ).annotate(
+            media_presenca=F('total_presentes') / F('total_eventos')
+        ).order_by('-media_presenca')[:5]
+    else:
+        presenca_por_pg = []
+    
+    pg_labels = []
+    pg_data = []
+    for pg in presenca_por_pg:
+        pg_labels.append(pg.nome)
+        pg_data.append(round(pg.media_presenca, 1))
+    
+    # Evolução da presença (últimos 10 eventos)
+    ultimos_eventos = eventos_query.order_by('-data')[:10] if eventos_query.exists() else []
+    presenca_por_evento = []
+    for evento in reversed(ultimos_eventos):  # Inverter para ordem cronológica
+        presentes = Presenca.objects.filter(dia=evento, presente=True).count()
+        total = Presenca.objects.filter(dia=evento).count()
+        # Calcular percentual em relação ao total de adolescentes cadastrados
+        percentual = round((presentes / max(total_adolescentes, 1)) * 100, 1)
+        presenca_por_evento.append({
+            'data': evento.data.strftime('%d/%m'),
+            'presentes': presentes,
+            'total': total,
+            'percentual': percentual
+        })
+    
+    # Presença média por Império
+    if eventos_query.exists():
+        presenca_por_imperio = Imperio.objects.annotate(
+            total_presentes=Count('adolescente__presenca', 
+                filter=Q(adolescente__presenca__presente=True, 
+                        adolescente__presenca__dia__in=eventos_query)),
+            total_eventos=Count('adolescente__presenca__dia', 
+                filter=Q(adolescente__presenca__dia__in=eventos_query), 
+                distinct=True)
+        ).annotate(
+            media_presenca=F('total_presentes') / F('total_eventos')
+        ).order_by('-media_presenca')
+    else:
+        presenca_por_imperio = []
+    
+    imperio_labels = []
+    imperio_data = []
+    for imperio in presenca_por_imperio:
+        imperio_labels.append(imperio.nome)
+        imperio_data.append(round(imperio.media_presenca, 1))
+    
+    # Estatísticas do último evento
+    ultimo_evento = eventos_query.order_by('-data').first() if eventos_query.exists() else None
+    if ultimo_evento:
+        ultimo_presentes = Presenca.objects.filter(dia=ultimo_evento, presente=True).count()
+        ultimo_total = Presenca.objects.filter(dia=ultimo_evento).count()
+        # Calcular percentual em relação ao total de adolescentes cadastrados
+        ultimo_percentual = round((ultimo_presentes / max(total_adolescentes, 1)) * 100, 1)
+    else:
+        ultimo_presentes = 0
+        ultimo_total = 0
+        ultimo_percentual = 0
+    
+    # Lista de eventos para o filtro
+    todos_eventos = DiaEvento.objects.order_by('-data')
+    
+    evolucao_labels = [e['data'] for e in presenca_por_evento]
+    evolucao_data = [e['presentes'] for e in presenca_por_evento]
+    evolucao_total = [e['total'] for e in presenca_por_evento]
+    
+    context = {
+        'total_adolescentes': total_adolescentes,
+        'total_pgs': total_pgs,
+        'total_imperios': total_imperios,
+        'total_eventos': total_eventos,
+        'media_presenca': media_presenca,
+        'ultimo_presentes': ultimo_presentes,
+        'ultimo_total': ultimo_total,
+        'ultimo_percentual': ultimo_percentual,
+        'ultimo_evento': ultimo_evento,
+        
+        # Filtros
+        'data_inicio': data_inicio,
+        'data_fim': data_fim,
+        'dia_especifico': dia_especifico,
+        'todos_eventos': todos_eventos,
+        
+        # Dados para gráficos
+        'genero_labels': genero_labels,
+        'genero_data': genero_data,
+        'pg_labels': pg_labels,
+        'pg_data': pg_data,
+        'presenca_por_evento': presenca_por_evento,
+        'evolucao_labels': evolucao_labels,
+        'evolucao_data': evolucao_data,
+        'evolucao_total': evolucao_total,
+        'imperio_labels': imperio_labels,
+        'imperio_data': imperio_data,
+    }
+    
+    return render(request, 'adolescentes/dashboard.html', context)
