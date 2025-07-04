@@ -6,3 +6,4 @@ sqlparse==0.5.3
 tzdata==2025.2
 gunicorn==23.0.0
 whitenoise==6.6.0
+weasyprint==65.1

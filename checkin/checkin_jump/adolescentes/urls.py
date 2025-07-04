@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from .views import login_view, logout_view, listar_adolescentes
-from .views import exportar_adolescentes_csv, exportar_presencas_csv, selecionar_dia_exportar
+from .views import exportar_adolescentes_csv, exportar_presencas_csv, selecionar_dia_exportar, exportar_dashboard_pdf
 
 urlpatterns = [
     # Autenticação
@@ -35,5 +35,6 @@ urlpatterns = [
 
     # Dashboard
     path("dashboard/", views.dashboard, name="dashboard"),
+    path("dashboard/pdf/", exportar_dashboard_pdf, name="exportar_dashboard_pdf"),
 ]
 
