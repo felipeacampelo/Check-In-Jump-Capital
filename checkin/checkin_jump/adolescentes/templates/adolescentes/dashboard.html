@@ -2,10 +2,25 @@
 {% block content %}
 
 <style>
-  body.dark-mode .card:not(.text-bg-primary):not(.text-bg-success):not(.text-bg-info) {
+  body.dark-mode .card:not(.text-bg-primary):not(.text-bg-success):not(.text-bg-warning):not(.text-bg-info) {
     background-color: #23272b !important;
     color: #f8f9fa !important;
     border-color: #444 !important;
+  }
+  body.dark-mode .card.text-bg-primary {
+    background-color: #0d6efd !important;
+    color: #fff !important;
+    border-color: #0a58ca !important;
+  }
+  body.dark-mode .card.text-bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+    border-color: #ffcd39 !important;
+  }
+  body.dark-mode .card.text-bg-success {
+    background-color: #198754 !important;
+    color: #fff !important;
+    border-color: #157347 !important;
   }
   body.dark-mode .card-header {
     background-color: #23272b !important;
@@ -102,7 +117,7 @@
 <!-- Cards de estatísticas principais -->
 <div class="row mb-4 justify-content-center">
     <div class="col-md-3 mb-3">
-        <div class="card">
+        <div class="card text-bg-primary card-total-adolescentes">
             <div class="card-body text-center">
                 <i class="fas fa-users fa-2x mb-2"></i>
                 <h5 class="card-title">Total de Adolescentes</h5>
@@ -111,7 +126,7 @@
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card">
+        <div class="card text-bg-warning card-total-pgs">
             <div class="card-body text-center">
                 <i class="fas fa-layer-group fa-2x mb-2"></i>
                 <h5 class="card-title">Pequenos Grupos</h5>
@@ -120,7 +135,7 @@
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card">
+        <div class="card text-bg-success card-total-eventos">
             <div class="card-body text-center">
                 <i class="fas fa-calendar-check fa-2x mb-2"></i>
                 <h5 class="card-title">Eventos Realizados</h5>
