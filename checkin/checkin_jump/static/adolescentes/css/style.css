@@ -329,6 +329,57 @@ input[type="text"]:focus, select.form-select:focus {
     overflow: hidden;
 }
 
+/* Modo escuro para modais */
+body.dark-mode .modal-content {
+    background-color: #2d3748;
+    border-color: #4a5568;
+}
+
+body.dark-mode .modal-header {
+    background-color: #1a202c;
+    border-bottom-color: #4a5568;
+}
+
+body.dark-mode .modal-title {
+    color: #f7fafc;
+}
+
+body.dark-mode .modal-body {
+    background-color: #2d3748;
+    color: #e2e8f0;
+}
+
+body.dark-mode .modal-body p {
+    color: #e2e8f0;
+}
+
+body.dark-mode .modal-body strong {
+    color: #f7fafc;
+}
+
+body.dark-mode .modal-body h6 {
+    color: #f7fafc;
+}
+
+body.dark-mode .modal-footer {
+    background-color: #1a202c;
+    border-top-color: #4a5568;
+}
+
+body.dark-mode .modal .btn-close {
+    filter: invert(1) brightness(200%);
+}
+
+body.dark-mode .list-group-item {
+    background-color: #2d3748;
+    border-color: #4a5568;
+    color: #e2e8f0;
+}
+
+body.dark-mode .list-group-item:hover {
+    background-color: #4a5568;
+}
+
 /* ---------- Tema Escuro ---------- */
 
 body.dark-mode {
@@ -385,6 +436,7 @@ body.dark-mode .btn-danger {
 body.dark-mode .table {
     background-color: #1c1c1c;
     box-shadow: none;
+    border-color: #444;
 }
 
 body.dark-mode .table thead tr th {
@@ -398,6 +450,12 @@ body.dark-mode .table tbody tr {
 
 body.dark-mode .table tbody tr:hover {
     background-color: #333333;
+}
+
+body.dark-mode .table tbody tr td {
+    color: #e1e1e1 !important;
+    border-color: #444 !important;
+    background-color: transparent !important;
 }
 
 body.dark-mode input[type="text"], 
@@ -516,6 +574,265 @@ body.dark-mode .list-group-item .btn-outline-primary:hover {
     background-color: #4dabf7;
     border-color: #4dabf7;
     color: #1a1a1a;
+}
+
+/* ---------- Estilos Mobile para Cards ---------- */
+
+/* Cards responsivos para mobile */
+@media (max-width: 991.98px) {
+    .card {
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 0;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card-text {
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .card-text i {
+        width: 16px;
+        text-align: center;
+        color: #d7600b;
+    }
+    
+    /* Botões em grupo vertical */
+    .btn-group-vertical .btn {
+        margin-bottom: 0.25rem;
+        border-radius: 6px !important;
+        font-size: 0.8rem;
+        padding: 0.375rem 0.5rem;
+    }
+    
+    .btn-group-vertical .btn:last-child {
+        margin-bottom: 0;
+    }
+    
+    /* Placeholder para foto */
+    .bg-light {
+        background-color: #f8f9fa !important;
+        border: 1px solid #dee2e6;
+    }
+    
+    /* Paginação mobile */
+    .pagination {
+        gap: 2px;
+    }
+    
+    .pagination .page-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+        border-radius: 6px;
+        margin: 0 1px;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #d7600b;
+        border-color: #d7600b;
+    }
+    
+    .pagination .page-link:hover {
+        background-color: #e6e6e6;
+        border-color: #d7600b;
+        color: #d7600b;
+    }
+    
+    /* Ajustes para telas muito pequenas */
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 0.75rem;
+        }
+        
+        .card-title {
+            font-size: 1rem;
+        }
+        
+        .card-text {
+            font-size: 0.8rem;
+        }
+        
+        .btn-group-vertical .btn {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.4rem;
+        }
+        
+        .pagination .page-link {
+            padding: 0.375rem 0.5rem;
+            font-size: 0.8rem;
+        }
+        
+        /* Reduzir espaçamento entre cards */
+        .row.g-3 {
+            --bs-gutter-y: 0.75rem;
+        }
+    }
+}
+
+/* Modo escuro para cards mobile */
+@media (max-width: 991.98px) {
+    body.dark-mode .card {
+        background-color: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    body.dark-mode .card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    
+    body.dark-mode .card-title {
+        color: #f7fafc;
+    }
+    
+    body.dark-mode .card-text {
+        color: #a0aec0;
+    }
+    
+    body.dark-mode .card-text i {
+        color: #f6ad55;
+    }
+    
+    body.dark-mode .bg-light {
+        background-color: #4a5568 !important;
+        border-color: #718096;
+        color: #a0aec0;
+    }
+    
+    body.dark-mode .pagination .page-link {
+        background-color: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    body.dark-mode .pagination .page-link:hover {
+        background-color: #4a5568;
+        border-color: #f6ad55;
+        color: #f6ad55;
+    }
+    
+    body.dark-mode .pagination .page-item.active .page-link {
+        background-color: #f6ad55;
+        border-color: #f6ad55;
+        color: #2d3748;
+    }
+}
+
+/* ---------- Padronização de Fotos ---------- */
+
+/* Foto na tabela desktop */
+.photo-table {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #dee2e6;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.photo-table:hover {
+    transform: scale(1.05);
+    border-color: #d7600b;
+}
+
+/* Foto nos cards mobile */
+.photo-card {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 2px solid #dee2e6;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.photo-card:hover {
+    transform: scale(1.05);
+    border-color: #d7600b;
+}
+
+/* Foto no modal de detalhes */
+.photo-modal {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 3px solid #dee2e6;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Foto no modal de visualização (foto grande) */
+.photo-modal-large {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* Placeholder para foto */
+.photo-placeholder {
+    width: 60px;
+    height: 60px;
+    background-color: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+.photo-placeholder-card {
+    width: 80px;
+    height: 80px;
+    background-color: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+/* Modo escuro para fotos */
+body.dark-mode .photo-table,
+body.dark-mode .photo-card,
+body.dark-mode .photo-modal {
+    border-color: #4a5568;
+}
+
+body.dark-mode .photo-table:hover,
+body.dark-mode .photo-card:hover {
+    border-color: #f6ad55;
+}
+
+body.dark-mode .photo-placeholder,
+body.dark-mode .photo-placeholder-card {
+    background-color: #4a5568;
+    border-color: #718096;
+    color: #a0aec0;
 }
 
 

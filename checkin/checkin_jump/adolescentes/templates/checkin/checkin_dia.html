@@ -1,5 +1,13 @@
 {% extends 'adolescentes/base.html' %}
 {% block content %}
+
+<!-- Botão voltar -->
+<div class="mb-3">
+  <a href="{% url 'pagina_checkin' %}" class="btn btn-outline-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Voltar
+  </a>
+</div>
+
 <h2>Check-in do dia {{ dia.data|date:"d/m/Y" }}</h2>
 
 <div class="mb-3">
