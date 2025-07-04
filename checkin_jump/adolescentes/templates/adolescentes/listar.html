@@ -1,0 +1,363 @@
+{% extends 'adolescentes/base.html' %}
+{% block content %}
+
+<h2>Lista de Adolescentes</h2>
+
+<!-- Total de cadastrados -->
+<p class="mt-2">
+  <strong>Total cadastrados:</strong>
+  <span class="badge bg-primary">{{ total_adolescentes }}</span>
+  {% if adolescentes.has_other_pages %}
+    <span class="badge bg-info ms-2">
+      Página {{ adolescentes.number }} de {{ adolescentes.paginator.num_pages }}
+    </span>
+  {% endif %}
+</p>
+
+
+<!-- Filtros e busca -->
+<form method="get" id="filtroForm" class="mb-4">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-3">
+      <label for="busca" class="form-label">Buscar por nome:</label>
+      <input type="text" name="busca" id="buscaInput" class="form-control" value="{{ request.GET.busca }}">
+    </div>
+
+    <div class="col-md-2">
+      <label for="pg" class="form-label">PG:</label>
+      <select name="pg" id="pg" class="form-select">
+        <option value="">Todos</option>
+        {% for pg in pgs %}
+          <option value="{{ pg.id }}" {% if request.GET.pg == pg.id|stringformat:"s" %}selected{% endif %}>{{ pg.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <label for="genero" class="form-label">Gênero:</label>
+      <select name="genero" id="genero" class="form-select">
+        <option value="">Todos</option>
+        <option value="M" {% if request.GET.genero == "M" %}selected{% endif %}>Masculino</option>
+        <option value="F" {% if request.GET.genero == "F" %}selected{% endif %}>Feminino</option>
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label for="imperio" class="form-label">Império:</label>
+      <select name="imperio" id="imperio" class="form-select">
+        <option value="">Todos</option>
+        {% for imperio in imperios %}
+          <option value="{{ imperio.id }}" {% if request.GET.imperio == imperio.id|stringformat:"s" %}selected{% endif %}>{{ imperio.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-2">
+      <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+  </div>
+</form>
+
+<!-- Botão adicionar adolescente -->
+<div class="text-start mt-3">
+    <a href="{% url 'criar_adolescente' %}" class="btn btn-primary">Adicionar Adolescente</a>
+    <a href="{% url 'exportar_adolescentes_csv' %}" class="btn btn-outline-secondary">Exportar CSV</a>
+  </div>
+
+<!-- Tabela Desktop (oculta em mobile) -->
+<div class="d-none d-lg-block">
+  <table class="table mt-3">
+    <thead>
+      <tr>
+        <th>
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+            Nome
+            {% if ordenar_por == 'nome' %}
+              {% if direcao == 'asc' %}
+                <i class="fas fa-sort-up"></i>
+              {% else %}
+                <i class="fas fa-sort-down"></i>
+              {% endif %}
+            {% else %}
+              <i class="fas fa-sort text-muted"></i>
+            {% endif %}
+          </a>
+        </th>
+        <th>
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}ordenar_por=sobrenome&direcao={% if ordenar_por == 'sobrenome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+            Sobrenome
+            {% if ordenar_por == 'sobrenome' %}
+              {% if direcao == 'asc' %}
+                <i class="fas fa-sort-up"></i>
+              {% else %}
+                <i class="fas fa-sort-down"></i>
+              {% endif %}
+            {% else %}
+              <i class="fas fa-sort text-muted"></i>
+            {% endif %}
+          </a>
+        </th>
+        <th>
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}ordenar_por=genero&direcao={% if ordenar_por == 'genero' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+            Gênero
+            {% if ordenar_por == 'genero' %}
+              {% if direcao == 'asc' %}
+                <i class="fas fa-sort-up"></i>
+              {% else %}
+                <i class="fas fa-sort-down"></i>
+              {% endif %}
+            {% else %}
+              <i class="fas fa-sort text-muted"></i>
+            {% endif %}
+          </a>
+        </th>
+        <th>
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}ordenar_por=data_nascimento&direcao={% if ordenar_por == 'data_nascimento' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+            Data de Nascimento
+            {% if ordenar_por == 'data_nascimento' %}
+              {% if direcao == 'asc' %}
+                <i class="fas fa-sort-up"></i>
+              {% else %}
+                <i class="fas fa-sort-down"></i>
+              {% endif %}
+            {% else %}
+              <i class="fas fa-sort text-muted"></i>
+            {% endif %}
+          </a>
+        </th>
+        <th>Foto</th>
+        <th>
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}ordenar_por=pg&direcao={% if ordenar_por == 'pg' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+            PG
+            {% if ordenar_por == 'pg' %}
+              {% if direcao == 'asc' %}
+                <i class="fas fa-sort-up"></i>
+              {% else %}
+                <i class="fas fa-sort-down"></i>
+              {% endif %}
+            {% else %}
+              <i class="fas fa-sort text-muted"></i>
+            {% endif %}
+          </a>
+        </th>
+        <th>
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}ordenar_por=imperio&direcao={% if ordenar_por == 'imperio' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+            Império
+            {% if ordenar_por == 'imperio' %}
+              {% if direcao == 'asc' %}
+                <i class="fas fa-sort-up"></i>
+              {% else %}
+                <i class="fas fa-sort-down"></i>
+              {% endif %}
+            {% else %}
+              <i class="fas fa-sort text-muted"></i>
+            {% endif %}
+          </a>
+        </th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for adolescente in adolescentes %}
+      <tr style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modal{{ adolescente.id }}">
+        <td>{{ adolescente.nome }}</td>
+        <td>{{ adolescente.sobrenome }}</td>
+        <td>{{ adolescente.genero }}</td>
+        <td>{{ adolescente.data_nascimento }}</td>
+        <td>
+          {% if adolescente.foto %}
+            <img src="{{ adolescente.foto.url }}" class="photo-table" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}">
+          {% else %}
+            <div class="photo-placeholder">
+              <i class="fas fa-user"></i>
+            </div>
+          {% endif %}
+        </td>
+        <td>{{ adolescente.pg }}</td>
+        <td>{{ adolescente.imperio }}</td>
+        <td>
+          <a href="{% url 'editar_adolescente' adolescente.id %}" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();">Editar</a>
+          <a href="{% url 'excluir_adolescente' adolescente.id %}" class="btn btn-danger btn-sm" onclick="event.stopPropagation();">Excluir</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Cards Mobile (visível apenas em mobile) -->
+<div class="d-lg-none">
+  <div class="row g-3 mt-3">
+    {% for adolescente in adolescentes %}
+    <div class="col-12">
+      <div class="card h-100" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modal{{ adolescente.id }}">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-3 col-md-2">
+              {% if adolescente.foto %}
+                <img src="{{ adolescente.foto.url }}" class="photo-card" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}">
+              {% else %}
+                <div class="photo-placeholder-card">
+                  <i class="fas fa-user fa-2x"></i>
+                </div>
+              {% endif %}
+            </div>
+            <div class="col-6 col-md-7">
+              <h6 class="card-title mb-1">{{ adolescente.nome }} {{ adolescente.sobrenome }}</h6>
+              <p class="card-text small mb-1">
+                <i class="fas fa-venus-mars me-1"></i>{{ adolescente.get_genero_display }}
+              </p>
+              <p class="card-text small mb-1">
+                <i class="fas fa-calendar me-1"></i>{{ adolescente.data_nascimento|date:"d/m/Y" }}
+              </p>
+              {% if adolescente.pg %}
+                <p class="card-text small mb-1">
+                  <i class="fas fa-layer-group me-1"></i>{{ adolescente.pg }}
+                </p>
+              {% endif %}
+              {% if adolescente.imperio %}
+                <p class="card-text small mb-0">
+                  <i class="fas fa-crown me-1"></i>{{ adolescente.imperio }}
+                </p>
+              {% endif %}
+            </div>
+            <div class="col-3 col-md-3 text-end">
+              <div class="btn-group-vertical btn-group-sm">
+                <a href="{% url 'editar_adolescente' adolescente.id %}" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a href="{% url 'excluir_adolescente' adolescente.id %}" class="btn btn-outline-danger btn-sm" onclick="event.stopPropagation();">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Modais dos Adolescentes -->
+{% for adolescente in adolescentes %}
+<!-- Modal da foto maior -->
+{% if adolescente.foto %}
+<div class="modal fade" id="modalFoto{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalFotoLabel{{ adolescente.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalFotoLabel{{ adolescente.id }}">Foto de {{ adolescente.nome }} {{ adolescente.sobrenome }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body d-flex justify-content-center">
+        <img src="{{ adolescente.foto.url }}" alt="Foto de {{ adolescente.nome }}" class="photo-modal-large">
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Modal do Adolescente -->
+<div class="modal fade" id="modal{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalLabel{{ adolescente.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLabel{{ adolescente.id }}">Detalhes de {{ adolescente.nome }} {{ adolescente.sobrenome }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Nome Completo:</strong> {{ adolescente.nome }} {{ adolescente.sobrenome }}</p>
+        <p><strong>Gênero:</strong> {{ adolescente.get_genero_display }}</p>
+        <p><strong>Data de Nascimento:</strong> {{ adolescente.data_nascimento|date:"d/m/Y" }}</p>
+        <p><strong>Pequeno Grupo (PG):</strong> {{ adolescente.pg }}</p>
+        <p><strong>Império:</strong> {{ adolescente.imperio }}</p>
+        {% if adolescente.foto %}
+          <p><strong>Foto:</strong></p>
+          <img src="{{ adolescente.foto.url }}" class="photo-modal" alt="Foto de {{ adolescente.nome }}">
+        {% endif %}
+
+        <hr>
+        <h6>Histórico de Presenças:</h6>
+        <ul class="list-group">
+          {% for presenca in adolescente.ultimas_presencas %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              {{ presenca.dia.data|date:"d/m/Y" }}
+              {% if presenca.presente %}
+                <span class="badge bg-success">Presente</span>
+              {% else %}
+                <span class="badge bg-danger">Ausente</span>
+              {% endif %}
+            </li>
+          {% empty %}
+            <li class="list-group-item">Nenhum registro de presença.</li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<!-- Paginação -->
+{% if adolescentes.has_other_pages %}
+<nav aria-label="Navegação de páginas">
+  <ul class="pagination justify-content-center flex-wrap">
+    {% if adolescentes.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}page=1">
+          <i class="fas fa-angle-double-left"></i>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}page={{ adolescentes.previous_page_number }}">
+          <i class="fas fa-angle-left"></i>
+        </a>
+      </li>
+    {% endif %}
+
+    {% for num in adolescentes.paginator.page_range %}
+      {% if adolescentes.number == num %}
+        <li class="page-item active">
+          <span class="page-link">{{ num }}</span>
+        </li>
+      {% elif num > adolescentes.number|add:'-3' and num < adolescentes.number|add:'3' %}
+        <li class="page-item">
+          <a class="page-link" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}page={{ num }}">{{ num }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+
+    {% if adolescentes.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}page={{ adolescentes.next_page_number }}">
+          <i class="fas fa-angle-right"></i>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}page={{ adolescentes.paginator.num_pages }}">
+          <i class="fas fa-angle-double-right"></i>
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+<!-- Script para submissão automática ao digitar -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const buscaInput = document.getElementById("buscaInput");
+    buscaInput.addEventListener("input", function () {
+      clearTimeout(buscaInput.dataset.timer);
+      buscaInput.dataset.timer = setTimeout(() => {
+        document.getElementById("filtroForm").submit();
+      }, 500);
+    });
+  });
+</script>
+
+{% endblock %}
