@@ -1,9 +1,0 @@
-{% extends 'adolescentes/base.html' %}
-{% block content %}
-<h2>Adicionar Novo Dia de Evento</h2>
-<form method="post">
-    {% csrf_token %}
-    <input type="date" name="data" class="form-control mb-2" required>
-    <button type="submit" class="btn btn-primary">Salvar</button>
-</form>
-{% endblock %}
