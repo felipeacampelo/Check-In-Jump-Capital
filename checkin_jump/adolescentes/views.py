@@ -132,6 +132,7 @@ def criar_adolescente(request):
         form = AdolescenteForm()
     return render(request, 'adolescentes/criar_adolescente.html', {'form': form})
 
+@permission_required('adolescentes.change_adolescente', raise_exception=True)
 @login_required
 def editar_adolescente(request, id):
     adolescente = get_object_or_404(Adolescente, id=id)
@@ -144,6 +145,7 @@ def editar_adolescente(request, id):
         form = AdolescenteForm(instance=adolescente)
     return render(request, 'adolescentes/criar_adolescente.html', {'form': form})
 
+@permission_required('adolescentes.delete_adolescente', raise_exception=True)
 @login_required
 def excluir_adolescente(request, id):
     adolescente = get_object_or_404(Adolescente, id=id)
@@ -348,6 +350,7 @@ def selecionar_dia_exportar(request):
         'dias': dias
     })
 
+@permission_required('adolescentes.view_dashboard', raise_exception=True)
 @login_required
 def dashboard(request):
     """Dashboard com estatísticas e gráficos"""

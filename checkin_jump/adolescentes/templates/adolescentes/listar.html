@@ -176,8 +176,12 @@
         <td>{{ adolescente.pg }}</td>
         <td>{{ adolescente.imperio }}</td>
         <td>
-          <a href="{% url 'editar_adolescente' adolescente.id %}" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();">Editar</a>
-          <a href="{% url 'excluir_adolescente' adolescente.id %}" class="btn btn-danger btn-sm" onclick="event.stopPropagation();">Excluir</a>
+          {% if perms.adolescentes.change_adolescente %}
+            <a href="{% url 'editar_adolescente' adolescente.id %}" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();">Editar</a>
+          {% endif %}
+          {% if perms.adolescentes.delete_adolescente %}
+            <a href="{% url 'excluir_adolescente' adolescente.id %}" class="btn btn-danger btn-sm" onclick="event.stopPropagation();">Excluir</a>
+          {% endif %}
         </td>
       </tr>
       {% endfor %}
@@ -223,12 +227,16 @@
             </div>
             <div class="col-3 col-md-3 text-end">
               <div class="btn-group-vertical btn-group-sm">
-                <a href="{% url 'editar_adolescente' adolescente.id %}" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
-                  <i class="fas fa-edit"></i>
-                </a>
-                <a href="{% url 'excluir_adolescente' adolescente.id %}" class="btn btn-outline-danger btn-sm" onclick="event.stopPropagation();">
-                  <i class="fas fa-trash"></i>
-                </a>
+                {% if perms.adolescentes.change_adolescente %}
+                  <a href="{% url 'editar_adolescente' adolescente.id %}" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                {% endif %}
+                {% if perms.adolescentes.delete_adolescente %}
+                  <a href="{% url 'excluir_adolescente' adolescente.id %}" class="btn btn-outline-danger btn-sm" onclick="event.stopPropagation();">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                {% endif %}
               </div>
             </div>
           </div>

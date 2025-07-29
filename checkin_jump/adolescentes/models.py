@@ -27,6 +27,11 @@ class Adolescente(models.Model):
     imperio = models.ForeignKey(Imperio, on_delete=models.SET_NULL, null=True, blank=True)
     data_inicio = models.DateField(blank=True, null=True)
 
+    class Meta:
+        permissions = [
+            ("view_dashboard", "Pode visualizar o dashboard"),
+        ]
+
     def __str__(self):
         return f"{self.nome} {self.sobrenome}"
     
