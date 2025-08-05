@@ -39,10 +39,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'adolescentes',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Para servir arquivos estáticos
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -172,3 +174,20 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    
+    # Configurações CSRF para Railway
+    CSRF_TRUSTED_ORIGINS = [
+        'https://check-in-production-b2e9.up.railway.app',
+        'https://*.up.railway.app',
+        'https://*.railway.app',
+    ]
+    
+    # Configurações de CORS para Railway
+    CORS_ALLOWED_ORIGINS = [
+        'https://check-in-production-b2e9.up.railway.app',
+        'https://*.up.railway.app',
+        'https://*.railway.app',
+    ]
+    
+    # Permitir credenciais em CORS
+    CORS_ALLOW_CREDENTIALS = True

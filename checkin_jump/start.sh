@@ -13,6 +13,12 @@ if [ -z "$DATABASE_URL" ]; then
     exit 1
 fi
 
+# Navegar para o diretório correto (se necessário)
+if [ -d "checkin_jump" ]; then
+    echo "Navigating to checkin_jump directory..."
+    cd checkin_jump
+fi
+
 # Executar migrações se necessário
 echo "Running database migrations..."
 python manage.py migrate --noinput
