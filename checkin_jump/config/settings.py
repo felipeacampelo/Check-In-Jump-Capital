@@ -164,6 +164,34 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 LOGIN_URL = "/login/"
 
+# Configurações CSRF globais (funcionam em todos os ambientes)
+CSRF_TRUSTED_ORIGINS = [
+    'https://check-in-production-b2e9.up.railway.app',
+    'https://checkinjumplocal-production.up.railway.app',
+    'https://*.up.railway.app',
+    'https://*.railway.app',
+    'https://railway.app',
+    '172.17.0.3',
+    '127.0.0.1',
+    'localhost',
+    '0.0.0.0',
+]
+
+# Configurações de CORS globais
+CORS_ALLOWED_ORIGINS = [
+    'https://check-in-production-b2e9.up.railway.app',
+    'https://checkinjumplocal-production.up.railway.app',
+    'https://*.up.railway.app',
+    'https://*.railway.app',
+    'https://railway.app',
+    '172.17.0.3',
+    '127.0.0.1',
+    'localhost',
+    '0.0.0.0',
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
 # Configurações de segurança para produção
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
@@ -175,25 +203,5 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     
-    # Configurações CSRF para Railway
-    CSRF_TRUSTED_ORIGINS = [
-        'https://check-in-production-b2e9.up.railway.app',
-        'https://checkinjumplocal-production.up.railway.app',
-        'https://*.up.railway.app',
-        'https://*.railway.app',
-        '172.17.0.3',  # IP interno do container
-        '127.0.0.1',   # Localhost
-    ]
-    
-    # Configurações de CORS para Railway
-    CORS_ALLOWED_ORIGINS = [
-        'https://check-in-production-b2e9.up.railway.app',
-        'https://checkinjumplocal-production.up.railway.app',
-        'https://*.up.railway.app',
-        'https://*.railway.app',
-        '172.17.0.3',  # IP interno do container
-        '127.0.0.1',   # Localhost
-    ]
-    
-    # Permitir credenciais em CORS
-    CORS_ALLOW_CREDENTIALS = True
+    # Configurações adicionais de CORS para maior compatibilidade
+    CORS_ALLOW_ALL_ORIGINS = True  # Temporário para debug
