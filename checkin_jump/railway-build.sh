@@ -8,7 +8,5 @@ pip install -r requirements.txt
 echo "Collecting static files..."
 python manage.py collectstatic --no-input
 
-echo "Running migrations..."
-python manage.py migrate
-
-echo "Build completed successfully!" 
+echo "Build completed successfully!"
+echo "Note: Migrations will be run during startup" 
