@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-1n4oqnk-++enx-r7hy%e+7se7y5y28#0#1^htqgh)h#c5#@(j3')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'False'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.150.106', '.onrender.com', '.railway.app', '.up.railway.app']
 
@@ -178,15 +178,21 @@ if not DEBUG:
     # Configurações CSRF para Railway
     CSRF_TRUSTED_ORIGINS = [
         'https://check-in-production-b2e9.up.railway.app',
+        'https://checkinjumplocal-production.up.railway.app',
         'https://*.up.railway.app',
         'https://*.railway.app',
+        '172.17.0.3',  # IP interno do container
+        '127.0.0.1',   # Localhost
     ]
     
     # Configurações de CORS para Railway
     CORS_ALLOWED_ORIGINS = [
         'https://check-in-production-b2e9.up.railway.app',
+        'https://checkinjumplocal-production.up.railway.app',
         'https://*.up.railway.app',
         'https://*.railway.app',
+        '172.17.0.3',  # IP interno do container
+        '127.0.0.1',   # Localhost
     ]
     
     # Permitir credenciais em CORS
