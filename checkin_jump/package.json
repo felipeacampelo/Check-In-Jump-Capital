@@ -1,0 +1,17 @@
+{
+  "name": "checkin-jump",
+  "version": "1.0.0",
+  "description": "Sistema de Check-in JUMP",
+  "main": "manage.py",
+  "scripts": {
+    "start": "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120",
+    "build": "./railway-build.sh",
+    "dev": "python manage.py runserver 0.0.0.0:8000"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["django", "checkin", "railway"],
+  "author": "Felipe Campelo",
+  "license": "MIT"
+} 

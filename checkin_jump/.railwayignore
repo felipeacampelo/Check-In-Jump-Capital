@@ -24,4 +24,8 @@ coverage.xml
 Thumbs.db
 *.swp
 *.swo
-*~ 
+*~
+
+# Arquivos de configuração que podem causar conflito
+nixpacks.toml
+railway.json 
