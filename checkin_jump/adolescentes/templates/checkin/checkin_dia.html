@@ -83,6 +83,40 @@
       </div>
     {% endfor %}
   </ul>
+
+  <!-- Paginação -->
+  <nav aria-label="Navegação de páginas">
+    <ul class="pagination justify-content-center">
+      {% if adolescentes.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ adolescentes.previous_page_number }}&filtro={{ filtro }}" aria-label="Anterior">&laquo;</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">&laquo;</span>
+        </li>
+      {% endif %}
+
+      {% for num in adolescentes.paginator.page_range %}
+        {% if adolescentes.number == num %}
+          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% else %}
+          <li class="page-item"><a class="page-link" href="?page={{ num }}&filtro={{ filtro }}">{{ num }}</a></li>
+        {% endif %}
+      {% endfor %}
+
+      {% if adolescentes.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ adolescentes.next_page_number }}&filtro={{ filtro }}" aria-label="Próximo">&raquo;</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">&raquo;</span>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+
 </form>
 
 <script>

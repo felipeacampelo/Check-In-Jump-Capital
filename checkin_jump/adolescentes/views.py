@@ -269,10 +269,10 @@ def atualizar_presenca(request):
 def adicionar_pg(request):
     if request.method == 'POST':
         nome = request.POST.get('nome')
-        lider = request.POST.get('lider')
+        genero_pg = request.POST.get('lider')
 
         if nome:
-            PequenoGrupo.objects.create(nome=nome, lider=lider)
+            PequenoGrupo.objects.create(nome=nome, genero_pg=genero_pg)
             messages.success(request, "PG criado com sucesso.")
             return redirect('lista_pgs')
         else:

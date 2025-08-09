@@ -2,7 +2,7 @@ from django.db import models
 
 class PequenoGrupo(models.Model):
     nome = models.CharField(max_length=100)
-    lider = models.CharField(max_length=100, blank=True, null=True)
+    genero_pg = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return self.nome

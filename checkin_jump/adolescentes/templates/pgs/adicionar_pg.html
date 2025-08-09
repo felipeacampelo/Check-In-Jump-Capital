@@ -5,13 +5,17 @@
     <form method="post">
         {% csrf_token %}
         <div class="mb-3">
-            <label for="nome" class="form-label">Nome do PG:</label>
+            <label for="nome" class="form-label">Líderes:</label>
             <input type="text" name="nome" id="nome" class="form-control" required>
         </div>
         <div class="mb-3">
-            <label for="lider" class="form-label">Líder:</label>
-            <input type="text" name="lider" id="lider" class="form-control">
-        </div>
+            <label for="genero" class="form-label">Gênero:</label>
+            <select name="genero" id="genero" class="form-control" required>
+                <option value="" disabled selected>Selecione o gênero</option>
+                <option value="M">Masculino</option>
+                <option value="F">Feminino</option>
+            </select>
+        </div>        
         <button type="submit" class="btn btn-primary">Criar PG</button>
     </form>
 </div>
