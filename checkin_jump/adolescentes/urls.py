@@ -35,5 +35,8 @@ urlpatterns = [
 
     # Dashboard
     path("dashboard/", views.dashboard, name="dashboard"),
+
+    # Contagem de Auditório
+    path('contagem-auditorio/', views.contagem_auditorio, name='contagem_auditorio'),
 ]
 

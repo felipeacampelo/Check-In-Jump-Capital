@@ -177,10 +177,14 @@
         <td>{{ adolescente.imperio }}</td>
         <td>
           {% if perms.adolescentes.change_adolescente %}
-            <a href="{% url 'editar_adolescente' adolescente.id %}" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();">Editar</a>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();" data-bs-toggle="modal" data-bs-target="#modalEditar{{ adolescente.id }}">
+              Editar
+            </button>
           {% endif %}
           {% if perms.adolescentes.delete_adolescente %}
-            <a href="{% url 'excluir_adolescente' adolescente.id %}" class="btn btn-danger btn-sm" onclick="event.stopPropagation();">Excluir</a>
+            <button type="button" class="btn btn-danger btn-sm" onclick="event.stopPropagation();" data-bs-toggle="modal" data-bs-target="#modalExcluir{{ adolescente.id }}">
+              Excluir
+            </button>
           {% endif %}
         </td>
       </tr>
@@ -228,14 +232,14 @@
             <div class="col-3 col-md-3 text-end">
               <div class="btn-group-vertical btn-group-sm">
                 {% if perms.adolescentes.change_adolescente %}
-                  <a href="{% url 'editar_adolescente' adolescente.id %}" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
+                  <button type="button" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();" data-bs-toggle="modal" data-bs-target="#modalEditar{{ adolescente.id }}">
                     <i class="fas fa-edit"></i>
-                  </a>
+                  </button>
                 {% endif %}
                 {% if perms.adolescentes.delete_adolescente %}
-                  <a href="{% url 'excluir_adolescente' adolescente.id %}" class="btn btn-outline-danger btn-sm" onclick="event.stopPropagation();">
+                  <button type="button" class="btn btn-outline-danger btn-sm" onclick="event.stopPropagation();" data-bs-toggle="modal" data-bs-target="#modalExcluir{{ adolescente.id }}">
                     <i class="fas fa-trash"></i>
-                  </a>
+                  </button>
                 {% endif %}
               </div>
             </div>
@@ -308,6 +312,54 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Editar Adolescente -->
+{% if perms.adolescentes.change_adolescente %}
+<div class="modal fade" id="modalEditar{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalEditarLabel{{ adolescente.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEditarLabel{{ adolescente.id }}">Editar {{ adolescente.nome }} {{ adolescente.sobrenome }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form method="post" action="{% url 'editar_adolescente' adolescente.id %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          {{ adolescente.form_edicao.as_p }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+ </div>
+{% endif %}
+
+<!-- Modal Confirmar Exclusão -->
+{% if perms.adolescentes.delete_adolescente %}
+<div class="modal fade" id="modalExcluir{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalExcluirLabel{{ adolescente.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalExcluirLabel{{ adolescente.id }}">Confirmar exclusão</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        Tem certeza que deseja excluir <strong>{{ adolescente.nome }} {{ adolescente.sobrenome }}</strong>?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form method="post" action="{% url 'excluir_adolescente' adolescente.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Excluir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endfor %}
 
 <!-- Paginação -->

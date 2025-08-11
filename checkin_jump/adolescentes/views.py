@@ -1,20 +1,61 @@
 from datetime import date, datetime
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio
-from .forms import AdolescenteForm
+from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio, ContagemAuditorio
+from .forms import AdolescenteForm, DiaEventoForm, ContagemAuditorioForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.messages import get_messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
-from django.db.models import Count, Q, Avg, F
+from django.db.models import Count, Q, Avg, F, Case, When, Value
 from django.db.models import Prefetch
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import csv
 from django.http import HttpResponse
 
 import json
+
+def buscar_adolescentes_por_nome(queryset, termo_busca):
+    """
+    Função auxiliar para buscar adolescentes por nome de forma mais inteligente
+    """
+    if not termo_busca:
+        return queryset
+    
+    # Remove espaços extras e divide em palavras
+    palavras = [palavra.strip() for palavra in termo_busca.split() if palavra.strip()]
+    
+    if not palavras:
+        return queryset
+    
+    if len(palavras) == 1:
+        # Busca simples: uma palavra em nome ou sobrenome
+        return queryset.filter(
+            Q(nome__icontains=palavras[0]) | Q(sobrenome__icontains=palavras[0])
+        )
+    else:
+        # Busca por nome completo: múltiplas estratégias
+        # 1. Busca por nome completo concatenado
+        nome_completo = ' '.join(palavras)
+        query = Q()
+        
+        # 2. Busca por nome completo concatenado (nome + sobrenome)
+        query |= Q(nome__icontains=nome_completo)
+        query |= Q(sobrenome__icontains=nome_completo)
+        
+        # 3. Busca por nome completo concatenado (sobrenome + nome)
+        nome_invertido = ' '.join(palavras[::-1])
+        query |= Q(nome__icontains=nome_invertido)
+        query |= Q(sobrenome__icontains=nome_invertido)
+        
+        # 4. Busca por todas as palavras em nome ou sobrenome
+        query_palavras = Q()
+        for palavra in palavras:
+            query_palavras &= (Q(nome__icontains=palavra) | Q(sobrenome__icontains=palavra))
+        query |= query_palavras
+        
+        return queryset.filter(query)
 
 def login_view(request):
     if request.method == "POST":
@@ -47,7 +88,7 @@ def listar_adolescentes(request):
 
     adolescentes = Adolescente.objects.all()
     if busca:
-        adolescentes = adolescentes.filter(nome__icontains=busca)
+        adolescentes = buscar_adolescentes_por_nome(adolescentes, busca)
     if pg_id:
         adolescentes = adolescentes.filter(pg__id=pg_id)
     if genero:
@@ -93,6 +134,10 @@ def listar_adolescentes(request):
     except EmptyPage:
         # Se a página estiver fora do range, mostrar a última página
         adolescentes_paginados = paginator.page(paginator.num_pages)
+
+    # Anexa um formulário de edição para cada adolescente na página atual
+    for adolescente in adolescentes_paginados:
+        setattr(adolescente, 'form_edicao', AdolescenteForm(instance=adolescente))
 
     return render(request, 'adolescentes/listar.html', {
         'adolescentes': adolescentes_paginados,
@@ -140,10 +185,12 @@ def editar_adolescente(request, id):
         form = AdolescenteForm(request.POST, request.FILES, instance=adolescente)
         if form.is_valid():
             form.save()
-            return redirect('listar_adolescentes')
-    else:
-        form = AdolescenteForm(instance=adolescente)
-    return render(request, 'adolescentes/criar_adolescente.html', {'form': form})
+            messages.success(request, "Adolescente atualizado com sucesso.")
+        else:
+            messages.error(request, "Não foi possível salvar. Verifique os campos e tente novamente.")
+        return redirect('listar_adolescentes')
+    # Em GET, direciona para a lista (edição agora é feita via modal na lista)
+    return redirect('listar_adolescentes')
 
 @permission_required('adolescentes.delete_adolescente', raise_exception=True)
 @login_required
@@ -151,8 +198,10 @@ def excluir_adolescente(request, id):
     adolescente = get_object_or_404(Adolescente, id=id)
     if request.method == "POST":
         adolescente.delete()
+        messages.success(request, "Adolescente excluído com sucesso.")
         return redirect('listar_adolescentes')
-    return render(request, 'adolescentes/confirmar_exclusao.html', {'adolescente': adolescente})
+    # Em GET, direciona para a lista (confirmação agora é feita via modal na lista)
+    return redirect('listar_adolescentes')
 
 @login_required
 def lista_dias_evento(request):
@@ -176,21 +225,27 @@ def lista_dias_evento(request):
 @permission_required('checkin.add_diaevento', raise_exception=True)
 def adicionar_dia_evento(request):
     if request.method == 'POST':
-        data = request.POST.get('data')
-        if DiaEvento.objects.filter(data=data).exists():
-            messages.warning(request, "Esse dia já foi adicionado.")
-        if data and datetime.strptime(data, "%Y-%m-%d").date() < date.today():
-            messages.warning(request, "Não é possível adicionar um dia no passado.")
+        form = DiaEventoForm(request.POST)
+        if form.is_valid():
+            if DiaEvento.objects.filter(data=form.cleaned_data['data']).exists():
+                messages.warning(request, "Esse dia já foi adicionado.")
+            else:
+                form.save()
+                messages.success(request, "Evento criado com sucesso!")
+            return redirect('pagina_checkin')
         else:
-            DiaEvento.objects.create(data=data)
-        return redirect('pagina_checkin')
-    return render(request, 'checkin/adicionar_dia.html')
+            messages.error(request, "Por favor, corrija os erros no formulário.")
+    else:
+        form = DiaEventoForm()
+    
+    return render(request, 'checkin/adicionar_dia.html', {'form': form})
 
 @login_required
 def checkin_dia(request, dia_id):
     dia = get_object_or_404(DiaEvento, pk=dia_id)
     adolescentes = Adolescente.objects.all()
     filtro = request.GET.get('filtro', 'todos')  # padrão: todos
+    busca = request.GET.get('busca', '')  # busca por nome
 
     presencas = Presenca.objects.filter(dia=dia)
     presentes_ids = presencas.filter(presente=True).values_list('adolescente_id', flat=True)
@@ -201,10 +256,48 @@ def checkin_dia(request, dia_id):
     elif filtro == 'ausentes':
         adolescentes = adolescentes.exclude(id__in=presentes_ids)
 
+    # Aplica busca por nome
+    if busca:
+        adolescentes = buscar_adolescentes_por_nome(adolescentes, busca)
+
     # Ordena: primeiro os presentes
     adolescentes = sorted(adolescentes, key=lambda x: x.id not in presentes_ids)
 
+    # Paginação
+    paginator = Paginator(adolescentes, 20)  # 20 adolescentes por página
+    page = request.GET.get('page')
+    try:
+        adolescentes_paginados = paginator.page(page)
+    except PageNotAnInteger:
+        adolescentes_paginados = paginator.page(1)
+    except EmptyPage:
+        adolescentes_paginados = paginator.page(paginator.num_pages)
+
     if request.method == 'POST':
+        # Se for o modal de contagem de auditório
+        if request.POST.get('contagem_auditorio'):
+            quantidade = request.POST.get('quantidade_pessoas')
+            try:
+                quantidade = int(quantidade)
+                if quantidade <= 0:
+                    raise ValueError
+            except (TypeError, ValueError):
+                messages.error(request, 'Digite um número válido para a contagem.')
+                return redirect('checkin_dia', dia_id=dia.id)
+            # Atualiza ou cria a contagem para o dia
+            contagem, created = ContagemAuditorio.objects.update_or_create(
+                dia=dia,
+                defaults={
+                    'quantidade_pessoas': quantidade,
+                    'usuario_registro': request.user
+                }
+            )
+            if created:
+                messages.success(request, f'Contagem registrada: {quantidade} pessoas no auditório!')
+            else:
+                messages.success(request, f'Contagem atualizada: {quantidade} pessoas no auditório!')
+            return redirect('checkin_dia', dia_id=dia.id)
+        # Check-in normal
         presencas_ids = request.POST.getlist('presentes')
         Presenca.objects.filter(dia=dia).delete()
         for adol in adolescentes:
@@ -218,9 +311,10 @@ def checkin_dia(request, dia_id):
 
     return render(request, 'checkin/checkin_dia.html', {
         'dia': dia,
-        'adolescentes': adolescentes,
+        'adolescentes': adolescentes_paginados,
         'presentes_ids': presentes_ids,
         'filtro': filtro,
+        'busca': busca,
     })
 
 @login_required
@@ -384,7 +478,8 @@ def dashboard(request):
             dia__in=eventos_query, 
             presente=True
         ).count()
-        media_presenca = round(total_presencas / eventos_query.count(), 1)
+        total_eventos = eventos_query.count()
+        media_presenca = round(total_presencas / max(total_eventos, 1), 1)
     else:
         media_presenca = 0
     
@@ -409,7 +504,10 @@ def dashboard(request):
                 filter=Q(adolescentes__presenca__dia__in=eventos_query), 
                 distinct=True)
         ).annotate(
-            media_presenca=F('total_presentes') / F('total_eventos')
+            media_presenca=Case(
+                When(total_eventos=0, then=Value(0)),
+                default=F('total_presentes') / F('total_eventos')
+            )
         ).order_by('-media_presenca')[:5]
     else:
         presenca_por_pg = []
@@ -445,7 +543,10 @@ def dashboard(request):
                 filter=Q(adolescente__presenca__dia__in=eventos_query), 
                 distinct=True)
         ).annotate(
-            media_presenca=F('total_presentes') / F('total_eventos')
+            media_presenca=Case(
+                When(total_eventos=0, then=Value(0)),
+                default=F('total_presentes') / F('total_eventos')
+            )
         ).order_by('-media_presenca')
     else:
         presenca_por_imperio = []
@@ -506,3 +607,44 @@ def dashboard(request):
     }
     
     return render(request, 'adolescentes/dashboard.html', context)
+
+@login_required
+def contagem_auditorio(request):
+    """Gerencia contagens de auditório - adicionar, editar ou visualizar"""
+    if request.method == 'POST':
+        form = ContagemAuditorioForm(request.POST)
+        if form.is_valid():
+            dia_evento = form.cleaned_data['dia']
+            quantidade = form.cleaned_data['quantidade_pessoas']
+            
+            # Verificar se já existe uma contagem para este dia
+            contagem_existente = ContagemAuditorio.objects.filter(dia=dia_evento).first()
+            
+            if contagem_existente:
+                # Atualizar contagem existente
+                contagem_existente.quantidade_pessoas = quantidade
+                contagem_existente.usuario_registro = request.user
+                contagem_existente.save()
+                messages.success(request, f'Contagem atualizada! {quantidade} pessoas para o evento de {dia_evento.data.strftime("%d/%m/%Y")}.')
+            else:
+                # Criar nova contagem
+                ContagemAuditorio.objects.create(
+                    dia=dia_evento,
+                    quantidade_pessoas=quantidade,
+                    usuario_registro=request.user
+                )
+                messages.success(request, f'Contagem registrada! {quantidade} pessoas para o evento de {dia_evento.data.strftime("%d/%m/%Y")}.')
+            
+            return redirect('contagem_auditorio')
+    else:
+        form = ContagemAuditorioForm()
+    
+    # Buscar contagens existentes
+    contagens = ContagemAuditorio.objects.select_related('dia', 'usuario_registro').all().order_by('-dia__data')
+    
+    context = {
+        'form': form,
+        'contagens': contagens,
+        'titulo_pagina': 'Contagem de Auditório'
+    }
+    return render(request, 'checkin/contagem_auditorio.html', context)

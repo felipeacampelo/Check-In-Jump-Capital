@@ -72,9 +72,21 @@
             </div>
         </div>
     </nav>
-    <hr />
+    <!-- <hr /> Removido para eliminar a linha -->
 
     <main class="flex-grow-1">
+        <div class="container-fluid p-0">
+            {% if messages %}
+              <div class="mt-2">
+                {% for message in messages %}
+                  <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+        </div>
         {% block content %}{% endblock %}
     </main>
 

@@ -8,17 +8,56 @@
   </a>
 </div>
 
-<h2>Check-in do dia {{ dia.data|date:"d/m/Y" }}</h2>
-
-<div class="mb-3">
-  <a href="?filtro=todos" class="btn btn-outline-primary {% if filtro == 'todos' %}active{% endif %}">Todos</a>
-  <a href="?filtro=presentes" class="btn btn-outline-success {% if filtro == 'presentes' %}active{% endif %}">Somente Presentes</a>
-  <a href="?filtro=ausentes" class="btn btn-outline-secondary {% if filtro == 'ausentes' %}active{% endif %}">Somente Ausentes</a>
+<!-- Título e botão lado a lado -->
+<div class="d-flex align-items-center justify-content-between mb-2">
+  <div>
+    <h2 class="mb-0">Check-in do dia {{ dia.data|date:"d/m/Y" }}</h2>
+    {% if dia.titulo %}
+      <p class="text-muted mb-0"><i class="fas fa-star me-1"></i>{{ dia.titulo }}</p>
+    {% endif %}
+  </div>
+  <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalContagemAuditorio">
+    <i class="fas fa-users me-1"></i>Contagem no Auditório
+  </button>
 </div>
 
-<div class="mb-3">
-  <input type="text" id="searchInput" class="form-control" placeholder="Buscar adolescente...">
+<!-- Exibir última contagem registrada -->
+{% with contagem=dia.contagens_auditorio.first %}
+  {% if contagem %}
+    <div class="alert alert-info">
+      <i class="fas fa-users me-1"></i>
+      <strong>Última contagem registrada:</strong> {{ contagem.quantidade_pessoas }} pessoas
+      <br>
+      <small>Registrado por {{ contagem.usuario_registro.username }} em {{ contagem.data_registro|date:"d/m/Y H:i" }}</small>
+    </div>
+  {% endif %}
+{% endwith %}
+
+<div class="row mb-3">
+  <div class="col-md-8">
+    <div class="btn-group" role="group">
+      <a href="?filtro=todos{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-primary {% if filtro == 'todos' %}active{% endif %}">Todos</a>
+      <a href="?filtro=presentes{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-success {% if filtro == 'presentes' %}active{% endif %}">Somente Presentes</a>
+      <a href="?filtro=ausentes{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-secondary {% if filtro == 'ausentes' %}active{% endif %}">Somente Ausentes</a>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <form method="get" class="d-flex">
+      <input type="hidden" name="filtro" value="{{ filtro }}">
+      <input type="text" name="busca" value="{{ busca }}" class="form-control me-2" placeholder="Buscar adolescente...">
+      <button type="submit" class="btn btn-outline-primary">
+        <i class="fas fa-search"></i>
+      </button>
+    </form>
+  </div>
 </div>
+
+{% if busca %}
+  <div class="alert alert-info">
+    <i class="fas fa-search me-1"></i>Buscando por: "{{ busca }}"
+    <a href="?filtro={{ filtro }}" class="btn btn-sm btn-outline-secondary ms-2">Limpar busca</a>
+  </div>
+{% endif %}
 
 <form method="post">
   {% csrf_token %}
@@ -83,41 +122,86 @@
       </div>
     {% endfor %}
   </ul>
+</form>
 
-  <!-- Paginação -->
-  <nav aria-label="Navegação de páginas">
+<!-- Paginação -->
+{% if adolescentes.has_other_pages %}
+  <nav aria-label="Paginação de adolescentes">
     <ul class="pagination justify-content-center">
       {% if adolescentes.has_previous %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ adolescentes.previous_page_number }}&filtro={{ filtro }}" aria-label="Anterior">&laquo;</a>
+          <a class="page-link" href="?page=1&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">
+            <i class="fas fa-angle-double-left"></i>
+          </a>
         </li>
-      {% else %}
-        <li class="page-item disabled">
-          <span class="page-link">&laquo;</span>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ adolescentes.previous_page_number }}&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">
+            <i class="fas fa-angle-left"></i>
+          </a>
         </li>
       {% endif %}
 
       {% for num in adolescentes.paginator.page_range %}
         {% if adolescentes.number == num %}
-          <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-        {% else %}
-          <li class="page-item"><a class="page-link" href="?page={{ num }}&filtro={{ filtro }}">{{ num }}</a></li>
+          <li class="page-item active">
+            <span class="page-link">{{ num }}</span>
+          </li>
+        {% elif num > adolescentes.number|add:'-3' and num < adolescentes.number|add:'3' %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ num }}&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">{{ num }}</a>
+          </li>
         {% endif %}
       {% endfor %}
 
       {% if adolescentes.has_next %}
         <li class="page-item">
-          <a class="page-link" href="?page={{ adolescentes.next_page_number }}&filtro={{ filtro }}" aria-label="Próximo">&raquo;</a>
+          <a class="page-link" href="?page={{ adolescentes.next_page_number }}&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">
+            <i class="fas fa-angle-right"></i>
+          </a>
         </li>
-      {% else %}
-        <li class="page-item disabled">
-          <span class="page-link">&raquo;</span>
+        <li class="page-item">
+          <a class="page-link" href="?page={{ adolescentes.paginator.num_pages }}&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">
+            <i class="fas fa-angle-double-right"></i>
+          </a>
         </li>
       {% endif %}
     </ul>
   </nav>
+  
+  <div class="text-center text-muted">
+    <small>
+      Página {{ adolescentes.number }} de {{ adolescentes.paginator.num_pages }} 
+      ({{ adolescentes.paginator.count }} adolescentes no total)
+    </small>
+  </div>
+{% endif %}
 
-</form>
+<!-- Modal de contagem de auditório -->
+<div class="modal fade" id="modalContagemAuditorio" tabindex="-1" aria-labelledby="modalContagemAuditorioLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="contagem_auditorio" value="1">
+        <input type="hidden" name="dia" value="{{ dia.id }}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalContagemAuditorioLabel"><i class="fas fa-users me-1"></i>Contagem no Auditório</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="quantidade_pessoas" class="form-label">Quantidade de Pessoas</label>
+            <input type="number" class="form-control" id="quantidade_pessoas" name="quantidade_pessoas" min="1" placeholder="Ex: 190" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Contagem</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <script>
   // Função para pegar o CSRF token do cookie
@@ -189,21 +273,6 @@
       });
     });
 
-    // Filtrar lista conforme o texto digitado na barra de busca
-    const searchInput = document.getElementById('searchInput');
-    searchInput.addEventListener('input', () => {
-      const filter = searchInput.value.toLowerCase();
-      const listItems = document.querySelectorAll('.list-group-item');
-
-      listItems.forEach(item => {
-        const text = item.textContent.toLowerCase();
-        if (text.includes(filter)) {
-          item.style.display = '';
-        } else {
-          item.style.display = 'none';
-        }
-      });
-    });
   });
 </script>
 

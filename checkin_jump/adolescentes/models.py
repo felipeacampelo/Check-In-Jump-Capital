@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class PequenoGrupo(models.Model):
     nome = models.CharField(max_length=100)
@@ -40,11 +41,34 @@ class Adolescente(models.Model):
 
 class DiaEvento(models.Model):
     data = models.DateField(unique=True)
+    titulo = models.CharField(max_length=200, blank=True, null=True, help_text="Título da celebração (ex: 40 Dias de Generosidade)")
 
     def __str__(self):
+        if self.titulo:
+            return f"{self.data.strftime('%d/%m/%Y')} - {self.titulo}"
         return self.data.strftime('%d/%m/%Y')
 
 class Presenca(models.Model):
     adolescente = models.ForeignKey(Adolescente, on_delete=models.CASCADE)
     dia = models.ForeignKey(DiaEvento, on_delete=models.CASCADE)
     presente = models.BooleanField(default=False)
+
+class ContagemAuditorio(models.Model):
+    dia = models.ForeignKey(DiaEvento, on_delete=models.CASCADE, related_name='contagens_auditorio')
+    quantidade_pessoas = models.PositiveIntegerField(help_text="Número de pessoas contadas no auditório")
+    usuario_registro = models.ForeignKey(User, on_delete=models.CASCADE, help_text="Usuário que fez o registro")
+    data_registro = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ['dia']
+        verbose_name = "Contagem de Auditório"
+        verbose_name_plural = "Contagens de Auditório"
+        ordering = ['-data_registro']
+    
+    def __str__(self):
+        return f"{self.dia} - {self.quantidade_pessoas} pessoas (por {self.usuario_registro.username})"
+    
+    def get_total_presentes(self):
+        """Retorna o total de presentes considerando check-ins individuais + contagem de auditório"""
+        checkins_individuals = self.dia.presenca_set.filter(presente=True).count()
+        return checkins_individuals + self.quantidade_pessoas

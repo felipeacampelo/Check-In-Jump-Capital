@@ -29,7 +29,14 @@
 <ul class="list-group">
     {% for dia in dias %}
       <li class="list-group-item d-flex justify-content-between align-items-center">
-        <a href="{% url 'checkin_dia' dia.id %}">{{ dia.data|date:"d/m/Y" }}</a>
+        <div>
+          <a href="{% url 'checkin_dia' dia.id %}" class="text-decoration-none">
+            <strong>{{ dia.data|date:"d/m/Y" }}</strong>
+            {% if dia.titulo %}
+              <br><small class="text-muted">{{ dia.titulo }}</small>
+            {% endif %}
+          </a>
+        </div>
         <span class="badge bg-success rounded-pill">
           {{ dia.total_presentes }} presentes
         </span>

@@ -1,0 +1,125 @@
+{% extends 'adolescentes/base.html' %}
+
+{% block title %}Contagem de Auditório{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2><i class="fas fa-users me-2"></i>Contagem de Auditório</h2>
+            <p class="text-muted">Registre quantas pessoas estavam no auditório para cada evento.</p>
+            
+            <div class="row">
+                <!-- Formulário para adicionar/editar contagem -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Registrar Contagem</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post">
+                                {% csrf_token %}
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.dia.id_for_label }}" class="form-label">
+                                        <strong>Evento:</strong>
+                                    </label>
+                                    {{ form.dia }}
+                                    {% if form.dia.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {{ form.dia.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="{{ form.quantidade_pessoas.id_for_label }}" class="form-label">
+                                        <strong>Quantidade de Pessoas:</strong>
+                                    </label>
+                                    {{ form.quantidade_pessoas }}
+                                    {% if form.quantidade_pessoas.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {{ form.quantidade_pessoas.errors.0 }}
+                                        </div>
+                                    {% endif %}
+                                    <div class="form-text">Digite o número total de pessoas contadas no auditório</div>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>Salvar Contagem
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lista de contagens existentes -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Contagens Registradas</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if contagens %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Evento</th>
+                                                <th>Pessoas</th>
+                                                <th>Registrado por</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for contagem in contagens %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ contagem.dia.data|date:"d/m/Y" }}</strong>
+                                                    {% if contagem.dia.titulo %}
+                                                        <br><small class="text-muted">{{ contagem.dia.titulo }}</small>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-success fs-6">{{ contagem.quantidade_pessoas }}</span>
+                                                </td>
+                                                <td>
+                                                    <small>
+                                                        <i class="fas fa-user me-1"></i>{{ contagem.usuario_registro.username }}
+                                                        <br><span class="text-muted">{{ contagem.data_registro|date:"d/m H:i" }}</span>
+                                                    </small>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-users fa-2x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">Nenhuma contagem registrada ainda.</p>
+                                    <small class="text-muted">Use o formulário ao lado para registrar a primeira contagem.</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Informações adicionais -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Como funciona:</h6>
+                        <ul class="mb-0">
+                            <li>Selecione o evento (dia) para o qual você fez a contagem</li>
+                            <li>Digite o número total de pessoas que estavam no auditório</li>
+                            <li>O sistema registra automaticamente quem fez a contagem e quando</li>
+                            <li>Se já existir uma contagem para o mesmo dia, ela será atualizada</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

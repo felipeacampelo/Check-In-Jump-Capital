@@ -26,7 +26,7 @@
                             {% for evento in todos_eventos %}
                                 <option value="{{ evento.data|date:'Y-m-d' }}" 
                                         {% if dia_especifico == evento.data|date:'Y-m-d' %}selected{% endif %}>
-                                    {{ evento.data|date:"d/m/Y" }}
+                                    {{ evento.data|date:"d/m/Y" }}{% if evento.titulo %} - {{ evento.titulo }}{% endif %}
                                 </option>
                             {% endfor %}
                         </select>
@@ -128,7 +128,7 @@
         <div class="card h-100">
             <div class="card-body text-center">
                 <h5 class="card-title">Taxa de Presença</h5>
-                {% if total_eventos > 0 %}
+                {% if total_eventos > 0 and total_adolescentes > 0 %}
                     {% widthratio media_presenca total_adolescentes 100 as taxa %}
                     <p class="card-text display-4 text-info">{{ taxa|floatformat:1 }}%</p>
                     <small class="text-muted">média geral</small>
@@ -269,41 +269,47 @@ const imperioData = {{ imperio_data|safe }};
 
 // Gráfico de evolução da presença
 const ctxEvolucao = document.getElementById('evolucaoChart').getContext('2d');
-new Chart(ctxEvolucao, {
-    type: 'line',
-    data: {
-        labels: evolucaoLabels,
-        datasets: [
-            {
-                label: 'Presentes',
-                data: evolucaoData,
-                borderColor: '#0d6efd',
-                backgroundColor: 'rgba(13,110,253,0.1)',
-                fill: true,
-                tension: 0.3
-            },
-            {
-                label: 'Total',
-                data: evolucaoTotal,
-                borderColor: '#adb5bd',
-                backgroundColor: 'rgba(173,181,189,0.1)',
-                fill: false,
-                borderDash: [5,5],
-                tension: 0.3
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: true },
-            tooltip: { enabled: true }
+if (evolucaoLabels.length > 0 && evolucaoData.length > 0) {
+    new Chart(ctxEvolucao, {
+        type: 'line',
+        data: {
+            labels: evolucaoLabels,
+            datasets: [
+                {
+                    label: 'Presentes',
+                    data: evolucaoData,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13,110,253,0.1)',
+                    fill: true,
+                    tension: 0.3
+                },
+                {
+                    label: 'Total',
+                    data: evolucaoTotal,
+                    borderColor: '#adb5bd',
+                    backgroundColor: 'rgba(173,181,189,0.1)',
+                    fill: false,
+                    borderDash: [5,5],
+                    tension: 0.3
+                }
+            ]
         },
-        scales: {
-            y: { beginAtZero: true }
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true },
+                tooltip: { enabled: true }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
         }
-    }
-});
+    });
+} else {
+    // Mostrar mensagem quando não há dados
+    ctxEvolucao.canvas.style.display = 'none';
+    document.getElementById('evolucaoChart').parentNode.innerHTML = '<p class="text-muted text-center mt-3">Sem dados de evolução de presença disponíveis</p>';
+}
 
 // Gráfico de distribuição por gênero
 const ctxGenero = document.getElementById('generoChart').getContext('2d');
@@ -327,51 +333,63 @@ new Chart(ctxGenero, {
 
 // Gráfico de presença média por PG
 const ctxPG = document.getElementById('pgChart').getContext('2d');
-new Chart(ctxPG, {
-    type: 'bar',
-    data: {
-        labels: pgLabels,
-        datasets: [{
-            label: 'Presença Média',
-            data: pgData,
-            backgroundColor: '#20c997'
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: false },
-            tooltip: { enabled: true }
+if (pgLabels.length > 0 && pgData.length > 0) {
+    new Chart(ctxPG, {
+        type: 'bar',
+        data: {
+            labels: pgLabels,
+            datasets: [{
+                label: 'Presença Média',
+                data: pgData,
+                backgroundColor: '#20c997'
+            }]
         },
-        scales: {
-            y: { beginAtZero: true }
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: true }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
         }
-    }
-});
+    });
+} else {
+    // Mostrar mensagem quando não há dados
+    ctxPG.canvas.style.display = 'none';
+    document.getElementById('pgChart').parentNode.innerHTML = '<p class="text-muted text-center mt-3">Sem dados de presença por PG disponíveis</p>';
+}
 
 // Gráfico de presença média por Império
 const ctxImperio = document.getElementById('imperioChart').getContext('2d');
-new Chart(ctxImperio, {
-    type: 'bar',
-    data: {
-        labels: imperioLabels,
-        datasets: [{
-            label: 'Presença Média',
-            data: imperioData,
-            backgroundColor: '#fd7e14'
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: { display: false },
-            tooltip: { enabled: true }
+if (imperioLabels.length > 0 && imperioData.length > 0) {
+    new Chart(ctxImperio, {
+        type: 'bar',
+        data: {
+            labels: imperioLabels,
+            datasets: [{
+                label: 'Presença Média',
+                data: imperioData,
+                backgroundColor: '#fd7e14'
+            }]
         },
-        scales: {
-            y: { beginAtZero: true }
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { enabled: true }
+            },
+            scales: {
+                y: { beginAtZero: true }
+            }
         }
-    }
-});
+    });
+} else {
+    // Mostrar mensagem quando não há dados
+    ctxImperio.canvas.style.display = 'none';
+    document.getElementById('imperioChart').parentNode.innerHTML = '<p class="text-muted text-center mt-3">Sem dados de presença por Império disponíveis</p>';
+}
 </script>
 
 {% endblock %} 
