@@ -1,10 +1,46 @@
 {% extends 'adolescentes/base.html' %}
 {% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  body, .card, .btn, .form-control {
+    font-family: 'Inter', Arial, sans-serif;
+  }
+  .dashboard-card {
+    border-radius: 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    border: none;
+    transition: box-shadow 0.2s;
+  }
+  .dashboard-card:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  }
+  .dashboard-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .dashboard-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+  .dashboard-value {
+    font-size: 2.2rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  .dashboard-label {
+    font-size: 0.95rem;
+    color: #6c757d;
+  }
+</style>
 
 <div class="row mb-4">
     <div class="col-12">
-        <h2><i class="fas fa-chart-bar me-2"></i>Dashboard JUMP</h2>
-        <p class="text-muted">Estatísticas das celebrações do JUMP</p>
+        <h2 class="fw-bold mb-1"><i class="fas fa-chart-bar me-2" data-bs-toggle="tooltip" title="Visão geral dos dados do JUMP"></i>Dashboard JUMP</h2>
+        <p class="text-muted mb-2">Estatísticas das celebrações do JUMP</p>
+        <p class="fst-italic text-muted mb-0" style="font-size: 0.95em;">
+            O total de presentes é baseado apenas nos adolescentes que fizeram check-in no dia da celebração.
+        </p>
     </div>
 </div>
 
@@ -63,38 +99,64 @@
 <!-- Cards de estatísticas principais -->
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
-        <div class="card text-bg-primary h-100">
+        <div class="card dashboard-card text-bg-primary h-100" data-bs-toggle="tooltip" title="Quantidade total de adolescentes cadastrados no sistema">
             <div class="card-body text-center">
-                <i class="fas fa-users fa-2x mb-2"></i>
-                <h5 class="card-title">Total de Adolescentes</h5>
-                <p class="card-text display-6">{{ total_adolescentes }}</p>
+                <i class="fas fa-users dashboard-icon"></i>
+                <div class="dashboard-title">Total de Adolescentes</div>
+                <div class="dashboard-value">{{ total_adolescentes }}</div>
             </div>
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card text-bg-success h-100">
+        <div class="card dashboard-card text-bg-success h-100" data-bs-toggle="tooltip" title="Quantidade de Pequenos Grupos (PGs) cadastrados">
             <div class="card-body text-center">
-                <i class="fas fa-layer-group fa-2x mb-2"></i>
-                <h5 class="card-title">Pequenos Grupos</h5>
-                <p class="card-text display-6">{{ total_pgs }}</p>
+                <i class="fas fa-layer-group dashboard-icon"></i>
+                <div class="dashboard-title">Pequenos Grupos</div>
+                <div class="dashboard-value">{{ total_pgs }}</div>
             </div>
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card text-bg-warning h-100">
+        <div class="card dashboard-card text-bg-warning h-100" data-bs-toggle="tooltip" title="Quantidade de Impérios cadastrados">
             <div class="card-body text-center">
-                <i class="fas fa-crown fa-2x mb-2"></i>
-                <h5 class="card-title">Impérios</h5>
-                <p class="card-text display-6">{{ total_imperios }}</p>
+                <i class="fas fa-crown dashboard-icon"></i>
+                <div class="dashboard-title">Impérios</div>
+                <div class="dashboard-value">{{ total_imperios }}</div>
             </div>
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card text-bg-info h-100">
+        <div class="card dashboard-card text-bg-info h-100" data-bs-toggle="tooltip" title="Total de eventos realizados registrados no sistema">
             <div class="card-body text-center">
-                <i class="fas fa-calendar-check fa-2x mb-2"></i>
-                <h5 class="card-title">Eventos Realizados</h5>
-                <p class="card-text display-6">{{ total_eventos }}</p>
+                <i class="fas fa-calendar-check dashboard-icon"></i>
+                <div class="dashboard-title">Eventos Realizados</div>
+                <div class="dashboard-value">{{ total_eventos }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cards de contagem de auditório -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card dashboard-card border-warning h-100" data-bs-toggle="tooltip" title="Última contagem de pessoas feita manualmente no auditório">
+            <div class="card-body text-center">
+                <div class="dashboard-title text-warning"><i class="fas fa-users me-1"></i>Última Contagem Auditório</div>
+                {% if contagem_auditorio_ultimo %}
+                    <div class="dashboard-value text-warning">{{ contagem_auditorio_ultimo }}</div>
+                    <div class="dashboard-label">por {{ contagem_auditorio_ultimo_usuario }} em {{ contagem_auditorio_ultimo_data|date:"d/m/Y" }}</div>
+                {% else %}
+                    <div class="dashboard-label">Nenhuma contagem registrada</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card dashboard-card border-warning h-100" data-bs-toggle="tooltip" title="Média de pessoas contadas manualmente no auditório por evento">
+            <div class="card-body text-center">
+                <div class="dashboard-title text-warning"><i class="fas fa-users me-1"></i>Média Auditório</div>
+                <div class="dashboard-value text-warning">{{ contagem_auditorio_media }}</div>
+                <div class="dashboard-label">pessoas por evento</div>
             </div>
         </div>
     </div>
@@ -390,6 +452,16 @@ if (imperioLabels.length > 0 && imperioData.length > 0) {
     ctxImperio.canvas.style.display = 'none';
     document.getElementById('imperioChart').parentNode.innerHTML = '<p class="text-muted text-center mt-3">Sem dados de presença por Império disponíveis</p>';
 }
+</script>
+
+<script>
+  // Ativar tooltips Bootstrap 5
+  document.addEventListener('DOMContentLoaded', function () {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+      new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+  });
 </script>
 
 {% endblock %} 

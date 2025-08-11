@@ -15,6 +15,8 @@ import csv
 from django.http import HttpResponse
 
 import json
+from django.urls import reverse
+from urllib.parse import urlencode
 
 def buscar_adolescentes_por_nome(queryset, termo_busca):
     """
@@ -188,8 +190,13 @@ def editar_adolescente(request, id):
             messages.success(request, "Adolescente atualizado com sucesso.")
         else:
             messages.error(request, "Não foi possível salvar. Verifique os campos e tente novamente.")
-        return redirect('listar_adolescentes')
-    # Em GET, direciona para a lista (edição agora é feita via modal na lista)
+        # Redireciona mantendo filtros, busca e página
+        params = request.GET.urlencode() or request.POST.get('params', '')
+        url = reverse('listar_adolescentes')
+        if params:
+            url = f"{url}?{params}"
+        return redirect(url)
+    # Em GET, direciona para a lista
     return redirect('listar_adolescentes')
 
 @permission_required('adolescentes.delete_adolescente', raise_exception=True)
@@ -199,8 +206,13 @@ def excluir_adolescente(request, id):
     if request.method == "POST":
         adolescente.delete()
         messages.success(request, "Adolescente excluído com sucesso.")
-        return redirect('listar_adolescentes')
-    # Em GET, direciona para a lista (confirmação agora é feita via modal na lista)
+        # Redireciona mantendo filtros, busca e página
+        params = request.GET.urlencode() or request.POST.get('params', '')
+        url = reverse('listar_adolescentes')
+        if params:
+            url = f"{url}?{params}"
+        return redirect(url)
+    # Em GET, direciona para a lista
     return redirect('listar_adolescentes')
 
 @login_required
@@ -576,6 +588,22 @@ def dashboard(request):
     evolucao_data = [e['presentes'] for e in presenca_por_evento]
     evolucao_total = [e['total'] for e in presenca_por_evento]
     
+    # Contagem de auditório por evento
+    contagem_auditorio_total = 0
+    contagem_auditorio_media = 0
+    contagem_auditorio_ultimo = None
+    contagem_auditorio_ultimo_usuario = None
+    contagem_auditorio_ultimo_data = None
+    if eventos_query.exists():
+        contagens = ContagemAuditorio.objects.filter(dia__in=eventos_query)
+        contagem_auditorio_media = round(contagem_auditorio_total / max(contagens.count(), 1), 1)
+        # Última contagem
+        ultima_contagem = contagens.order_by('-dia__data').first()
+        if ultima_contagem:
+            contagem_auditorio_ultimo = ultima_contagem.quantidade_pessoas
+            contagem_auditorio_ultimo_usuario = ultima_contagem.usuario_registro.username
+            contagem_auditorio_ultimo_data = ultima_contagem.dia.data
+
     context = {
         'total_adolescentes': total_adolescentes,
         'total_pgs': total_pgs,
@@ -604,6 +632,11 @@ def dashboard(request):
         'evolucao_total': evolucao_total,
         'imperio_labels': imperio_labels,
         'imperio_data': imperio_data,
+        'contagem_auditorio_total': contagem_auditorio_total,
+        'contagem_auditorio_media': contagem_auditorio_media,
+        'contagem_auditorio_ultimo': contagem_auditorio_ultimo,
+        'contagem_auditorio_ultimo_usuario': contagem_auditorio_ultimo_usuario,
+        'contagem_auditorio_ultimo_data': contagem_auditorio_ultimo_data,
     }
     
     return render(request, 'adolescentes/dashboard.html', context)

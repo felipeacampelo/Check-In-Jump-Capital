@@ -1,17 +1,63 @@
 {% extends 'adolescentes/base.html' %}
 {% block content %}
-
-<!-- Botão voltar -->
-<div class="mb-3">
-  <a href="{% url 'pagina_checkin' %}" class="btn btn-outline-secondary">
-    <i class="fas fa-arrow-left me-1"></i>Voltar
-  </a>
-</div>
-
-<!-- Título e botão lado a lado -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  .checkin-main, .checkin-main h1, .checkin-main h2, .checkin-main h3, .checkin-main h4, .checkin-main h5, .checkin-main h6, .checkin-main p, .checkin-main label, .checkin-main input, .checkin-main button, .checkin-main .card, .checkin-main .form-control, .checkin-main .list-group-item {
+    font-family: 'Inter', Arial, sans-serif;
+  }
+  .checkin-card {
+    border-radius: 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    border: none;
+    transition: box-shadow 0.2s;
+  }
+  .checkin-card:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  }
+  .checkin-filtros .btn {
+    min-width: 120px;
+    font-weight: 600;
+    border-radius: 2rem;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+  }
+  .checkin-filtros .btn.active {
+    box-shadow: 0 2px 8px rgba(13,110,253,0.08);
+  }
+  .checkin-search {
+    border-radius: 2rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .list-group-item {
+    border-radius: 0.75rem !important;
+    margin-bottom: 0.5rem;
+    border: 1px solid #f1f3f4;
+    transition: box-shadow 0.15s;
+  }
+  .list-group-item:hover {
+    box-shadow: 0 2px 8px rgba(13,110,253,0.06);
+    background: #f8f9fa;
+  }
+  @media (max-width: 576px) {
+    .checkin-filtros .btn {
+      min-width: 100px;
+      font-size: 0.95em;
+      margin-bottom: 0.2em;
+      padding-top: 0.7em;
+      padding-bottom: 0.7em;
+    }
+    /* Removido width: 100% e flex-direction: column do grupo de botões */
+    .list-group-item { font-size: 0.98em; }
+  }
+</style>
+<div class="checkin-main">
 <div class="d-flex align-items-center justify-content-between mb-2">
   <div>
-    <h2 class="mb-0">Check-in do dia {{ dia.data|date:"d/m/Y" }}</h2>
+    <h2 class="mb-0 fw-bold">Check-in do dia {{ dia.data|date:"d/m/Y" }}</h2>
     {% if dia.titulo %}
       <p class="text-muted mb-0"><i class="fas fa-star me-1"></i>{{ dia.titulo }}</p>
     {% endif %}
@@ -33,148 +79,154 @@
   {% endif %}
 {% endwith %}
 
-<div class="row mb-3">
-  <div class="col-md-8">
-    <div class="btn-group" role="group">
-      <a href="?filtro=todos{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-primary {% if filtro == 'todos' %}active{% endif %}">Todos</a>
-      <a href="?filtro=presentes{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-success {% if filtro == 'presentes' %}active{% endif %}">Somente Presentes</a>
-      <a href="?filtro=ausentes{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-secondary {% if filtro == 'ausentes' %}active{% endif %}">Somente Ausentes</a>
+<div class="card checkin-card mb-4">
+  <div class="card-body">
+    <div class="row mb-3">
+      <div class="col-md-8 mb-3 mb-md-0 checkin-filtros">
+        <div class="btn-group w-100" role="group">
+          <a href="?filtro=todos{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-primary {% if filtro == 'todos' %}active{% endif %}">Todos</a>
+          <a href="?filtro=presentes{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-success {% if filtro == 'presentes' %}active{% endif %}">Somente Presentes</a>
+          <a href="?filtro=ausentes{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-secondary {% if filtro == 'ausentes' %}active{% endif %}">Somente Ausentes</a>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <form method="get" class="d-flex">
+          <input type="hidden" name="filtro" value="{{ filtro }}">
+          <input type="text" name="busca" value="{{ busca }}" class="form-control me-2 checkin-search" placeholder="Buscar adolescente...">
+          <button type="submit" class="btn btn-outline-primary rounded-pill">
+            <i class="fas fa-search"></i>
+          </button>
+        </form>
+      </div>
     </div>
-  </div>
-  <div class="col-md-4">
-    <form method="get" class="d-flex">
-      <input type="hidden" name="filtro" value="{{ filtro }}">
-      <input type="text" name="busca" value="{{ busca }}" class="form-control me-2" placeholder="Buscar adolescente...">
-      <button type="submit" class="btn btn-outline-primary">
-        <i class="fas fa-search"></i>
-      </button>
+
+    {% if busca %}
+      <div class="alert alert-info">
+        <i class="fas fa-search me-1"></i>Buscando por: "{{ busca }}"
+        <a href="?filtro={{ filtro }}" class="btn btn-sm btn-outline-secondary ms-2">Limpar busca</a>
+      </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <ul class="list-group mb-3">
+        {% for adolescente in adolescentes %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              <label class="form-check-label d-flex align-items-center mb-0">
+                <input type="checkbox" 
+                       class="form-check-input me-2 presenca-checkbox"
+                       data-adolescente-id="{{ adolescente.id }}"
+                       {% if adolescente.id in presentes_ids %}checked{% endif %}>
+                {{ adolescente.nome }} {{ adolescente.sobrenome }}
+              </label>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary ms-2" data-bs-toggle="modal" data-bs-target="#modalDetalheAdol{{ adolescente.id }}">
+              <i class="fas fa-eye me-1"></i>Ver detalhes
+            </button>
+          </li>
+        {% endfor %}
+      </ul>
+      {% if adolescentes.has_other_pages %}
+        <nav aria-label="Paginação de adolescentes">
+          <ul class="pagination justify-content-center">
+            {% if adolescentes.has_previous %}
+              <li class="page-item">
+                <a class="page-link" href="?page=1&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">
+                  <i class="fas fa-angle-double-left"></i>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ adolescentes.previous_page_number }}&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">
+                  <i class="fas fa-angle-left"></i>
+                </a>
+              </li>
+            {% endif %}
+
+            {% for num in adolescentes.paginator.page_range %}
+              {% if adolescentes.number == num %}
+                <li class="page-item active">
+                  <span class="page-link">{{ num }}</span>
+                </li>
+              {% elif num > adolescentes.number|add:'-3' and num < adolescentes.number|add:'3' %}
+                <li class="page-item">
+                  <a class="page-link" href="?page={{ num }}&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">{{ num }}</a>
+                </li>
+              {% endif %}
+            {% endfor %}
+
+            {% if adolescentes.has_next %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ adolescentes.next_page_number }}&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">
+                  <i class="fas fa-angle-right"></i>
+                </a>
+              </li>
+              <li class="page-item">
+                <a class="page-link" href="?page={{ adolescentes.paginator.num_pages }}&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">
+                  <i class="fas fa-angle-double-right"></i>
+                </a>
+              </li>
+            {% endif %}
+          </ul>
+          <div class="text-center text-muted">
+            <small>
+              Página {{ adolescentes.number }} de {{ adolescentes.paginator.num_pages }} 
+              ({{ adolescentes.paginator.count }} adolescentes no total)
+            </small>
+          </div>
+        </nav>
+      {% endif %}
     </form>
   </div>
 </div>
+</div>
 
-{% if busca %}
-  <div class="alert alert-info">
-    <i class="fas fa-search me-1"></i>Buscando por: "{{ busca }}"
-    <a href="?filtro={{ filtro }}" class="btn btn-sm btn-outline-secondary ms-2">Limpar busca</a>
-  </div>
-{% endif %}
-
-<form method="post">
-  {% csrf_token %}
-  <ul class="list-group mb-3">
-    {% for adolescente in adolescentes %}
-      <li class="list-group-item">
-        <div class="d-flex justify-content-between align-items-center">
-          <label class="form-check-label d-flex align-items-center">
-            <input type="checkbox" 
-                   class="form-check-input me-2 presenca-checkbox"
-                   data-adolescente-id="{{ adolescente.id }}"
-                   {% if adolescente.id in presentes_ids %}checked{% endif %}>
-            {{ adolescente.nome }} {{ adolescente.sobrenome }}
-          </label>
-          <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal{{ adolescente.id }}">
-            <i class="fas fa-eye me-1"></i>Ver detalhes
-          </button>
+<!-- Modais de detalhes dos adolescentes (padrão Bootstrap, sem customização) -->
+{% for adolescente in adolescentes %}
+  <div class="modal fade" id="modalDetalheAdol{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalLabelDetalheAdol{{ adolescente.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalLabelDetalheAdol{{ adolescente.id }}">Detalhes de {{ adolescente.nome }} {{ adolescente.sobrenome }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
         </div>
-      </li>
-
-      <!-- Modal do Adolescente -->
-      <div class="modal fade" id="modal{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalLabel{{ adolescente.id }}" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="modalLabel{{ adolescente.id }}">Detalhes de {{ adolescente.nome }} {{ adolescente.sobrenome }}</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-            </div>
-            <div class="modal-body">
-              <p><strong>Nome Completo:</strong> {{ adolescente.nome }} {{ adolescente.sobrenome }}</p>
-              <p><strong>Gênero:</strong> {{ adolescente.get_genero_display }}</p>
-              <p><strong>Data de Nascimento:</strong> {{ adolescente.data_nascimento|date:"d/m/Y" }}</p>
-              <p><strong>Pequeno Grupo (PG):</strong> {{ adolescente.pg }}</p>
-              <p><strong>Império:</strong> {{ adolescente.imperio }}</p>
-              {% if adolescente.foto %}
-                <p><strong>Foto:</strong></p>
-                <img src="{{ adolescente.foto.url }}" class="img-fluid" alt="Foto de {{ adolescente.nome }}">
-              {% endif %}
-
-              <hr>
-              <h6>Histórico de Presenças:</h6>
-              <ul class="list-group">
-                {% for presenca in adolescente.ultimas_presencas %}
-                  <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ presenca.dia.data|date:"d/m/Y" }}
-                    {% if presenca.presente %}
-                      <span class="badge bg-success">Presente</span>
-                    {% else %}
-                      <span class="badge bg-danger">Ausente</span>
-                    {% endif %}
-                  </li>
-                {% empty %}
-                  <li class="list-group-item">Nenhum registro de presença.</li>
-                {% endfor %}
-              </ul>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-            </div>
+        <div class="modal-body">
+          <div class="text-center mb-3">
+            {% if adolescente.foto %}
+              <img src="{{ adolescente.foto.url }}" class="rounded-circle img-thumbnail" style="width: 96px; height: 96px; object-fit: cover;" alt="Foto de {{ adolescente.nome }}">
+            {% else %}
+              <span class="rounded-circle bg-secondary d-inline-block" style="width: 96px; height: 96px; line-height: 96px; text-align: center; color: #fff; font-size: 2em;">{{ adolescente.nome|slice:":1" }}{{ adolescente.sobrenome|slice:":1" }}</span>
+            {% endif %}
           </div>
+          <p><strong>Nome Completo:</strong> {{ adolescente.nome }} {{ adolescente.sobrenome }}</p>
+          <p><strong>Gênero:</strong> {{ adolescente.get_genero_display }}</p>
+          <p><strong>Data de Nascimento:</strong> {{ adolescente.data_nascimento|date:"d/m/Y" }}</p>
+          <p><strong>Pequeno Grupo (PG):</strong> {{ adolescente.pg }}</p>
+          <p><strong>Império:</strong> {{ adolescente.imperio }}</p>
+          <hr>
+          <h6>Histórico de Presenças:</h6>
+          <ul class="list-group">
+            {% for presenca in adolescente.ultimas_presencas %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                {{ presenca.dia.data|date:"d/m/Y" }}
+                {% if presenca.presente %}
+                  <span class="badge bg-success">Presente</span>
+                {% else %}
+                  <span class="badge bg-danger">Ausente</span>
+                {% endif %}
+              </li>
+            {% empty %}
+              <li class="list-group-item">Nenhum registro de presença.</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
         </div>
       </div>
-    {% endfor %}
-  </ul>
-</form>
-
-<!-- Paginação -->
-{% if adolescentes.has_other_pages %}
-  <nav aria-label="Paginação de adolescentes">
-    <ul class="pagination justify-content-center">
-      {% if adolescentes.has_previous %}
-        <li class="page-item">
-          <a class="page-link" href="?page=1&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">
-            <i class="fas fa-angle-double-left"></i>
-          </a>
-        </li>
-        <li class="page-item">
-          <a class="page-link" href="?page={{ adolescentes.previous_page_number }}&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">
-            <i class="fas fa-angle-left"></i>
-          </a>
-        </li>
-      {% endif %}
-
-      {% for num in adolescentes.paginator.page_range %}
-        {% if adolescentes.number == num %}
-          <li class="page-item active">
-            <span class="page-link">{{ num }}</span>
-          </li>
-        {% elif num > adolescentes.number|add:'-3' and num < adolescentes.number|add:'3' %}
-          <li class="page-item">
-            <a class="page-link" href="?page={{ num }}&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">{{ num }}</a>
-          </li>
-        {% endif %}
-      {% endfor %}
-
-      {% if adolescentes.has_next %}
-        <li class="page-item">
-          <a class="page-link" href="?page={{ adolescentes.next_page_number }}&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">
-            <i class="fas fa-angle-right"></i>
-          </a>
-        </li>
-        <li class="page-item">
-          <a class="page-link" href="?page={{ adolescentes.paginator.num_pages }}&filtro={{ filtro }}{% if busca %}&busca={{ busca }}{% endif %}">
-            <i class="fas fa-angle-double-right"></i>
-          </a>
-        </li>
-      {% endif %}
-    </ul>
-  </nav>
-  
-  <div class="text-center text-muted">
-    <small>
-      Página {{ adolescentes.number }} de {{ adolescentes.paginator.num_pages }} 
-      ({{ adolescentes.paginator.count }} adolescentes no total)
-    </small>
+    </div>
   </div>
-{% endif %}
+{% endfor %}
 
 <!-- Modal de contagem de auditório -->
 <div class="modal fade" id="modalContagemAuditorio" tabindex="-1" aria-labelledby="modalContagemAuditorioLabel" aria-hidden="true">

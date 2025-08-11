@@ -322,8 +322,9 @@
         <h5 class="modal-title" id="modalEditarLabel{{ adolescente.id }}">Editar {{ adolescente.nome }} {{ adolescente.sobrenome }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
-      <form method="post" action="{% url 'editar_adolescente' adolescente.id %}" enctype="multipart/form-data">
+      <form method="post" action="{% url 'editar_adolescente' adolescente.id %}?{{ request.GET.urlencode }}" enctype="multipart/form-data">
         {% csrf_token %}
+        <input type="hidden" name="params" value="{{ request.GET.urlencode }}">
         <div class="modal-body">
           {{ adolescente.form_edicao.as_p }}
         </div>
@@ -351,8 +352,9 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <form method="post" action="{% url 'excluir_adolescente' adolescente.id %}">
+        <form method="post" action="{% url 'excluir_adolescente' adolescente.id %}?{{ request.GET.urlencode }}">
           {% csrf_token %}
+          <input type="hidden" name="params" value="{{ request.GET.urlencode }}">
           <button type="submit" class="btn btn-danger">Excluir</button>
         </form>
       </div>

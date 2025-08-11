@@ -11,8 +11,73 @@
 
   <form method="POST" enctype="multipart/form-data" class="mt-3">
     {% csrf_token %}
-    {{ form.as_p }}
+    <div id="form-campos">
+      {{ form.as_p }}
+    </div>
     <button type="submit" class="btn btn-success">Salvar</button>
     <a href="{% url 'listar_adolescentes' %}" class="btn btn-secondary">Cancelar</a>
   </form>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Procura o input de data de nascimento
+      var dataInput = document.querySelector('input[name="data_nascimento"]');
+      if (dataInput) {
+        // Cria o aviso se não existir
+        var aviso = document.createElement('div');
+        aviso.id = 'aviso-idade';
+        aviso.className = 'mt-2';
+        dataInput.parentNode.appendChild(aviso);
+        // Função para calcular idade
+        function calcularIdade(dataStr) {
+          if (!dataStr) return null;
+          var partes = dataStr.split('-');
+          if (partes.length === 3) {
+            // yyyy-mm-dd
+            var ano = parseInt(partes[0]);
+            var mes = parseInt(partes[1]) - 1;
+            var dia = parseInt(partes[2]);
+          } else {
+            partes = dataStr.split('/');
+            if (partes.length !== 3) return null;
+            // dd/mm/yyyy
+            var dia = parseInt(partes[0]);
+            var mes = parseInt(partes[1]) - 1;
+            var ano = parseInt(partes[2]);
+          }
+          var hoje = new Date();
+          var nascimento = new Date(ano, mes, dia);
+          var idade = hoje.getFullYear() - nascimento.getFullYear();
+          var m = hoje.getMonth() - nascimento.getMonth();
+          if (m < 0 || (m === 0 && hoje.getDate() < nascimento.getDate())) {
+            idade--;
+          }
+          return idade;
+        }
+        // Função para mostrar aviso
+        function mostrarAviso() {
+          var valor = dataInput.value;
+          if (!valor || valor.length < 10) {
+            aviso.innerHTML = '';
+            return;
+          }
+          var idade = calcularIdade(valor);
+          if (idade === null || isNaN(idade)) {
+            aviso.innerHTML = '';
+            return;
+          }
+          if (idade < 12) {
+            aviso.innerHTML = '<span class="text-warning fw-bold">Atenção: Menor de 12 anos (' + idade + ' anos)</span>';
+          } else if (idade > 18) {
+            aviso.innerHTML = '<span class="text-danger fw-bold">Atenção: Maior de 18 anos (' + idade + ' anos)</span>';
+          } else {
+            aviso.innerHTML = '';
+          }
+        }
+        dataInput.addEventListener('input', mostrarAviso);
+        dataInput.addEventListener('change', mostrarAviso);
+        // Chama ao carregar
+        mostrarAviso();
+      }
+    });
+  </script>
 {% endblock %}
