@@ -52,6 +52,19 @@
     }
     /* Removido width: 100% e flex-direction: column do grupo de botões */
     .list-group-item { font-size: 0.98em; }
+
+    /* Ações do topo (Auditório e Visitantes) */
+    .checkin-actions {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.5rem !important;
+    }
+    .checkin-actions .btn {
+      font-size: 0.95rem; /* similar ao btn-sm */
+      padding: 0.45rem 0.75rem;
+      border-radius: 0.75rem;
+      width: 100%;
+    }
   }
 </style>
 <div class="checkin-main">
@@ -62,9 +75,14 @@
       <p class="text-muted mb-0"><i class="fas fa-star me-1"></i>{{ dia.titulo }}</p>
     {% endif %}
   </div>
-  <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalContagemAuditorio">
-    <i class="fas fa-users me-1"></i>Contagem no Auditório
-  </button>
+  <div class="d-flex gap-2 checkin-actions">
+    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalContagemAuditorio">
+      <i class="fas fa-users me-1"></i>Contagem no Auditório
+    </button>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalContagemVisitantes">
+      <i class="fas fa-user-plus me-1"></i>Visitantes
+    </button>
+  </div>
 </div>
 
 <!-- Exibir última contagem registrada -->
@@ -75,6 +93,18 @@
       <strong>Última contagem registrada:</strong> {{ contagem.quantidade_pessoas }} pessoas
       <br>
       <small>Registrado por {{ contagem.usuario_registro.username }} em {{ contagem.data_registro|date:"d/m/Y H:i" }}</small>
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- Exibir última contagem de visitantes -->
+{% with contagemv=dia.contagens_visitantes.first %}
+  {% if contagemv %}
+    <div class="alert alert-secondary">
+      <i class="fas fa-user-plus me-1"></i>
+      <strong>Últimos visitantes registrados:</strong> {{ contagemv.quantidade_visitantes }}
+      <br>
+      <small>Registrado por {{ contagemv.usuario_registro.username }} em {{ contagemv.data_registro|date:"d/m/Y H:i" }}</small>
     </div>
   {% endif %}
 {% endwith %}
@@ -179,6 +209,33 @@
     </form>
   </div>
 </div>
+
+<!-- Modal de contagem de visitantes -->
+<div class="modal fade" id="modalContagemVisitantes" tabindex="-1" aria-labelledby="modalContagemVisitantesLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="contagem_visitantes" value="1">
+        <input type="hidden" name="dia" value="{{ dia.id }}">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalContagemVisitantesLabel"><i class="fas fa-user-plus me-1"></i>Contagem de Visitantes</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="quantidade_visitantes" class="form-label">Número de Visitantes</label>
+            <input type="number" class="form-control" id="quantidade_visitantes" name="quantidade_visitantes" min="0" placeholder="Ex: 12" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Salvar Visitantes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  </div>
 </div>
 
 <!-- Modais de detalhes dos adolescentes (padrão Bootstrap, sem customização) -->

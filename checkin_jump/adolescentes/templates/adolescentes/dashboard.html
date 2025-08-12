@@ -42,7 +42,7 @@
             O total de presentes é baseado apenas nos adolescentes que fizeram check-in no dia da celebração.
         </p>
     </div>
-</div>
+  </div>
 
 <!-- Filtros de Data -->
 <div class="row mb-4">
@@ -136,31 +136,7 @@
     </div>
 </div>
 
-<!-- Cards de contagem de auditório -->
-<div class="row mb-4">
-    <div class="col-md-6 mb-3">
-        <div class="card dashboard-card border-warning h-100" data-bs-toggle="tooltip" title="Última contagem de pessoas feita manualmente no auditório">
-            <div class="card-body text-center">
-                <div class="dashboard-title text-warning"><i class="fas fa-users me-1"></i>Última Contagem Auditório</div>
-                {% if contagem_auditorio_ultimo %}
-                    <div class="dashboard-value text-warning">{{ contagem_auditorio_ultimo }}</div>
-                    <div class="dashboard-label">por {{ contagem_auditorio_ultimo_usuario }} em {{ contagem_auditorio_ultimo_data|date:"d/m/Y" }}</div>
-                {% else %}
-                    <div class="dashboard-label">Nenhuma contagem registrada</div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 mb-3">
-        <div class="card dashboard-card border-warning h-100" data-bs-toggle="tooltip" title="Média de pessoas contadas manualmente no auditório por evento">
-            <div class="card-body text-center">
-                <div class="dashboard-title text-warning"><i class="fas fa-users me-1"></i>Média Auditório</div>
-                <div class="dashboard-value text-warning">{{ contagem_auditorio_media }}</div>
-                <div class="dashboard-label">pessoas por evento</div>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Removido: cards de auditório no topo (reposicionados para a parte inferior) -->
 
 <!-- Estatísticas de presença -->
 <div class="row mb-4">
@@ -263,6 +239,44 @@
     </div>
 </div>
 
+<!-- Métricas inferiores: Visitantes + Auditório -->
+<div class="row mb-4">
+  <!-- Média de Visitantes -->
+  <div class="col-md-4 mb-3">
+    <div class="card dashboard-card border-info h-100" data-bs-toggle="tooltip" title="Média de visitantes registrados por evento (via contagem de visitantes)">
+      <div class="card-body text-center">
+        <div class="dashboard-title text-info"><i class="fas fa-user-plus me-1"></i>Média de Visitantes</div>
+        <div class="dashboard-value text-info">{{ contagem_visitantes_media }}</div>
+        <div class="dashboard-label">visitantes por evento</div>
+      </div>
+    </div>
+  </div>
+  <!-- Última Contagem Auditório -->
+  <div class="col-md-4 mb-3">
+    <div class="card dashboard-card border-warning h-100" data-bs-toggle="tooltip" title="Última contagem de pessoas feita manualmente no auditório">
+      <div class="card-body text-center">
+        <div class="dashboard-title text-warning"><i class="fas fa-users me-1"></i>Última Contagem Auditório</div>
+        {% if contagem_auditorio_ultimo %}
+          <div class="dashboard-value text-warning">{{ contagem_auditorio_ultimo }}</div>
+          <div class="dashboard-label">por {{ contagem_auditorio_ultimo_usuario }} em {{ contagem_auditorio_ultimo_data|date:"d/m/Y" }}</div>
+        {% else %}
+          <div class="dashboard-label">Nenhuma contagem registrada</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <!-- Média Auditório -->
+  <div class="col-md-4 mb-3">
+    <div class="card dashboard-card border-warning h-100" data-bs-toggle="tooltip" title="Média de pessoas contadas manualmente no auditório por evento">
+      <div class="card-body text-center">
+        <div class="dashboard-title text-warning"><i class="fas fa-users me-1"></i>Média Auditório</div>
+        <div class="dashboard-value text-warning">{{ contagem_auditorio_media }}</div>
+        <div class="dashboard-label">pessoas por evento</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Tabela de eventos recentes -->
 <div class="row">
     <div class="col-12">
@@ -278,7 +292,9 @@
                         <thead>
                             <tr>
                                 <th>Data</th>
+                                <th>Evento</th>
                                 <th>Presentes</th>
+                                <th>Visitantes</th>
                                 <th>Percentual</th>
                                 <th>Status</th>
                             </tr>
@@ -287,7 +303,9 @@
                             {% for evento in presenca_por_evento %}
                             <tr>
                                 <td>{{ evento.data }}</td>
+                                <td>{{ evento.titulo|default:"-" }}</td>
                                 <td>{{ evento.presentes }}</td>
+                                <td>{{ evento.visitantes }}</td>
                                 <td>{{ evento.percentual }}%</td>
                                 <td>
                                     {% if evento.percentual >= 80 %}
@@ -301,7 +319,7 @@
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="4" class="text-center text-muted">Nenhum evento registrado</td>
+                                <td colspan="6" class="text-center text-muted">Nenhum evento registrado</td>
                             </tr>
                             {% endfor %}
                         </tbody>

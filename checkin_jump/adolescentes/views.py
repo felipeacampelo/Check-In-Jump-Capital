@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio, ContagemAuditorio
-from .forms import AdolescenteForm, DiaEventoForm, ContagemAuditorioForm
+from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio, ContagemAuditorio, ContagemVisitantes
+from .forms import AdolescenteForm, DiaEventoForm, ContagemAuditorioForm, ContagemVisitantesForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.messages import get_messages
@@ -333,6 +333,30 @@ def checkin_dia(request, dia_id):
             else:
                 messages.success(request, f'Contagem atualizada: {quantidade} pessoas no auditório!')
             return redirect('checkin_dia', dia_id=dia.id)
+        
+        # Se for o modal de contagem de visitantes
+        if request.POST.get('contagem_visitantes'):
+            quantidade_v = request.POST.get('quantidade_visitantes')
+            try:
+                quantidade_v = int(quantidade_v)
+                if quantidade_v < 0:
+                    raise ValueError
+            except (TypeError, ValueError):
+                messages.error(request, 'Digite um número válido para visitantes (zero ou mais).')
+                return redirect('checkin_dia', dia_id=dia.id)
+            contagem_v, created_v = ContagemVisitantes.objects.update_or_create(
+                dia=dia,
+                defaults={
+                    'quantidade_visitantes': quantidade_v,
+                    'usuario_registro': request.user
+                }
+            )
+            if created_v:
+                messages.success(request, f'Visitantes registrados: {quantidade_v}.')
+            else:
+                messages.success(request, f'Visitantes atualizados: {quantidade_v}.')
+            return redirect('checkin_dia', dia_id=dia.id)
+        
         # Check-in normal
         presencas_ids = request.POST.getlist('presentes')
         Presenca.objects.filter(dia=dia).delete()
@@ -560,11 +584,14 @@ def dashboard(request):
     for evento in reversed(ultimos_eventos):  # Inverter para ordem cronológica
         presentes = Presenca.objects.filter(dia=evento, presente=True).count()
         total = Presenca.objects.filter(dia=evento).count()
+        visitantes = ContagemVisitantes.objects.filter(dia=evento).values_list('quantidade_visitantes', flat=True).first() or 0
         # Calcular percentual em relação ao total de adolescentes cadastrados
         percentual = round((presentes / max(total_adolescentes, 1)) * 100, 1)
         presenca_por_evento.append({
             'data': evento.data.strftime('%d/%m'),
+            'titulo': evento.titulo or '',
             'presentes': presentes,
+            'visitantes': visitantes,
             'total': total,
             'percentual': percentual
         })
@@ -620,13 +647,21 @@ def dashboard(request):
     contagem_auditorio_ultimo_data = None
     if eventos_query.exists():
         contagens = ContagemAuditorio.objects.filter(dia__in=eventos_query)
-        contagem_auditorio_media = round(contagem_auditorio_total / max(contagens.count(), 1), 1)
+        media_a = contagens.aggregate(avg=Avg('quantidade_pessoas'))['avg']
+        contagem_auditorio_media = round(media_a or 0, 1)
         # Última contagem
         ultima_contagem = contagens.order_by('-dia__data').first()
         if ultima_contagem:
             contagem_auditorio_ultimo = ultima_contagem.quantidade_pessoas
             contagem_auditorio_ultimo_usuario = ultima_contagem.usuario_registro.username
             contagem_auditorio_ultimo_data = ultima_contagem.dia.data
+
+    # Contagem de visitantes por evento (média)
+    contagem_visitantes_media = 0
+    if eventos_query.exists():
+        contagens_visitantes = ContagemVisitantes.objects.filter(dia__in=eventos_query)
+        media_v = contagens_visitantes.aggregate(avg=Avg('quantidade_visitantes'))['avg']
+        contagem_visitantes_media = round(media_v or 0, 1)
 
     context = {
         'total_adolescentes': total_adolescentes,
@@ -661,6 +696,7 @@ def dashboard(request):
         'contagem_auditorio_ultimo': contagem_auditorio_ultimo,
         'contagem_auditorio_ultimo_usuario': contagem_auditorio_ultimo_usuario,
         'contagem_auditorio_ultimo_data': contagem_auditorio_ultimo_data,
+        'contagem_visitantes_media': contagem_visitantes_media,
     }
     
     return render(request, 'adolescentes/dashboard.html', context)

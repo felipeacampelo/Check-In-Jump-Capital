@@ -1,5 +1,5 @@
 from django import forms
-from .models import Adolescente, DiaEvento, ContagemAuditorio
+from .models import Adolescente, DiaEvento, ContagemAuditorio, ContagemVisitantes
 from django.core.exceptions import ValidationError
 from datetime import datetime
 
@@ -75,3 +75,22 @@ class ContagemAuditorioForm(forms.ModelForm):
             raise forms.ValidationError("A quantidade deve ser maior que zero.")
         return quantidade
 
+
+class ContagemVisitantesForm(forms.ModelForm):
+    class Meta:
+        model = ContagemVisitantes
+        fields = ['dia', 'quantidade_visitantes']
+        widgets = {
+            'dia': forms.Select(attrs={'class': 'form-control'}),
+            'quantidade_visitantes': forms.NumberInput(attrs={'class': 'form-control', 'min': '1', 'placeholder': 'Ex: 35'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['dia'].queryset = DiaEvento.objects.all().order_by('-data')
+    
+    def clean_quantidade_visitantes(self):
+        quantidade = self.cleaned_data['quantidade_visitantes']
+        if quantidade <= 0:
+            raise forms.ValidationError("A quantidade deve ser maior que zero.")
+        return quantidade

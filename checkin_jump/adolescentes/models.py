@@ -72,3 +72,19 @@ class ContagemAuditorio(models.Model):
         """Retorna o total de presentes considerando check-ins individuais + contagem de auditório"""
         checkins_individuals = self.dia.presenca_set.filter(presente=True).count()
         return checkins_individuals + self.quantidade_pessoas
+
+
+class ContagemVisitantes(models.Model):
+    dia = models.ForeignKey(DiaEvento, on_delete=models.CASCADE, related_name='contagens_visitantes')
+    quantidade_visitantes = models.PositiveIntegerField(help_text="Número de visitantes no dia")
+    usuario_registro = models.ForeignKey(User, on_delete=models.CASCADE, help_text="Usuário que fez o registro")
+    data_registro = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ['dia']
+        verbose_name = "Contagem de Visitantes"
+        verbose_name_plural = "Contagens de Visitantes"
+        ordering = ['-data_registro']
+
+    def __str__(self):
+        return f"{self.dia} - {self.quantidade_visitantes} visitantes (por {self.usuario_registro.username})"
