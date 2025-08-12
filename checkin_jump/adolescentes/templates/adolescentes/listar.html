@@ -16,47 +16,49 @@
 
 
 <!-- Filtros e busca -->
-<form method="get" id="filtroForm" class="mb-4">
-  <div class="row g-2 align-items-end">
-    <div class="col-md-3">
-      <label for="busca" class="form-label">Buscar por nome:</label>
-      <input type="text" name="busca" id="buscaInput" class="form-control" value="{{ request.GET.busca }}">
-    </div>
-
-    <div class="col-md-2">
-      <label for="pg" class="form-label">PG:</label>
-      <select name="pg" id="pg" class="form-select">
-        <option value="">Todos</option>
-        {% for pg in pgs %}
-          <option value="{{ pg.id }}" {% if request.GET.pg == pg.id|stringformat:"s" %}selected{% endif %}>{{ pg.nome }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="col-md-2">
-      <label for="genero" class="form-label">Gênero:</label>
-      <select name="genero" id="genero" class="form-select">
-        <option value="">Todos</option>
-        <option value="M" {% if request.GET.genero == "M" %}selected{% endif %}>Masculino</option>
-        <option value="F" {% if request.GET.genero == "F" %}selected{% endif %}>Feminino</option>
-      </select>
-    </div>
-
-    <div class="col-md-3">
-      <label for="imperio" class="form-label">Império:</label>
-      <select name="imperio" id="imperio" class="form-select">
-        <option value="">Todos</option>
-        {% for imperio in imperios %}
-          <option value="{{ imperio.id }}" {% if request.GET.imperio == imperio.id|stringformat:"s" %}selected{% endif %}>{{ imperio.nome }}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="col-md-2">
-      <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-    </div>
+<div class="card shadow-sm rounded-3 mb-4">
+  <div class="card-body">
+    <form method="get" id="filtroForm">
+      <div class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label for="busca" class="form-label">Buscar por nome:</label>
+          <input type="text" name="busca" id="buscaInput" class="form-control" value="{{ request.GET.busca }}">
+        </div>
+        <div class="col-md-2">
+          <label for="pg" class="form-label">PG:</label>
+          <select name="pg" id="pg" class="form-select">
+            <option value="">Todos</option>
+            <option value="sem_pg" {% if request.GET.pg == "sem_pg" %}selected{% endif %}>Sem PG</option>
+            {% for pg in pgs %}
+              <option value="{{ pg.id }}" {% if request.GET.pg == pg.id|stringformat:"s" %}selected{% endif %}>{{ pg.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <label for="genero" class="form-label">Gênero:</label>
+          <select name="genero" id="genero" class="form-select">
+            <option value="">Todos</option>
+            <option value="M" {% if request.GET.genero == "M" %}selected{% endif %}>Masculino</option>
+            <option value="F" {% if request.GET.genero == "F" %}selected{% endif %}>Feminino</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="imperio" class="form-label">Império:</label>
+          <select name="imperio" id="imperio" class="form-select">
+            <option value="">Todos</option>
+            {% for imperio in imperios %}
+              <option value="{{ imperio.id }}" {% if request.GET.imperio == imperio.id|stringformat:"s" %}selected{% endif %}>{{ imperio.nome }}</option>
+            {% endfor %}
+            <option value="sem_imperio" {% if request.GET.imperio == "sem_imperio" %}selected{% endif %}>Sem Império</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+      </div>
+    </form>
   </div>
-</form>
+</div>
 
 <!-- Botão adicionar adolescente -->
 <div class="text-start mt-3">
@@ -70,7 +72,7 @@
     <thead>
       <tr>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Nome
             {% if ordenar_por == 'nome' %}
               {% if direcao == 'asc' %}
@@ -84,7 +86,7 @@
           </a>
         </th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}ordenar_por=sobrenome&direcao={% if ordenar_por == 'sobrenome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=sobrenome&direcao={% if ordenar_por == 'sobrenome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Sobrenome
             {% if ordenar_por == 'sobrenome' %}
               {% if direcao == 'asc' %}
@@ -98,7 +100,7 @@
           </a>
         </th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}ordenar_por=genero&direcao={% if ordenar_por == 'genero' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=genero&direcao={% if ordenar_por == 'genero' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Gênero
             {% if ordenar_por == 'genero' %}
               {% if direcao == 'asc' %}
@@ -112,7 +114,7 @@
           </a>
         </th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}ordenar_por=data_nascimento&direcao={% if ordenar_por == 'data_nascimento' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=data_nascimento&direcao={% if ordenar_por == 'data_nascimento' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Data de Nascimento
             {% if ordenar_por == 'data_nascimento' %}
               {% if direcao == 'asc' %}
@@ -127,7 +129,7 @@
         </th>
         <th>Foto</th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}ordenar_por=pg&direcao={% if ordenar_por == 'pg' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=pg&direcao={% if ordenar_por == 'pg' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             PG
             {% if ordenar_por == 'pg' %}
               {% if direcao == 'asc' %}
@@ -141,7 +143,7 @@
           </a>
         </th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.page %}page={{ request.GET.page }}&{% endif %}ordenar_por=imperio&direcao={% if ordenar_por == 'imperio' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=imperio&direcao={% if ordenar_por == 'imperio' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Império
             {% if ordenar_por == 'imperio' %}
               {% if direcao == 'asc' %}
@@ -177,13 +179,13 @@
         <td>{{ adolescente.imperio }}</td>
         <td>
           {% if perms.adolescentes.change_adolescente %}
-            <button type="button" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();" data-bs-toggle="modal" data-bs-target="#modalEditar{{ adolescente.id }}">
-              Editar
+            <button type="button" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();" data-bs-toggle="modal" data-bs-target="#modalEditar{{ adolescente.id }}" data-bs-toggle="tooltip" title="Editar">
+              <i class="fas fa-edit"></i>
             </button>
           {% endif %}
           {% if perms.adolescentes.delete_adolescente %}
-            <button type="button" class="btn btn-danger btn-sm" onclick="event.stopPropagation();" data-bs-toggle="modal" data-bs-target="#modalExcluir{{ adolescente.id }}">
-              Excluir
+            <button type="button" class="btn btn-danger btn-sm" onclick="event.stopPropagation();" data-bs-toggle="modal" data-bs-target="#modalExcluir{{ adolescente.id }}" data-bs-toggle="tooltip" title="Excluir">
+              <i class="fas fa-trash"></i>
             </button>
           {% endif %}
         </td>

@@ -92,28 +92,52 @@ def listar_adolescentes(request):
     if busca:
         adolescentes = buscar_adolescentes_por_nome(adolescentes, busca)
     if pg_id:
-        adolescentes = adolescentes.filter(pg__id=pg_id)
+        if pg_id == 'sem_pg':
+            adolescentes = adolescentes.filter(pg__isnull=True)
+        else:
+            adolescentes = adolescentes.filter(pg__id=pg_id)
     if genero:
         adolescentes = adolescentes.filter(genero=genero)
     if imperio_id:
-        adolescentes = adolescentes.filter(imperio__id=imperio_id)
+        if imperio_id == 'sem_imperio':
+            adolescentes = adolescentes.filter(imperio__isnull=True)
+        else:
+            adolescentes = adolescentes.filter(imperio__id=imperio_id)
 
     # Aplicar ordenação
     if ordenar_por == 'nome':
-        adolescentes = adolescentes.order_by('nome' if direcao == 'asc' else '-nome')
+        if direcao == 'asc':
+            adolescentes = adolescentes.order_by('nome', 'sobrenome')
+        else:
+            adolescentes = adolescentes.order_by('-nome', '-sobrenome')
     elif ordenar_por == 'sobrenome':
-        adolescentes = adolescentes.order_by('sobrenome' if direcao == 'asc' else '-sobrenome')
+        if direcao == 'asc':
+            adolescentes = adolescentes.order_by('sobrenome', 'nome')
+        else:
+            adolescentes = adolescentes.order_by('-sobrenome', '-nome')
     elif ordenar_por == 'genero':
-        adolescentes = adolescentes.order_by('genero' if direcao == 'asc' else '-genero')
+        if direcao == 'asc':
+            adolescentes = adolescentes.order_by('genero', 'nome', 'sobrenome')
+        else:
+            adolescentes = adolescentes.order_by('-genero', '-nome', '-sobrenome')
     elif ordenar_por == 'data_nascimento':
-        adolescentes = adolescentes.order_by('data_nascimento' if direcao == 'asc' else '-data_nascimento')
+        if direcao == 'asc':
+            adolescentes = adolescentes.order_by('data_nascimento', 'nome', 'sobrenome')
+        else:
+            adolescentes = adolescentes.order_by('-data_nascimento', '-nome', '-sobrenome')
     elif ordenar_por == 'pg':
-        adolescentes = adolescentes.order_by('pg__nome' if direcao == 'asc' else '-pg__nome')
+        if direcao == 'asc':
+            adolescentes = adolescentes.order_by('pg__nome', 'nome', 'sobrenome')
+        else:
+            adolescentes = adolescentes.order_by('-pg__nome', '-nome', '-sobrenome')
     elif ordenar_por == 'imperio':
-        adolescentes = adolescentes.order_by('imperio__nome' if direcao == 'asc' else '-imperio__nome')
+        if direcao == 'asc':
+            adolescentes = adolescentes.order_by('imperio__nome', 'nome', 'sobrenome')
+        else:
+            adolescentes = adolescentes.order_by('-imperio__nome', '-nome', '-sobrenome')
     else:
-        # Padrão: ordenar por nome
-        adolescentes = adolescentes.order_by('nome')
+        # Padrão: ordenar por nome e sobrenome
+        adolescentes = adolescentes.order_by('nome', 'sobrenome')
 
     total_adolescentes = adolescentes.count()
     pgs = PequenoGrupo.objects.all()
