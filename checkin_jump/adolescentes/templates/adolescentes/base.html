@@ -9,13 +9,64 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="{% static 'adolescentes/css/style.css' %}" />
 
+    <style>
+      /* Themed navbar (dark translucent with blur) */
+      .navbar.jump { 
+        background: rgba(11, 19, 32, 0.75);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        padding-top: .10rem;
+        padding-bottom: .10rem;
+      }
+      /* Brand area: fixed height and overflow hidden to crop the logo if needed */
+      .navbar.jump .navbar-brand { color: #fff; padding-top: 0; padding-bottom: 0; height: 44px; overflow: hidden; display: flex; align-items: center; }
+      .navbar.jump .nav-logo { height: 112px; width: auto; display: block; transform: translateY(-2px); }
+      @media (max-width: 575.98px) {
+        .navbar.jump .navbar-brand { height: 40px; }
+        .navbar.jump .nav-logo { height: 84px; transform: translateY(0); }
+      }
+      .navbar.jump .navbar-brand span { display: none !important; }
+      .navbar.jump .navbar-brand:hover { color: #fff; text-decoration: none; }
+      .navbar.jump .nav-link { color: rgba(255,255,255,0.85); padding-top: .35rem; padding-bottom: .35rem; }
+      .navbar.jump .nav-link:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+      .navbar.jump .nav-link.active { color: #0d6efd; position: relative; }
+      .navbar.jump .nav-link.active::after {
+        content: ""; position: absolute; left: 0; bottom: -6px; width: 100%; height: 2px; background: #0d6efd; border-radius: 2px;
+      }
+      .navbar.jump .navbar-toggler { padding: .2rem .4rem; }
+      /* Force white hamburger icon and dark collapse background on mobile */
+      .navbar.jump .navbar-toggler { border-color: rgba(255,255,255,0.25); color: #fff; }
+      .navbar.jump .navbar-toggler-icon {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255,255,255, 0.9)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+      }
+      .navbar.jump .navbar-collapse {
+        background: rgba(11, 19, 32, 0.92);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+      @media (min-width: 992px) {
+        .navbar.jump .navbar-collapse { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+      }
+      .navbar.jump .navbar-text, .navbar.jump .btn { color: rgba(255,255,255,0.9); }
+      .navbar.jump .btn.btn-secondary { background: rgba(255,255,255,0.12); border: none; }
+      .navbar.jump .btn.btn-secondary:hover { background: rgba(255,255,255,0.2); }
+      .navbar.jump .btn.btn-danger { background: #dc3545; border: none; }
+      .navbar.jump .btn.btn-primary { background: #0d6efd; border: none; }
+      /* Icon-only dark mode button: hide any text nodes/elements other than the icon */
+      #dark-mode-toggle { white-space: nowrap; }
+      #dark-mode-toggle > :not(i) { display: none !important; }
+    </style>
 </head>
 
-<body class="container d-flex flex-column min-vh-100">
-    <nav class="navbar navbar-expand-lg">
+<body class="{% block body_class %}container d-flex flex-column min-vh-100{% endblock %}">
+    {% block navbar %}
+    <nav class="navbar navbar-expand-lg navbar-dark jump">
         <div class="container-fluid">
             <!-- Logo/Título -->
-            <h1 class="navbar-brand mb-0">Check-in JUMP</h1>
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'listar_adolescentes' %}">
+                <img src="{% static 'adolescentes/img/logo-white.png' %}" alt="JUMP" class="nav-logo" />
+            </a>
 
             <!-- Botão hambúrguer para mobile -->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,23 +77,23 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'listar_adolescentes' %}">
+                        <a class="nav-link{% if request.resolver_match.url_name == 'listar_adolescentes' %} active{% endif %}" href="{% url 'listar_adolescentes' %}">
                             <i class="fas fa-users me-1"></i>Adolescentes
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'pagina_checkin' %}">
+                        <a class="nav-link{% if request.resolver_match.url_name == 'pagina_checkin' %} active{% endif %}" href="{% url 'pagina_checkin' %}">
                             <i class="fas fa-check-circle me-1"></i>Check-in
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'lista_pgs' %}">
+                        <a class="nav-link{% if request.resolver_match.url_name == 'lista_pgs' %} active{% endif %}" href="{% url 'lista_pgs' %}">
                             <i class="fas fa-layer-group me-1"></i>PGs
                         </a>
                     </li>
                     {% if perms.adolescentes.view_dashboard %}
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard' %}">
+                        <a class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}" href="{% url 'dashboard' %}">
                             <i class="fas fa-chart-bar me-1"></i>Dashboard
                         </a>
                     </li>
@@ -50,15 +101,15 @@
                 </ul>
 
                 <!-- Área do usuário -->
-                <div class="navbar-nav">
-                    <!-- Botão modo escuro -->
-                    <button id="dark-mode-toggle" class="nav-link btn btn-secondary me-2">
-                        <i class="fas fa-moon me-1"></i>Modo Escuro
+                <div class="navbar-nav align-items-center">
+                    <!-- Botão modo escuro (apenas ícone) -->
+                    <button id="dark-mode-toggle" class="btn btn-secondary me-2 p-2" aria-label="Alternar modo escuro/claro" title="Alternar tema">
+                        <i class="fas fa-moon"></i>
                     </button>
                     
                     {% if user.is_authenticated %}
                         <span class="navbar-text me-3">
-                            <i class="fas fa-user me-1"></i><strong>{{ user.username }}</strong>
+                            <i class="fas fa-user me-1"></i><strong>{{ user.get_full_name|default:user.username }}</strong>
                         </span>
                         <a class="nav-link btn btn-danger" href="{% url 'logout' %}">
                             <i class="fas fa-sign-out-alt me-1"></i>Sair
@@ -72,6 +123,7 @@
             </div>
         </div>
     </nav>
+    {% endblock %}
     <!-- <hr /> Removido para eliminar a linha -->
 
     <main class="flex-grow-1">
@@ -99,13 +151,16 @@
         {% block content %}{% endblock %}
     </main>
 
+    {% block footer %}
     <footer class="mt-auto p-3 border-top d-flex justify-content-center">
         <small class="text-muted">© 2025 JUMP Capital</small>
     </footer>
+    {% endblock %}
 
     <script src="{% static 'adolescentes/js/darkmode.js' %}"></script>
     <script src="{% static 'adolescentes/js/mask-data.js' %}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     
     <!-- Script para fechar menu mobile automaticamente -->
     <script>

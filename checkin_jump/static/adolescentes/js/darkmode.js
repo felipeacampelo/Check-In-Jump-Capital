@@ -1,21 +1,35 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const toggleButton = document.getElementById("dark-mode-toggle");
-    const body = document.body;
+document.addEventListener('DOMContentLoaded', function () {
+  const btn = document.getElementById('dark-mode-toggle');
+  const body = document.body;
+  if (!btn) return;
 
-    if (!toggleButton) {
-        console.warn("Botão de alternância de tema não encontrado!");
-        return;
+  // Ensure only an <i> icon is inside the button
+  const ensureIcon = (isDark) => {
+    // remove any text nodes/non-icon elements without nuking innerHTML repeatedly
+    const nodes = Array.from(btn.childNodes);
+    for (const n of nodes) {
+      if (n.nodeType === Node.TEXT_NODE) n.remove();
+      else if (n.nodeType === Node.ELEMENT_NODE && n.tagName.toLowerCase() !== 'i') n.remove();
     }
+    let icon = btn.querySelector('i');
+    if (!icon) {
+      icon = document.createElement('i');
+      btn.appendChild(icon);
+    }
+    icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+    btn.setAttribute('aria-label', isDark ? 'Alternar para modo claro' : 'Alternar para modo escuro');
+    btn.setAttribute('title', isDark ? 'Alternar tema (claro)' : 'Alternar tema (escuro)');
+  };
 
-    // Verifica o estado salvo e aplica o tema
-    const darkModeEnabled = localStorage.getItem("dark-mode") === "enabled";
-    body.classList.toggle("dark-mode", darkModeEnabled);
-    toggleButton.textContent = darkModeEnabled ? "☀️ Modo Claro" : "🌙 Modo Escuro";
+  // Load initial state
+  const darkModeEnabled = localStorage.getItem('dark-mode') === 'enabled';
+  body.classList.toggle('dark-mode', darkModeEnabled);
+  ensureIcon(darkModeEnabled);
 
-    // Alternar tema ao clicar no botão
-    toggleButton.addEventListener("click", function () {
-        const isDarkMode = body.classList.toggle("dark-mode");
-        localStorage.setItem("dark-mode", isDarkMode ? "enabled" : "disabled");
-        toggleButton.textContent = isDarkMode ? "☀️ Modo Claro" : "🌙 Modo Escuro";
-    });
+  // Toggle on click
+  btn.addEventListener('click', function () {
+    const isDarkMode = body.classList.toggle('dark-mode');
+    localStorage.setItem('dark-mode', isDarkMode ? 'enabled' : 'disabled');
+    ensureIcon(isDarkMode);
+  });
 });

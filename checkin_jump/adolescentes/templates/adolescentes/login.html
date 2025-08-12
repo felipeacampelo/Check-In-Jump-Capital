@@ -1,24 +1,149 @@
 {% extends 'adolescentes/base.html' %}
+{% load static %}
+
+{% block body_class %}d-flex flex-column min-vh-100{% endblock %}
 
 {% block content %}
-<h2>Login</h2>
+<style>
+  html, body { height: 100%; background: #0b1320; }
+  body { margin: 0; padding-top: 0 !important; }
+  .login-hero {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    color: #fff;
+  }
+  .login-hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+                url("{% static 'adolescentes/img/login-bg.jpg' %}") center/cover no-repeat;
+    filter: saturate(110%);
+    z-index: 0;
+  }
+  .login-grid { position: relative; z-index: 1; width: 100%; }
+  .welcome-panel {
+    position: relative;
+    color: #fff;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow: hidden;
+  }
+  /* Align the logo's left edge with the content start; keep a small minimum gutter */
+  .top-left-logo { position: absolute; top: -36px; left: max(16px, calc(50% - 340px)); }
+  .brand-logo-top { display: block; height: auto; width: auto; max-width: 240px; }
+  .welcome-panel h1 { font-weight: 800; letter-spacing: .3px; white-space: nowrap; }
+  /* Keep a common content width so the paragraph left edge matches the title block */
+  .welcome-content { width: min(92%, 680px); margin: 0 auto; }
+  .welcome-panel p { max-width: 100%; font-size: 1rem; opacity: .9; text-align: left; }
+  /* Mobile logo above card */
+  .mobile-logo-wrap { margin-bottom: .5rem; margin-top: -8px; }
+  .mobile-logo-img { display: inline-block; height: auto; width: auto; max-width: clamp(260px, 70vw, 420px); }
+  @media (max-width: 991.98px) { /* < lg */
+    .mobile-logo-wrap { position: fixed; top: 56px; left: 50%; transform: translateX(-50%); z-index: 2; margin: 0; }
+    .right-pane { padding-top: 60px !important; }
+  }
+  .welcome-badge { backdrop-filter: blur(6px); background: rgba(255,255,255,0.12); border-radius: 999px; padding: .25rem .75rem; display: inline-flex; align-items: center; gap: .5rem; }
+  .welcome-badge i { color: #ffd166; }
+  .login-card {
+    z-index: 1;
+    width: 100%;
+    max-width: 400px;
+    background: #ffffff;
+    border: none;
+    border-radius: 16px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.35);
+    overflow: hidden;
+  }
+  .login-card .card-header {
+    background: transparent;
+    border-bottom: none;
+    text-align: center;
+    padding: 1.5rem 1.5rem 0.5rem;
+  }
+  .brand-title {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #0d6efd;
+    letter-spacing: 0.3px;
+  }
+  /* Logos: preserve aspect ratio and prevent squashing */
+  .brand-logo { display: block; height: auto; width: auto; max-width: clamp(200px, 22vw, 380px); }
+  .brand-logo-lg { display: block; height: auto; width: auto; max-width: clamp(280px, 32vw, 600px); }
+  .login-card .card-body {
+    padding: 1.5rem;
+  }
+  .form-floating>.form-control { height: calc(3.5rem + 2px); }
+  .muted-links { font-size: .9rem; }
+  .muted-links a { text-decoration: none; }
+  .alert-login { border-radius: 10px; }
+  @media (min-width: 992px) {
+    .right-pane { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  }
+</style>
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-danger">{{ message }}</div>
-    {% endfor %}
-{% endif %}
+{# Esconde a navbar no login sobrescrevendo o bloco definido no base.html #}
+{% block navbar %}{% endblock %}
 
-<form method="post">
-    {% csrf_token %}
-    <div class="mb-3">
-        <label for="username" class="form-label">Usuário:</label>
-        <input type="text" name="username" class="form-control" required>
+<section class="login-hero">
+  <div class="login-grid container-fluid px-0">
+    <div class="row g-0">
+      <div class="col-lg-7 d-none d-lg-flex">
+        <div class="welcome-panel">
+          <div class="top-left-logo">
+            <img src="{% static 'adolescentes/img/logo-white.png' %}" alt="Logo" class="brand-logo-top" />
+          </div>
+          <div class="welcome-content">
+            <h1 class="display-5 mb-3 text-center">Bem-vindo ao Check-in Jump</h1>
+            <p>Gerencie adolescentes, presenças, veja relatórios e muito mais. Faça login para começar.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-5 right-pane p-4 p-lg-5">
+        <div class="d-lg-none text-center mobile-logo-wrap">
+          <img src="{% static 'adolescentes/img/logo-white.png' %}" alt="Logo" class="mobile-logo-img" />
+        </div>
+        <div class="mx-auto login-card card">
+          <div class="card-header">
+            <h2 class="h5 text-dark mt-2 mb-0">Acesse sua conta</h2>
+          </div>
+          <div class="card-body">
+            {% if messages %}
+              {% for message in messages %}
+                <div class="alert alert-danger alert-login mb-3" role="alert">{{ message }}</div>
+              {% endfor %}
+            {% endif %}
+            <form method="post" novalidate>
+              {% csrf_token %}
+              <div class="form-floating mb-3">
+                <input type="text" class="form-control" id="username" name="username" placeholder="Usuário" required>
+                <label for="username">Usuário</label>
+              </div>
+              <div class="form-floating mb-3">
+                <input type="password" class="form-control" id="password" name="password" placeholder="Senha" required>
+                <label for="password">Senha</label>
+              </div>
+              <button type="submit" class="btn btn-primary w-100 py-2">Entrar</button>
+            </form>
+            <div class="d-flex justify-content-between align-items-center mt-3 muted-links">
+              <span class="text-muted">Problemas para entrar?</span>
+              <a href="#" class="text-primary">Contatar o administrador</a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="mb-3">
-        <label for="password" class="form-label">Senha:</label>
-        <input type="password" name="password" class="form-control" required>
-    </div>
-    <button type="submit" class="btn btn-primary">Entrar</button>
-</form>
+  </div>
+</section>
+<div class="login-copy">&copy; JUMP Capital 2025</div>
 {% endblock %}
+
+{% block footer %}{% endblock %}
