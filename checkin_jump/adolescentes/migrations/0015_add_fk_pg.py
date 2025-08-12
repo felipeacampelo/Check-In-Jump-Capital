@@ -51,5 +51,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(sql=FORWARD_SQL, reverse_sql=REVERSE_SQL),
+        migrations.RunPython(
+            code=lambda apps, schema_editor: (
+                schema_editor.execute(FORWARD_SQL)
+                if schema_editor.connection.vendor == "postgresql"
+                else None
+            ),
+            reverse_code=lambda apps, schema_editor: (
+                schema_editor.execute(REVERSE_SQL)
+                if schema_editor.connection.vendor == "postgresql"
+                else None
+            ),
+        ),
     ]
