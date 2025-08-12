@@ -10,14 +10,33 @@
     <link rel="stylesheet" href="{% static 'adolescentes/css/style.css' %}" />
 
     <style>
-      /* Themed navbar (dark translucent with blur) */
-      .navbar.jump { 
-        background: rgba(11, 19, 32, 0.75);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border-bottom: 1px solid rgba(255,255,255,0.08);
+      /* Reset possible default spacing */
+      html, body { margin: 0; padding: 0; }
+      /* Reserve space for fixed navbar */
+      body { padding-top: 60px; }
+      /* Themed navbar (Glass style: dark translucent + stronger blur + gradient border) */
+      .navbar.jump {
+        background: rgba(11, 19, 32, 0.85) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
         padding-top: .10rem;
         padding-bottom: .10rem;
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 1030; /* above content */
+        margin: 0;
+        width: 100%;
+      }
+      /* Subtle elevation */
+      .navbar.jump { box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+      /* Gradient bottom border */
+      .navbar.jump::after {
+        content: "";
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.45), rgba(255,255,255,0));
+        pointer-events: none;
       }
       /* Brand area: fixed height and overflow hidden to crop the logo if needed */
       .navbar.jump .navbar-brand { color: #fff; padding-top: 0; padding-bottom: 0; height: 44px; overflow: hidden; display: flex; align-items: center; }
@@ -28,12 +47,22 @@
       }
       .navbar.jump .navbar-brand span { display: none !important; }
       .navbar.jump .navbar-brand:hover { color: #fff; text-decoration: none; }
-      .navbar.jump .nav-link { color: rgba(255,255,255,0.85); padding-top: .35rem; padding-bottom: .35rem; }
-      .navbar.jump .nav-link:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
-      .navbar.jump .nav-link.active { color: #0d6efd; position: relative; }
-      .navbar.jump .nav-link.active::after {
-        content: ""; position: absolute; left: 0; bottom: -6px; width: 100%; height: 2px; background: #0d6efd; border-radius: 2px;
+      .navbar.jump .nav-link { color: rgba(255,255,255,0.85); padding-top: .35rem; padding-bottom: .35rem; position: relative; transition: color .2s ease; }
+      .navbar.jump .nav-link:hover { color: #fff; }
+      /* Animated underline for hover/active */
+      .navbar.jump .nav-link::after {
+        content: "";
+        position: absolute;
+        left: 10%; right: 10%; bottom: -6px;
+        height: 2px; border-radius: 2px;
+        background: linear-gradient(90deg, rgba(13,110,253,0), #0d6efd, rgba(13,110,253,0));
+        transform: scaleX(0);
+        transform-origin: center;
+        transition: transform .25s ease;
       }
+      .navbar.jump .nav-link:hover::after,
+      .navbar.jump .nav-link.active::after { transform: scaleX(1); }
+      .navbar.jump .nav-link.active { color: #0d6efd; }
       .navbar.jump .navbar-toggler { padding: .2rem .4rem; }
       /* Force white hamburger icon and dark collapse background on mobile */
       .navbar.jump .navbar-toggler { border-color: rgba(255,255,255,0.25); color: #fff; }
@@ -41,9 +70,9 @@
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255,255,255, 0.9)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
       }
       .navbar.jump .navbar-collapse {
-        background: rgba(11, 19, 32, 0.92);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        background: rgba(11, 19, 32, 0.90);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
       }
       @media (min-width: 992px) {
         .navbar.jump .navbar-collapse { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
@@ -53,13 +82,15 @@
       .navbar.jump .btn.btn-secondary:hover { background: rgba(255,255,255,0.2); }
       .navbar.jump .btn.btn-danger { background: #dc3545; border: none; }
       .navbar.jump .btn.btn-primary { background: #0d6efd; border: none; }
+      /* Spacing between dark mode button and user area */
+      .navbar.jump .navbar-nav.align-items-center { gap: .5rem; }
       /* Icon-only dark mode button: hide any text nodes/elements other than the icon */
       #dark-mode-toggle { white-space: nowrap; }
       #dark-mode-toggle > :not(i) { display: none !important; }
     </style>
 </head>
 
-<body class="{% block body_class %}container d-flex flex-column min-vh-100{% endblock %}">
+<body class="{% block body_class %}d-flex flex-column min-vh-100{% endblock %}">
     {% block navbar %}
     <nav class="navbar navbar-expand-lg navbar-dark jump">
         <div class="container-fluid">
@@ -101,11 +132,11 @@
                 </ul>
 
                 <!-- Área do usuário -->
-                <div class="navbar-nav align-items-center">
-                    <!-- Botão modo escuro (apenas ícone) -->
-                    <button id="dark-mode-toggle" class="btn btn-secondary me-2 p-2" aria-label="Alternar modo escuro/claro" title="Alternar tema">
-                        <i class="fas fa-moon"></i>
-                    </button>
+                <div class="navbar-nav align-items-center" style="gap: 1rem;">
+                  <!-- Botão modo escuro (apenas ícone) -->
+                  <button id="dark-mode-toggle" class="btn btn-secondary me-3 p-2" aria-label="Alternar modo escuro/claro" title="Alternar tema">
+                    <i class="fas fa-moon"></i>
+                  </button>
                     
                     {% if user.is_authenticated %}
                         <span class="navbar-text me-3">
@@ -127,7 +158,7 @@
     <!-- <hr /> Removido para eliminar a linha -->
 
     <main class="flex-grow-1">
-        <div class="container-fluid p-0">
+        <div class="container">
             {% if messages %}
               <div class="mt-2">
                 {% for message in messages %}
@@ -147,8 +178,9 @@
                 {% endfor %}
               </div>
             {% endif %}
+
+            {% block content %}{% endblock %}
         </div>
-        {% block content %}{% endblock %}
     </main>
 
     {% block footer %}
