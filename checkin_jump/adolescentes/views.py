@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio, ContagemAuditorio, ContagemVisitantes
 from .forms import AdolescenteForm, DiaEventoForm, ContagemAuditorioForm, ContagemVisitantesForm
@@ -83,6 +83,7 @@ def listar_adolescentes(request):
     pg_id = request.GET.get('pg')
     genero = request.GET.get('genero')
     imperio_id = request.GET.get('imperio')
+    presenca_filtro = request.GET.get('presenca')
     
     # Parâmetros de ordenação
     ordenar_por = request.GET.get('ordenar_por', 'nome')  # Padrão: ordenar por nome
@@ -103,6 +104,24 @@ def listar_adolescentes(request):
             adolescentes = adolescentes.filter(imperio__isnull=True)
         else:
             adolescentes = adolescentes.filter(imperio__id=imperio_id)
+
+    # Filtro por presença
+    if presenca_filtro:
+        trinta_dias_atras = date.today() - timedelta(days=30)
+        if presenca_filtro == 'presente_30':
+            adolescentes = adolescentes.filter(
+                presenca__presente=True,
+                presenca__dia__data__gte=trinta_dias_atras,
+            ).distinct()
+        elif presenca_filtro == 'ausente_30':
+            # Não teve nenhuma presença (presente=True) nos últimos 30 dias
+            adolescentes = adolescentes.exclude(
+                presenca__presente=True,
+                presenca__dia__data__gte=trinta_dias_atras,
+            ).distinct()
+        elif presenca_filtro == 'nunca':
+            # Nunca compareceu (sem nenhum registro de presença)
+            adolescentes = adolescentes.filter(presenca__isnull=True).distinct()
 
     # Aplicar ordenação
     if ordenar_por == 'nome':
@@ -174,6 +193,7 @@ def listar_adolescentes(request):
         'pg_selecionado': pg_id,
         'genero_selecionado': genero,
         'imperio_selecionado': imperio_id,
+        'presenca_selecionada': presenca_filtro,
         'ordenar_por': ordenar_por,
         'direcao': direcao
     })

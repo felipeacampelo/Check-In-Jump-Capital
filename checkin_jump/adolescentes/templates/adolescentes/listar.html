@@ -5,7 +5,7 @@
 
 <!-- Total de cadastrados -->
 <p class="mt-2">
-  <strong>Total cadastrados:</strong>
+  <strong>Total:</strong>
   <span class="badge bg-primary">{{ total_adolescentes }}</span>
   {% if adolescentes.has_other_pages %}
     <span class="badge bg-info ms-2">
@@ -18,11 +18,31 @@
 <!-- Filtros e busca -->
 <div class="card shadow-sm rounded-3 mb-4">
   <div class="card-body">
+    <!-- Toggle filtros no mobile -->
+    <button class="btn btn-outline-secondary btn-sm d-lg-none mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="true" aria-controls="filtersCollapse">
+      <i class="fas fa-filter me-1"></i> Filtros
+    </button>
+
+    <div class="collapse show d-lg-block" id="filtersCollapse">
     <form method="get" id="filtroForm">
       <div class="row g-2 align-items-end">
         <div class="col-md-3">
           <label for="busca" class="form-label">Buscar por nome:</label>
-          <input type="text" name="busca" id="buscaInput" class="form-control" value="{{ request.GET.busca }}">
+          <div class="input-group">
+            <input type="text" name="busca" id="buscaInput" class="form-control" value="{{ request.GET.busca }}" placeholder="Buscar por nome">
+            <button class="btn btn-outline-secondary" type="button" id="clearBusca" title="Limpar busca">
+              <i class="fas fa-times"></i>
+              <span class="visually-hidden">Limpar busca</span>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <label for="genero" class="form-label">Gênero:</label>
+          <select name="genero" id="genero" class="form-select">
+            <option value="">Todos</option>
+            <option value="M" {% if request.GET.genero == "M" %}selected{% endif %}>Masculino</option>
+            <option value="F" {% if request.GET.genero == "F" %}selected{% endif %}>Feminino</option>
+          </select>
         </div>
         <div class="col-md-2">
           <label for="pg" class="form-label">PG:</label>
@@ -35,14 +55,6 @@
           </select>
         </div>
         <div class="col-md-2">
-          <label for="genero" class="form-label">Gênero:</label>
-          <select name="genero" id="genero" class="form-select">
-            <option value="">Todos</option>
-            <option value="M" {% if request.GET.genero == "M" %}selected{% endif %}>Masculino</option>
-            <option value="F" {% if request.GET.genero == "F" %}selected{% endif %}>Feminino</option>
-          </select>
-        </div>
-        <div class="col-md-3">
           <label for="imperio" class="form-label">Império:</label>
           <select name="imperio" id="imperio" class="form-select">
             <option value="">Todos</option>
@@ -53,17 +65,80 @@
           </select>
         </div>
         <div class="col-md-2">
-          <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+          <label for="presenca" class="form-label">Presença:</label>
+          <select name="presenca" id="presenca" class="form-select">
+            <option value="">Todas</option>
+            <option value="presente_30" {% if request.GET.presenca == "presente_30" %}selected{% endif %}>Presentes nos últimos 30 dias</option>
+            <option value="ausente_30" {% if request.GET.presenca == "ausente_30" %}selected{% endif %}>Ausentes nos últimos 30 dias</option>
+            <option value="nunca" {% if request.GET.presenca == "nunca" %}selected{% endif %}>Nunca compareceu</option>
+          </select>
+        </div>
+        <div class="col-md-1">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-search"></i>
+            <span class="visually-hidden">Filtrar</span>
+          </button>
         </div>
       </div>
+      
     </form>
+    </div>
+
+    <!-- Chips de filtros ativos -->
+    <div class="mt-2">
+      {% if request.GET.busca or request.GET.pg or request.GET.genero or request.GET.imperio or request.GET.presenca or request.GET.ordenar_por %}
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <span class="text-muted small me-1">Filtros ativos:</span>
+
+          {% if request.GET.busca %}
+            <a class="badge rounded-pill bg-primary text-decoration-none" href="?{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
+              Busca: {{ request.GET.busca }} <i class="fas fa-times ms-1"></i>
+            </a>
+          {% endif %}
+
+          {% if request.GET.pg %}
+            <a class="badge rounded-pill bg-secondary text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
+              PG: {% if request.GET.pg == 'sem_pg' %}Sem PG{% else %}{% for pg in pgs %}{% if request.GET.pg == pg.id|stringformat:"s" %}{{ pg.nome }}{% endif %}{% endfor %}{% endif %} <i class="fas fa-times ms-1"></i>
+            </a>
+          {% endif %}
+
+          {% if request.GET.genero %}
+            <a class="badge rounded-pill bg-info text-dark text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
+              Gênero: {{ request.GET.genero }} <i class="fas fa-times ms-1"></i>
+            </a>
+          {% endif %}
+
+          {% if request.GET.imperio %}
+            <a class="badge rounded-pill bg-warning text-dark text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
+              Império: {% if request.GET.imperio == 'sem_imperio' %}Sem Império{% else %}{% for imp in imperios %}{% if request.GET.imperio == imp.id|stringformat:"s" %}{{ imp.nome }}{% endif %}{% endfor %}{% endif %} <i class="fas fa-times ms-1"></i>
+            </a>
+          {% endif %}
+
+          {% if request.GET.presenca %}
+            <a class="badge rounded-pill bg-success text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
+              Presença:
+              {% if request.GET.presenca == 'presente_30' %}Presentes (30d){% elif request.GET.presenca == 'ausente_30' %}Ausentes (30d){% elif request.GET.presenca == 'nunca' %}Nunca compareceu{% else %}{{ request.GET.presenca }}{% endif %}
+              <i class="fas fa-times ms-1"></i>
+            </a>
+          {% endif %}
+
+          {% if request.GET.ordenar_por %}
+            <a class="badge rounded-pill bg-light text-dark border text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}">
+              Ordenação: {{ request.GET.ordenar_por }} {% if request.GET.direcao %}({{ request.GET.direcao }}){% endif %} <i class="fas fa-times ms-1"></i>
+            </a>
+            <a class="btn btn-link btn-sm text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}">Limpar ordenação</a>
+          {% endif %}
+          <a class="btn btn-link btn-sm text-decoration-none" href="{% url 'listar_adolescentes' %}">Limpar todos</a>
+        </div>
+      {% endif %}
+    </div>
   </div>
 </div>
 
 <!-- Botão adicionar adolescente -->
-<div class="text-start mt-3">
+  <div class="text-start mt-3">
     <a href="{% url 'criar_adolescente' %}" class="btn btn-primary">Adicionar Adolescente</a>
-    <a href="{% url 'exportar_adolescentes_csv' %}" class="btn btn-outline-secondary">Exportar CSV</a>
+    <a href="{% url 'exportar_adolescentes_csv' %}?{{ request.GET.urlencode }}" class="btn btn-outline-secondary">Exportar CSV</a>
   </div>
 
 <!-- Tabela Desktop (oculta em mobile) -->
@@ -72,7 +147,7 @@
     <thead>
       <tr>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Nome
             {% if ordenar_por == 'nome' %}
               {% if direcao == 'asc' %}
@@ -86,7 +161,7 @@
           </a>
         </th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=sobrenome&direcao={% if ordenar_por == 'sobrenome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=sobrenome&direcao={% if ordenar_por == 'sobrenome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Sobrenome
             {% if ordenar_por == 'sobrenome' %}
               {% if direcao == 'asc' %}
@@ -100,7 +175,7 @@
           </a>
         </th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=genero&direcao={% if ordenar_por == 'genero' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=genero&direcao={% if ordenar_por == 'genero' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Gênero
             {% if ordenar_por == 'genero' %}
               {% if direcao == 'asc' %}
@@ -114,7 +189,7 @@
           </a>
         </th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=data_nascimento&direcao={% if ordenar_por == 'data_nascimento' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=data_nascimento&direcao={% if ordenar_por == 'data_nascimento' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Data de Nascimento
             {% if ordenar_por == 'data_nascimento' %}
               {% if direcao == 'asc' %}
@@ -129,7 +204,7 @@
         </th>
         <th>Foto</th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=pg&direcao={% if ordenar_por == 'pg' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=pg&direcao={% if ordenar_por == 'pg' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             PG
             {% if ordenar_por == 'pg' %}
               {% if direcao == 'asc' %}
@@ -143,7 +218,7 @@
           </a>
         </th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=imperio&direcao={% if ordenar_por == 'imperio' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=imperio&direcao={% if ordenar_por == 'imperio' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Império
             {% if ordenar_por == 'imperio' %}
               {% if direcao == 'asc' %}
@@ -415,12 +490,20 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const buscaInput = document.getElementById("buscaInput");
+    const clearBtn = document.getElementById("clearBusca");
     buscaInput.addEventListener("input", function () {
       clearTimeout(buscaInput.dataset.timer);
       buscaInput.dataset.timer = setTimeout(() => {
         document.getElementById("filtroForm").submit();
       }, 500);
     });
+
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function () {
+        buscaInput.value = "";
+        document.getElementById("filtroForm").submit();
+      });
+    }
   });
 </script>
 
