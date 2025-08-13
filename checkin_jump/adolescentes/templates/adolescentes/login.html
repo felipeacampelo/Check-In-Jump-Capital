@@ -7,9 +7,17 @@
 <style>
   html, body { height: 100%; background: #0b1320; }
   body { margin: 0; padding-top: 0 !important; }
+  html, body { overflow-x: hidden; }
+  /* Make base container full-bleed on this page */
+  main > .container { max-width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; }
   .login-hero {
     position: relative;
     height: 100vh;
+    width: 100vw;                 /* full viewport width */
+    left: 50%;                    /* breakout from any parent container */
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
     display: flex;
     align-items: center;
     justify-content: center;
