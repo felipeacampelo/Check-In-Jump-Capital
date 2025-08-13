@@ -18,10 +18,19 @@
 <!-- Filtros e busca -->
 <div class="card shadow-sm rounded-3 mb-4">
   <div class="card-body">
-    <!-- Toggle filtros no mobile -->
-    <button class="btn btn-outline-secondary btn-sm d-lg-none mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="true" aria-controls="filtersCollapse">
-      <i class="fas fa-filter me-1"></i> Filtros
-    </button>
+    <!-- Header de filtros no mobile: título fixo + seta para mostrar/ocultar -->
+    <style>
+      /* Rotaciona a seta conforme o estado de expansão */
+      #filtersToggleBtnMobile i { transition: transform .2s ease; }
+      #filtersToggleBtnMobile[aria-expanded="true"] i { transform: rotate(180deg); }
+    </style>
+    <div class="d-lg-none mb-2 d-flex align-items-center justify-content-between">
+      <span class="text-muted fw-semibold"><i class="fas fa-filter me-1"></i> Filtros</span>
+      <button id="filtersToggleBtnMobile" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="true" aria-controls="filtersCollapse">
+        <i class="fas fa-chevron-up"></i>
+        <span class="visually-hidden">Mostrar/ocultar filtros</span>
+      </button>
+    </div>
 
     <div class="collapse show d-lg-block" id="filtersCollapse">
     <form method="get" id="filtroForm">

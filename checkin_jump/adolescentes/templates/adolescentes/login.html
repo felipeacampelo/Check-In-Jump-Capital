@@ -1,6 +1,10 @@
 {% extends 'adolescentes/base.html' %}
 {% load static %}
 
+{% block extra_head %}
+  <link rel="preload" as="image" href="{% static 'adolescentes/img/login-bg.jpg' %}">
+{% endblock %}
+
 {% block body_class %}d-flex flex-column min-vh-100{% endblock %}
 
 {% block content %}
