@@ -1,0 +1,49 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="container" style="max-width: 920px;">
+  <h1>{{ title }}</h1>
+  <p>Total: {{ queryset_count }}</p>
+
+  <div class="mb-3">
+    <button class="button" type="button" onclick="copiarTudo()">Copiar todos</button>
+  </div>
+
+  <table class="adminlist">
+    <thead>
+      <tr>
+        <th>Usuário</th>
+        <th>Nome</th>
+        <th>E-mail</th>
+        <th>Link</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.username }}</td>
+        <td>{{ item.full_name }}</td>
+        <td>{{ item.email }}</td>
+        <td><a href="{{ item.link }}" target="_blank">{{ item.link }}</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4">Nenhum usuário selecionado.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <textarea id="todos-links" style="width:100%; height: 160px; margin-top:16px;">{% for item in items %}{{ item.username }}, {{ item.email }}, {{ item.link }}
+{% endfor %}</textarea>
+</div>
+
+<script>
+function copiarTudo() {
+  const ta = document.getElementById('todos-links');
+  ta.select();
+  ta.setSelectionRange(0, 99999);
+  document.execCommand('copy');
+  alert('Todos os links foram copiados para a área de transferência.');
+}
+</script>
+{% endblock %}

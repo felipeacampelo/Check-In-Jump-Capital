@@ -25,9 +25,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-1n4oqnk-++enx-r7hy%e+7se7y5y28#0#1^htqgh)h#c5#@(j3')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'False'
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.150.106', '.onrender.com', '.railway.app', '.up.railway.app']
+
+# URL base do site para geração de links (ex.: https://seu-dominio.railway.app)
+SITE_URL = os.environ.get('SITE_URL')
+
+# Remetente padrão para envio de e-mails
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@example.com')
 
 
 # Application definition
@@ -121,6 +127,9 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Validade do token de redefinição de senha (24 horas)
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 86400 segundos
 
 
 # Internationalization

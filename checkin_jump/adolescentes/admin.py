@@ -1,13 +1,19 @@
 from django.contrib import admin
-
-from django.contrib import admin
+from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio
 
 from django import forms
 from django.contrib import messages
 from django.contrib.admin.helpers import ActionForm
 from django.http import HttpResponse
+from django.template.response import TemplateResponse
 import csv
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.urls import reverse
+from django.conf import settings
 
 
 class PresencaInline(admin.TabularInline):
@@ -138,3 +144,80 @@ class ImperioAdmin(admin.ModelAdmin):
 admin.site.site_header = "Check-in Jump — Admin"
 admin.site.site_title = "Check-in Jump"
 admin.site.index_title = "Painel de Administração"
+
+
+# --- User admin: gerar links de definição de senha ---
+def build_base_url(request):
+    # Prioriza SITE_URL nas settings, se configurado (ex.: https://seu-dominio.railway.app)
+    site_url = getattr(settings, 'SITE_URL', None)
+    if site_url:
+        return site_url.rstrip('/')
+    # Fallback: host do request atual
+    scheme = 'https' if request.is_secure() else 'http'
+    host = request.get_host()
+    return f"{scheme}://{host}"
+
+
+@admin.action(description="Gerar links de definir senha (CSV)")
+def gerar_links_definir_senha(modeladmin, request, queryset):
+    """Gera um CSV com: username, email, link de definição de senha.
+    O link usa a rota 'password_reset_confirm' com uidb64 e token padrão do Django.
+    """
+    base_url = build_base_url(request)
+
+    rows = [("username", "email", "definir_senha_link")]
+    for user in queryset:
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        path = reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+        link = f"{base_url}{path}"
+        rows.append((user.username, user.email or "", link))
+
+    response = HttpResponse(content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="links_definir_senha.csv"'
+    writer = csv.writer(response)
+    writer.writerows(rows)
+    return response
+
+
+class UserAdmin(DjangoUserAdmin):
+    actions = [gerar_links_definir_senha]
+
+
+@admin.action(description="Mostrar links de definir senha na tela")
+def mostrar_links_na_tela(modeladmin, request, queryset):
+    base_url = build_base_url(request)
+    items = []
+    for user in queryset:
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        path = reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})
+        link = f"{base_url}{path}"
+        items.append({
+            'username': user.username,
+            'email': user.email or "",
+            'link': link,
+            'full_name': user.get_full_name() or user.username,
+        })
+
+    context = {
+        **modeladmin.admin_site.each_context(request),
+        'title': 'Links para definir senha',
+        'items': items,
+        'queryset_count': queryset.count(),
+    }
+    return TemplateResponse(request, 'admin/definir_senha_links.html', context)
+
+
+ 
+
+
+# Substitui o admin padrão do User para incluir a action
+try:
+    admin.site.unregister(User)
+except admin.sites.NotRegistered:
+    pass
+admin.site.register(User, UserAdmin)
+UserAdmin.actions = list(UserAdmin.actions) + [mostrar_links_na_tela]
+
+ 
