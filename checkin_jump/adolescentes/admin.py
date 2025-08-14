@@ -1,6 +1,6 @@
 from django.contrib import admin
-from django.contrib.auth.models import User
-from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin, GroupAdmin as DjangoGroupAdmin
 from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio
 
 from django import forms
@@ -181,7 +181,78 @@ def gerar_links_definir_senha(modeladmin, request, queryset):
 
 
 class UserAdmin(DjangoUserAdmin):
+    # Facilita ações em massa e visualização
     actions = [gerar_links_definir_senha]
+    list_filter = DjangoUserAdmin.list_filter + ('groups',)
+    search_fields = DjangoUserAdmin.search_fields + ('groups__name',)
+    # Garante UI amigável para grupos/permissões
+    filter_horizontal = ('groups', 'user_permissions')
+
+
+class AtribuirGrupoActionForm(ActionForm):
+    grupo = forms.ModelChoiceField(
+        queryset=Group.objects.all(), required=False, label="Selecione um grupo"
+    )
+
+
+# Adiciona ações em massa para vincular/desvincular usuários de um grupo
+UserAdmin.action_form = AtribuirGrupoActionForm
+
+@admin.action(description="Adicionar usuários selecionados ao grupo informado")
+def adicionar_ao_grupo(modeladmin, request, queryset):
+    grupo = request.POST.get('grupo')
+    if not grupo:
+        modeladmin.message_user(request, "Nenhum grupo selecionado no formulário de ações.", level=messages.WARNING)
+        return
+    try:
+        g = Group.objects.get(pk=grupo)
+    except Group.DoesNotExist:
+        modeladmin.message_user(request, "Grupo inválido.", level=messages.ERROR)
+        return
+    count = 0
+    for user in queryset:
+        user.groups.add(g)
+        count += 1
+    modeladmin.message_user(request, f"{count} usuário(s) adicionados ao grupo '{g.name}'.")
+
+
+@admin.action(description="Remover usuários selecionados do grupo informado")
+def remover_do_grupo(modeladmin, request, queryset):
+    grupo = request.POST.get('grupo')
+    if not grupo:
+        modeladmin.message_user(request, "Nenhum grupo selecionado no formulário de ações.", level=messages.WARNING)
+        return
+    try:
+        g = Group.objects.get(pk=grupo)
+    except Group.DoesNotExist:
+        modeladmin.message_user(request, "Grupo inválido.", level=messages.ERROR)
+        return
+    count = 0
+    for user in queryset:
+        user.groups.remove(g)
+        count += 1
+    modeladmin.message_user(request, f"{count} usuário(s) removidos do grupo '{g.name}'.")
+
+
+# Anexa as novas ações ao UserAdmin existente
+UserAdmin.actions = list(UserAdmin.actions) + [adicionar_ao_grupo, remover_do_grupo]
+
+
+# --- Group admin: gerenciar membros diretamente ---
+class UserGroupInline(admin.TabularInline):
+    model = User.groups.through  # Tabela M2M
+    extra = 1
+    verbose_name = "Membro"
+    verbose_name_plural = "Membros do grupo"
+    autocomplete_fields = ['user']
+    # Evita editar o próprio campo group (fixado pela página do Group)
+    can_delete = True
+
+
+class CustomGroupAdmin(DjangoGroupAdmin):
+    inlines = [UserGroupInline]
+    search_fields = ('name', 'user__username', 'user__first_name', 'user__last_name')
+    filter_horizontal = ('permissions',)
 
 
 @admin.action(description="Mostrar links de definir senha na tela")
@@ -220,4 +291,10 @@ except admin.sites.NotRegistered:
 admin.site.register(User, UserAdmin)
 UserAdmin.actions = list(UserAdmin.actions) + [mostrar_links_na_tela]
 
- 
+# Substitui o Group admin para incluir os membros inline
+try:
+    admin.site.unregister(Group)
+except admin.sites.NotRegistered:
+    pass
+admin.site.register(Group, CustomGroupAdmin)
+
