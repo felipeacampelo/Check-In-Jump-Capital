@@ -195,6 +195,14 @@
                           {% endif %}
                         {% endwith %}
                         <li><hr class="dropdown-divider"></li>
+                        {% if user.is_staff or user.is_superuser %}
+                        <li>
+                          <a class="dropdown-item" href="{% url 'admin:index' %}">
+                            <i class="fas fa-toolbox me-2"></i>Admin
+                          </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
                         <li>
                           <a class="dropdown-item" href="{% url 'logout' %}">
                             <i class="fas fa-sign-out-alt me-2"></i>Sair
