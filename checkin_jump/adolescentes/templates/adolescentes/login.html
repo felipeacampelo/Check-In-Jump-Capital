@@ -101,6 +101,9 @@
     .right-pane { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
   }
   .login-copy { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); color: #ffffff; opacity: .85; font-size: .9rem; z-index: 2; }
+  /* Ensure modal appears above hero/backdrop stacking contexts */
+  .modal { z-index: 2000; }
+  .modal-backdrop { z-index: 1990; }
 </style>
 
 {# Esconde a navbar no login sobrescrevendo o bloco definido no base.html #}
@@ -114,6 +117,7 @@
           <div class="top-left-logo">
             <img src="{% static 'adolescentes/img/logo-white.png' %}" alt="Logo" class="brand-logo-top" />
           </div>
+
           <div class="welcome-content">
             <h1 class="display-5 mb-3 text-center">Bem-vindo ao Check-in Jump</h1>
             <p>Gerencie adolescentes, presenças, veja relatórios e muito mais. Faça login para começar.</p>
@@ -148,7 +152,7 @@
             </form>
             <div class="d-flex justify-content-between align-items-center mt-3 muted-links">
               <span class="text-muted">Problemas para entrar?</span>
-              <a href="#" class="text-primary">Contatar o administrador</a>
+              <a id="whatsBtn" href="#" class="text-primary" data-bs-toggle="modal" data-bs-target="#whatsModal">Contatar o administrador</a>
             </div>
           </div>
         </div>
@@ -157,6 +161,118 @@
   </div>
 </section>
 <div class="login-copy">© 2025 JUMP Capital</div>
+{# Modal global para WhatsApp - dentro do bloco content, mas fora do hero, para evitar problemas de stacking #}
+<div class="modal fade" id="whatsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title">Informar usuário</h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <label for="whatsUsername" class="form-label small text-muted">Seu usuário</label>
+        <input type="text" id="whatsUsername" class="form-control" placeholder="Digite seu usuário">
+      </div>
+      <div class="modal-footer py-2">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" id="whatsConfirm" class="btn btn-success btn-sm">Enviar no WhatsApp</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    const btn = document.getElementById('whatsBtn');
+    const modalEl = document.getElementById('whatsModal');
+    const inputEl = document.getElementById('whatsUsername');
+    const confirmBtn = document.getElementById('whatsConfirm');
+    const closeBtn = modalEl ? modalEl.querySelector('[data-bs-dismiss="modal"]') : null;
+    if (!btn || !modalEl || !inputEl || !confirmBtn) return;
+    const phone = '5561995030469';
+
+    function getPreFill(){
+      const uInput = document.querySelector('input[name="username"], #username');
+      return (uInput && uInput.value ? uInput.value.trim() : '') || '';
+    }
+    function buildUrl(u){
+      const user = (u && u.trim()) ? u.trim() : '(não informado)';
+      const msg = `Olá, preciso de um link para redefinir minha senha. Meu usuário: ${user}.`;
+      return `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+    }
+
+    // Bootstrap path
+    function bootstrapShow(){
+      const inst = bootstrap.Modal.getOrCreateInstance(modalEl);
+      inputEl.value = getPreFill();
+      inst.show();
+      setTimeout(()=> inputEl.focus(), 120);
+    }
+    function bootstrapHide(){
+      const inst = bootstrap.Modal.getInstance(modalEl);
+      if (inst) inst.hide();
+    }
+
+    // Fallback (sem Bootstrap JS)
+    let fbBackdrop = null;
+    function fallbackShow(){
+      inputEl.value = getPreFill();
+      modalEl.style.display = 'block';
+      modalEl.removeAttribute('aria-hidden');
+      modalEl.classList.add('show');
+      document.body.classList.add('modal-open');
+      fbBackdrop = document.createElement('div');
+      fbBackdrop.className = 'modal-backdrop fade show';
+      fbBackdrop.style.zIndex = 1990;
+      document.body.appendChild(fbBackdrop);
+      setTimeout(()=> inputEl.focus(), 120);
+    }
+    function fallbackHide(){
+      modalEl.classList.remove('show');
+      modalEl.setAttribute('aria-hidden','true');
+      modalEl.style.display = 'none';
+      document.body.classList.remove('modal-open');
+      if (fbBackdrop && fbBackdrop.parentNode) fbBackdrop.parentNode.removeChild(fbBackdrop);
+      fbBackdrop = null;
+    }
+
+    // Open modal
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      if (window.bootstrap && bootstrap.Modal) {
+        bootstrapShow();
+      } else {
+        fallbackShow();
+      }
+    });
+
+    // Prefill with Bootstrap event too (no-op in fallback)
+    modalEl.addEventListener('show.bs.modal', function(){
+      inputEl.value = getPreFill();
+      setTimeout(()=> inputEl.focus(), 120);
+    });
+
+    // Confirm -> open WhatsApp and close modal
+    confirmBtn.addEventListener('click', function(){
+      const url = buildUrl(inputEl.value);
+      window.open(url, '_blank', 'noopener');
+      if (window.bootstrap && bootstrap.Modal) bootstrapHide(); else fallbackHide();
+    });
+
+    // Close button in fallback
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function(){
+        if (!(window.bootstrap && bootstrap.Modal)) fallbackHide();
+      });
+    }
+
+    // Enter submits
+    inputEl.addEventListener('keydown', function(ev){
+      if (ev.key === 'Enter') { ev.preventDefault(); confirmBtn.click(); }
+    });
+  })();
+</script>
+
 {% endblock %}
 
 {% block footer %}{% endblock %}
