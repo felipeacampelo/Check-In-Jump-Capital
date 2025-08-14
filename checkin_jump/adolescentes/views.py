@@ -317,8 +317,14 @@ def checkin_dia(request, dia_id):
     if busca:
         adolescentes = buscar_adolescentes_por_nome(adolescentes, busca)
 
-    # Ordena: primeiro os presentes
-    adolescentes = sorted(adolescentes, key=lambda x: x.id not in presentes_ids)
+    # Ordenação solicitada:
+    # 1) pela quantidade total de presenças (desc)
+    # 2) desempate por ordem alfabética (nome, sobrenome)
+    adolescentes = (
+        adolescentes
+        .annotate(total_presencas=Count('presenca', filter=Q(presenca__presente=True)))
+        .order_by('-total_presencas', 'nome', 'sobrenome')
+    )
 
     # Paginação
     paginator = Paginator(adolescentes, 20)  # 20 adolescentes por página
