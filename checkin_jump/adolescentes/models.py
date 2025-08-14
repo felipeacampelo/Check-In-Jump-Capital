@@ -31,6 +31,7 @@ class Adolescente(models.Model):
     class Meta:
         permissions = [
             ("view_dashboard", "Pode visualizar o dashboard"),
+            ("view_pgs_page", "Pode ver página de PGs"),
         ]
 
     def __str__(self):

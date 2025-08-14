@@ -274,11 +274,12 @@ def lista_dias_evento(request):
     return render(request, 'checkin/lista_dias.html', {
         'dias': dias,
         'media_presentes': media_presentes,
+        'pode_adicionar_dia': request.user.has_perm('adolescentes.add_diaevento'),
     })
 
 
 @login_required
-@permission_required('checkin.add_diaevento', raise_exception=True)
+@permission_required('adolescentes.add_diaevento', raise_exception=True)
 def adicionar_dia_evento(request):
     if request.method == 'POST':
         form = DiaEventoForm(request.POST)
@@ -332,6 +333,10 @@ def checkin_dia(request, dia_id):
     if request.method == 'POST':
         # Se for o modal de contagem de auditório
         if request.POST.get('contagem_auditorio'):
+            # Verifica permissão de adicionar contagem de auditório
+            if not request.user.has_perm('adolescentes.add_contagemauditorio'):
+                messages.error(request, 'Você não tem permissão para registrar contagem de auditório.')
+                return redirect('checkin_dia', dia_id=dia.id)
             quantidade = request.POST.get('quantidade_pessoas')
             try:
                 quantidade = int(quantidade)
@@ -356,6 +361,10 @@ def checkin_dia(request, dia_id):
         
         # Se for o modal de contagem de visitantes
         if request.POST.get('contagem_visitantes'):
+            # Verifica permissão de adicionar contagem de visitantes
+            if not request.user.has_perm('adolescentes.add_contagemvisitantes'):
+                messages.error(request, 'Você não tem permissão para registrar visitantes.')
+                return redirect('checkin_dia', dia_id=dia.id)
             quantidade_v = request.POST.get('quantidade_visitantes')
             try:
                 quantidade_v = int(quantidade_v)
@@ -454,15 +463,17 @@ def adicionar_pg(request):
 
     return render(request, 'pgs/adicionar_pg.html')
 
+@permission_required('adolescentes.view_pgs_page', raise_exception=True)
 @login_required
 def lista_pgs(request):
     pgs = PequenoGrupo.objects.all()
     return render(request, 'pgs/lista_pgs.html', {'pgs': pgs})
 
+@permission_required('adolescentes.view_pgs_page', raise_exception=True)
 @login_required
 def detalhes_pg(request, pg_id):
     pg = get_object_or_404(PequenoGrupo, id=pg_id)
-    adolescentes = Adolescente.objects.filter(pg=pg)
+    adolescentes = Adolescente.objects.filter(pg=pg).order_by('nome', 'sobrenome')
     return render(request, 'pgs/pg.html', {'pg': pg, 'adolescentes': adolescentes})
 
 
@@ -721,6 +732,7 @@ def dashboard(request):
     
     return render(request, 'adolescentes/dashboard.html', context)
 
+@permission_required('adolescentes.add_contagemauditorio', raise_exception=True)
 @login_required
 def contagem_auditorio(request):
     """Gerencia contagens de auditório - adicionar, editar ou visualizar"""

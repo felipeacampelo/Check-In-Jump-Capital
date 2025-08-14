@@ -3,13 +3,13 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h2>Dias de Evento</h2>
-    {% if perms.checkin.add_diaevento %}
+    {% if perms.adolescentes.add_diaevento %}
     {% endif %}
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>
-    {% if perms.checkin.add_diaevento %}
+    {% if perms.adolescentes.add_diaevento %}
       <a href="{% url 'novo_dia_evento' %}" class="btn btn-primary me-2">Adicionar Dia</a>
     {% endif %}
     <a href="{% url 'selecionar_dia_exportar' %}" class="btn btn-outline-secondary">
