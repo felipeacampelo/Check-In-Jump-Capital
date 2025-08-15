@@ -1,6 +1,6 @@
 from datetime import date, datetime, timedelta
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio, ContagemAuditorio, ContagemVisitantes
+from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio, ContagemAuditorio, ContagemVisitantes, DuplicadoRejeitado
 from .forms import AdolescenteForm, DiaEventoForm, ContagemAuditorioForm, ContagemVisitantesForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -17,6 +17,12 @@ from django.http import HttpResponse
 import json
 from django.urls import reverse
 from urllib.parse import urlencode
+from django.db import transaction, connection
+try:
+    # Disponível quando usando PostgreSQL e habilitando django.contrib.postgres
+    from django.contrib.postgres.search import TrigramSimilarity
+except Exception:  # pragma: no cover
+    TrigramSimilarity = None
 
 def buscar_adolescentes_por_nome(queryset, termo_busca):
     """
@@ -197,6 +203,213 @@ def listar_adolescentes(request):
         'ordenar_por': ordenar_por,
         'direcao': direcao
     })
+
+
+@login_required
+@permission_required('adolescentes.review_duplicates', raise_exception=True)
+@require_http_methods(["GET"])
+def sugestoes_duplicados(request):
+    """
+    Retorna pares candidatos a duplicados com mesma data_nascimento e alta similaridade de nome completo.
+    Usa função similarity do pg_trgm via SQL bruto para desempenho.
+    """
+    threshold = float(request.GET.get('threshold', '0.75'))
+    limit = int(request.GET.get('limit', '50'))
+
+    # Estratégias combinadas:
+    # 1) Mesma data de nascimento + similaridade >= threshold (pg_trgm)
+    # 2) Nome e sobrenome exatamente iguais e data de nascimento diferente (incluir mesmo se similarity < threshold)
+    #    - Para (2), o score é reduzido (ex.: 0.70) e marcamos datas_diferentes=true para a UI exibir aviso.
+    sql = """
+        (
+          SELECT a.id AS id_a, b.id AS id_b,
+                 a.nome || ' ' || a.sobrenome AS nome_a,
+                 b.nome || ' ' || b.sobrenome AS nome_b,
+                 a.data_nascimento AS data_nasc_a,
+                 b.data_nascimento AS data_nasc_b,
+                 similarity(a.nome || ' ' || a.sobrenome, b.nome || ' ' || b.sobrenome) AS score,
+                 FALSE AS datas_diferentes,
+                 (a.pg_id IS NOT NULL) AS a_has_pg,
+                 (a.imperio_id IS NOT NULL) AS a_has_imp,
+                 (b.pg_id IS NOT NULL) AS b_has_pg,
+                 (b.imperio_id IS NOT NULL) AS b_has_imp,
+                 CASE
+                   WHEN a.pg_id IS NOT NULL AND b.pg_id IS NULL THEN a.id
+                   WHEN b.pg_id IS NOT NULL AND a.pg_id IS NULL THEN b.id
+                   WHEN a.imperio_id IS NOT NULL AND b.imperio_id IS NULL THEN a.id
+                   WHEN b.imperio_id IS NOT NULL AND a.imperio_id IS NULL THEN b.id
+                   ELSE NULL
+                 END AS recommended_winner
+          FROM adolescentes_adolescente a
+          JOIN adolescentes_adolescente b
+            ON a.id < b.id
+           AND a.data_nascimento = b.data_nascimento
+          LEFT JOIN adolescentes_duplicadorejeitado r
+            ON r.adolescente_a_id = a.id AND r.adolescente_b_id = b.id
+          WHERE similarity(a.nome || ' ' || a.sobrenome, b.nome || ' ' || b.sobrenome) >= %s
+            AND r.id IS NULL
+        )
+        UNION ALL
+        (
+          SELECT a.id AS id_a, b.id AS id_b,
+                 a.nome || ' ' || a.sobrenome AS nome_a,
+                 b.nome || ' ' || b.sobrenome AS nome_b,
+                 a.data_nascimento AS data_nasc_a,
+                 b.data_nascimento AS data_nasc_b,
+                 0.70 AS score,
+                 TRUE AS datas_diferentes,
+                 (a.pg_id IS NOT NULL) AS a_has_pg,
+                 (a.imperio_id IS NOT NULL) AS a_has_imp,
+                 (b.pg_id IS NOT NULL) AS b_has_pg,
+                 (b.imperio_id IS NOT NULL) AS b_has_imp,
+                 CASE
+                   WHEN a.pg_id IS NOT NULL AND b.pg_id IS NULL THEN a.id
+                   WHEN b.pg_id IS NOT NULL AND a.pg_id IS NULL THEN b.id
+                   WHEN a.imperio_id IS NOT NULL AND b.imperio_id IS NULL THEN a.id
+                   WHEN b.imperio_id IS NOT NULL AND a.imperio_id IS NULL THEN b.id
+                   ELSE NULL
+                 END AS recommended_winner
+          FROM adolescentes_adolescente a
+          JOIN adolescentes_adolescente b
+            ON a.id < b.id
+           AND a.nome = b.nome
+           AND a.sobrenome = b.sobrenome
+           AND a.data_nascimento IS DISTINCT FROM b.data_nascimento
+          LEFT JOIN adolescentes_duplicadorejeitado r
+            ON r.adolescente_a_id = a.id AND r.adolescente_b_id = b.id
+          WHERE r.id IS NULL
+        )
+        ORDER BY score DESC
+        LIMIT %s
+    """
+    try:
+        with connection.cursor() as cur:
+            cur.execute(sql, [threshold, limit])
+            rows = cur.fetchall()
+    except Exception as e:
+        return JsonResponse({
+            'ok': False,
+            'error': str(e),
+            'hint': 'Certifique-se de que a extensão pg_trgm está habilitada.'
+        }, status=500)
+
+    results = []
+    for r in rows:
+        (
+            id_a, id_b, nome_a, nome_b,
+            dna, dnb, score, datas_dif,
+            a_has_pg, a_has_imp, b_has_pg, b_has_imp,
+            recommended_winner
+        ) = r
+        results.append({
+            'id_a': id_a,
+            'id_b': id_b,
+            'nome_a': nome_a,
+            'nome_b': nome_b,
+            'data_nascimento_a': dna.strftime('%Y-%m-%d') if dna else None,
+            'data_nascimento_b': dnb.strftime('%Y-%m-%d') if dnb else None,
+            'score': float(score),
+            'datas_diferentes': bool(datas_dif),
+            'a_has_pg': bool(a_has_pg),
+            'a_has_imp': bool(a_has_imp),
+            'b_has_pg': bool(b_has_pg),
+            'b_has_imp': bool(b_has_imp),
+            'recommended_winner': int(recommended_winner) if recommended_winner is not None else None,
+        })
+    return JsonResponse({'ok': True, 'results': results})
+
+
+@login_required
+@permission_required('adolescentes.review_duplicates', raise_exception=True)
+@require_http_methods(["POST"])
+def merge_duplicados(request):
+    """
+    Mescla dois perfis: winner_id mantém, loser_id é fundido e removido.
+    - Reatribui Presenças para o vencedor (evita duplicar por mesmo dia).
+    - Copia foto se vencedor não tiver.
+    """
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        payload = request.POST
+    winner_id = int(payload.get('winner_id'))
+    loser_id = int(payload.get('loser_id'))
+    dry_run = str(payload.get('dry_run', 'false')).lower() == 'true'
+    allow_diff_dob = str(payload.get('allow_diff_dob', 'false')).lower() == 'true'
+
+    if winner_id == loser_id:
+        return JsonResponse({'ok': False, 'error': 'IDs iguais'}, status=400)
+
+    winner = get_object_or_404(Adolescente, id=winner_id)
+    loser = get_object_or_404(Adolescente, id=loser_id)
+
+    # Proteção básica: bloquear datas diferentes salvo confirmação explícita
+    if winner.data_nascimento != loser.data_nascimento and not allow_diff_dob:
+        return JsonResponse({'ok': False, 'error': 'Datas de nascimento diferentes. Confirme para prosseguir.'}, status=400)
+
+    changes = {'presencas_movidas': 0, 'foto_copiada': False}
+
+    if dry_run:
+        return JsonResponse({'ok': True, 'dry_run': True, 'changes': changes})
+
+    with transaction.atomic():
+        # Reatribuir presenças do perdedor para o vencedor, evitando duplicar por mesmo dia
+        loser_presencas = Presenca.objects.filter(adolescente=loser)
+        for p in loser_presencas.select_related('dia'):
+            exists = Presenca.objects.filter(adolescente=winner, dia=p.dia, presente=p.presente).exists()
+            if not exists:
+                p.adolescente = winner
+                p.save(update_fields=['adolescente'])
+                changes['presencas_movidas'] += 1
+            else:
+                p.delete()
+
+        # Foto: se winner não tem e loser tem, copiar
+        if not winner.foto and loser.foto:
+            winner.foto = loser.foto
+            winner.save(update_fields=['foto'])
+            changes['foto_copiada'] = True
+
+        # Finalmente apagar perdedor
+        loser.delete()
+
+    return JsonResponse({'ok': True, 'changes': changes})
+
+
+@login_required
+@permission_required('adolescentes.review_duplicates', raise_exception=True)
+@require_http_methods(["POST"])
+def rejeitar_duplicado(request):
+    """Persiste a rejeição de um par para não sugerir novamente."""
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        payload = request.POST
+    try:
+        id_a = int(payload.get('id_a'))
+        id_b = int(payload.get('id_b'))
+    except Exception:
+        return JsonResponse({'ok': False, 'error': 'Par inválido'}, status=400)
+
+    if id_a == id_b:
+        return JsonResponse({'ok': False, 'error': 'IDs iguais'}, status=400)
+
+    # garantir ordem
+    a_id, b_id = (id_a, id_b) if id_a < id_b else (id_b, id_a)
+    a = get_object_or_404(Adolescente, id=a_id)
+    b = get_object_or_404(Adolescente, id=b_id)
+    motivo = payload.get('motivo') or ''
+    obj, created = DuplicadoRejeitado.objects.get_or_create(
+        adolescente_a=a, adolescente_b=b,
+        defaults={'criado_por': request.user, 'motivo': motivo}
+    )
+    if not created:
+        # atualizar quem rejeitou/motivo mais recente
+        obj.criado_por = request.user
+        if motivo:
+            obj.motivo = motivo
+        obj.save(update_fields=['criado_por', 'motivo'])
+    return JsonResponse({'ok': True, 'rejeitado': True})
 
 @login_required
 def pagina_checkin(request):

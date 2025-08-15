@@ -109,6 +109,194 @@
         }
       })();
     </script>
+
+{% if perms.adolescentes.review_duplicates %}
+<!-- Modal: Revisar Duplicados -->
+<div class="modal fade" id="modalDuplicados" tabindex="-1" aria-labelledby="modalDuplicadosLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalDuplicadosLabel">Possíveis Duplicados</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+          <div class="text-muted small">Exibindo pares por similaridade de nome com mesma data de nascimento</div>
+          <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+            <label class="form-label me-1 mb-0 small">Limiar</label>
+            <input type="number" id="dupThreshold" class="form-control form-control-sm" style="width: 90px;" step="0.01" min="0" max="1" value="0.75">
+            <button type="button" id="dupApplyBtn" class="btn btn-sm btn-primary">Aplicar</button>
+          </div>
+        </div>
+        <div id="duplicadosContainer" class="list-group small"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const modalEl = document.getElementById('modalDuplicados');
+  if (!modalEl) return;
+  // Move modal to body to avoid ancestor transforms affecting fixed positioning
+  if (modalEl.parentElement !== document.body) {
+    document.body.appendChild(modalEl);
+  }
+  modalEl.addEventListener('shown.bs.modal', async function(){
+    await carregarDuplicados();
+  });
+
+  // Apply button and Enter key on threshold
+  const applyBtn = document.getElementById('dupApplyBtn');
+  const thresholdInput = document.getElementById('dupThreshold');
+  if (applyBtn) {
+    applyBtn.addEventListener('click', function(){
+      carregarDuplicados();
+    });
+  }
+  if (thresholdInput) {
+    thresholdInput.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (applyBtn) applyBtn.click(); else carregarDuplicados();
+      }
+    });
+  }
+
+  // Delegated click handler (attach once)
+  const container = document.getElementById('duplicadosContainer');
+  let handlerAttached = false;
+  function attachHandlerOnce(){
+    if(handlerAttached || !container) return;
+    container.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      const action = btn.getAttribute('data-action');
+      const parent = btn.closest('.list-group-item');
+      if(action === 'merge'){
+        const winner = btn.getAttribute('data-winner');
+        const loser = btn.getAttribute('data-loser');
+        const winnerName = btn.getAttribute('data-winner-name') || 'perfil vencedor';
+        const loserName = btn.getAttribute('data-loser-name') || 'perfil perdedor';
+        const parentRow = btn.closest('.list-group-item');
+        const hasDifferentDob = parentRow && parentRow.querySelector('.badge.bg-warning');
+        const msg = hasDifferentDob
+          ? `ATENÇÃO: Datas de nascimento diferentes.\n\nConfirmar: mesclar \"${loserName}\" em \"${winnerName}\"?\n\nO perfil de \"${winnerName}\" será mantido.\nO perfil de \"${loserName}\" será removido.\n\nEsta ação é irreversível.`
+          : `Confirmar: mesclar \"${loserName}\" em \"${winnerName}\"?\n\nO perfil de \"${winnerName}\" será mantido.\nO perfil de \"${loserName}\" será removido.\n\nEsta ação é irreversível.`;
+        if(!confirm(msg)) return;
+        btn.disabled = true;
+        try{
+          const r = await fetch('{% url "merge_duplicados" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+            body: JSON.stringify({ winner_id: winner, loser_id: loser, allow_diff_dob: Boolean(hasDifferentDob) })
+          });
+          const jd = await r.json();
+          if(!jd.ok){ throw new Error(jd.error || 'Falha ao mesclar'); }
+          parent.classList.add('list-group-item-success');
+          parent.innerHTML += '<div class="small text-success mt-1">Mesclado com sucesso</div>';
+        }catch(err){
+          alert(err.message);
+        }finally{
+          btn.disabled = false;
+        }
+      } else if(action === 'rejeitar'){
+        try{
+          const r = await fetch('{% url "rejeitar_duplicado" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+            body: JSON.stringify({ id_a: parent.dataset.idA, id_b: parent.dataset.idB })
+          });
+          const jd = await r.json();
+          if(!jd.ok){ throw new Error(jd.error || 'Falha ao rejeitar'); }
+          parent.remove();
+        }catch(err){
+          alert(err.message);
+        }
+      }
+    });
+    handlerAttached = true;
+  }
+  attachHandlerOnce();
+
+  async function carregarDuplicados(){
+    if(!container) return;
+    const threshold = document.getElementById('dupThreshold').value || 0.75;
+    container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" role="status"></div> Carregando...</div>';
+    try{
+      const resp = await fetch('{% url "sugestoes_duplicados" %}?threshold=' + encodeURIComponent(threshold));
+      const data = await resp.json();
+      if(!data.ok){ throw new Error(data.error || 'Erro ao buscar sugestões'); }
+      if(!data.results.length){
+        container.innerHTML = '<div class="alert alert-success">Nenhum possível duplicado encontrado com o limiar atual.</div>';
+        return;
+      }
+      // Build content using a DocumentFragment to reduce reflow
+      const frag = document.createDocumentFragment();
+      data.results.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'list-group-item';
+        row.dataset.idA = String(item.id_a);
+        row.dataset.idB = String(item.id_b);
+        if (item.recommended_winner) {
+          row.style.borderLeft = '4px solid var(--bs-success)';
+          row.style.paddingLeft = '10px';
+        }
+        row.style.overflow = 'hidden';
+        row.innerHTML = `
+          <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+            <div class="flex-fill min-w-0">
+              <div class="fw-semibold text-truncate text-nowrap">${item.nome_a} ${ (item.recommended_winner && item.recommended_winner === item.id_a) ? '<span class=\'badge bg-info text-dark ms-1\'>recomendado</span>' : '' } <span class="text-muted">vs</span> ${item.nome_b} ${ (item.recommended_winner && item.recommended_winner === item.id_b) ? '<span class=\'badge bg-info text-dark ms-1\'>recomendado</span>' : '' }</div>
+              ${ item.recommended_winner ? `
+                <div class="small text-success">Recomendação: manter 
+                  ${ item.recommended_winner === item.id_a ? item.nome_a : item.nome_b }
+                  (${ item.recommended_winner === item.id_a ? (item.a_has_pg ? 'tem PG' : (item.a_has_imp ? 'tem Império' : '')) : (item.b_has_pg ? 'tem PG' : (item.b_has_imp ? 'tem Império' : '')) })
+                </div>
+              ` : '' }
+              <div class="text-muted">
+                ${item.datas_diferentes
+                  ? `<span class="badge bg-warning text-dark me-2" title="Atenção: datas diferentes">datas diferentes</span>`
+                  : ''}
+                ${item.datas_diferentes
+                  ? `Datas: ${item.data_nascimento_a || '-'} vs ${item.data_nascimento_b || '-'}`
+                  : `Data nasc.: ${item.data_nascimento_a || '-'}`}
+                 · score: ${item.score.toFixed(3)}
+              </div>
+            </div>
+            <div class="d-flex flex-column align-items-end w-100 w-sm-auto mt-2 mt-sm-0">
+              <div class="d-flex flex-wrap gap-2 justify-content-end w-100">
+                <button class="btn btn-outline-primary d-inline-flex align-items-center flex-fill flex-sm-none" data-action="merge" data-winner="${item.id_a}" data-loser="${item.id_b}" data-winner-name="${item.nome_a.replace(/\"/g,'\\\"')}" data-loser-name="${item.nome_b.replace(/\"/g,'\\\"')}" title="Manter ${item.nome_a}; remover ${item.nome_b}" aria-label="Manter ${item.nome_a}; remover ${item.nome_b}">
+                  <i class="fas fa-check me-1"></i><span class="me-1">Manter</span><span class="text-truncate text-nowrap d-inline-block" style="max-width: 140px;">${item.nome_a}</span>
+                </button>
+                <button class="btn btn-outline-primary d-inline-flex align-items-center flex-fill flex-sm-none" data-action="merge" data-winner="${item.id_b}" data-loser="${item.id_a}" data-winner-name="${item.nome_b.replace(/\"/g,'\\\"')}" data-loser-name="${item.nome_a.replace(/\"/g,'\\\"')}" title="Manter ${item.nome_b}; remover ${item.nome_a}" aria-label="Manter ${item.nome_b}; remover ${item.nome_a}">
+                  <i class="fas fa-check me-1"></i><span class="me-1">Manter</span><span class="text-truncate text-nowrap d-inline-block" style="max-width: 140px;">${item.nome_b}</span>
+                </button>
+                <div class="w-100 d-block d-sm-none"></div>
+                <button class="btn btn-outline-secondary d-inline-flex align-items-center flex-fill flex-sm-none" data-action="rejeitar" aria-label="Rejeitar sugestão">Rejeitar</button>
+              </div>
+              <small class="text-muted mt-1 d-none d-lg-block">Escolha quem manter.</small>
+            </div>
+          </div>`;
+        frag.appendChild(row);
+      });
+      container.innerHTML = '';
+      container.appendChild(frag);
+
+    }catch(err){
+      container.innerHTML = `<div class=\"alert alert-danger\">${err.message}</div>`;
+    }
+  }
+
+  function getCsrfToken(){
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? match[1] : '';
+  }
+})();
+</script>
+{% endif %}
     </div>
 
     <!-- Chips de filtros ativos -->
@@ -162,10 +350,15 @@
   </div>
 </div>
 
-<!-- Botão adicionar adolescente -->
-  <div class="text-start mt-3">
+<!-- Botões de ações -->
+  <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
     <a href="{% url 'criar_adolescente' %}" class="btn btn-primary">Adicionar Adolescente</a>
     <a href="{% url 'exportar_adolescentes_csv' %}?{{ request.GET.urlencode }}" class="btn btn-outline-secondary">Exportar CSV</a>
+    {% if perms.adolescentes.review_duplicates %}
+      <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalDuplicados">
+        <i class="fas fa-user-astronaut me-1"></i> Revisar Duplicados
+      </button>
+    {% endif %}
   </div>
 
 <!-- Tabela Desktop (oculta em mobile) -->
@@ -298,6 +491,8 @@
 <script>
   (function(){
     document.addEventListener('click', function(e){
+      // Se o clique foi dentro de qualquer modal, não faça nada (evita interferência)
+      if (e.target.closest('.modal')) return;
       const row = e.target.closest('tr.row-modal');
       if(!row) return;
       // Ignorar cliques em elementos interativos dentro da linha

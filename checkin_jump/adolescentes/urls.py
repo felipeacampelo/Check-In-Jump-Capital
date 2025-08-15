@@ -38,5 +38,10 @@ urlpatterns = [
 
     # Contagem de Auditório
     path('contagem-auditorio/', views.contagem_auditorio, name='contagem_auditorio'),
+
+    # Duplicados (apenas com permissão review_duplicates)
+    path('adolescentes/duplicados/sugestoes/', views.sugestoes_duplicados, name='sugestoes_duplicados'),
+    path('adolescentes/duplicados/merge/', views.merge_duplicados, name='merge_duplicados'),
+    path('adolescentes/duplicados/rejeitar/', views.rejeitar_duplicado, name='rejeitar_duplicado'),
 ]
 

@@ -14,6 +14,8 @@
     <style>
       /* Reset possible default spacing */
       html, body { margin: 0; padding: 0; }
+      /* Reserve scrollbar gutter to avoid layout shift when modal opens */
+      html { scrollbar-gutter: stable both-edges; }
       /* Reserve space for fixed navbar */
       body { padding-top: 72px; }
       /* Themed navbar (Glass style: dark translucent + stronger blur + gradient border) */
@@ -185,6 +187,8 @@
       .navbar.jump .right-controls { display: flex; align-items: center; gap: 0.75rem; min-width: 0; flex-direction: row !important; flex-wrap: nowrap; flex: 1 1 auto; }
       .navbar.jump .right-controls > * { flex: 0 0 auto; }
       .navbar.jump .right-controls .spacer { flex: 1 1 auto; }
+      /* Avoid layout shift when Bootstrap hides body scrollbar on modal open */
+      .modal-open .navbar.jump { padding-right: var(--bs-scrollbar-width); }
       /* Mobile alignment for right-side controls */
       @media (max-width: 991.98px) {
         .navbar.jump .right-controls { width: auto; min-width: 0; }
@@ -218,6 +222,14 @@
       body.dark-mode .navbar.jump .nav-link { color: rgba(255,255,255,0.96); text-shadow: none; }
       body.dark-mode .navbar.jump .nav-link.active { color: #93c5fd; }
       body.dark-mode .navbar.jump .nav-link::after { background: linear-gradient(90deg, rgba(147,197,253,0), #93c5fd, rgba(147,197,253,0)); }
+
+      /* Modal stability tweaks to reduce flicker during repaints */
+      .modal { will-change: transform, opacity; backface-visibility: hidden; }
+      .modal .modal-dialog { transform: translateZ(0); }
+      .modal-backdrop { will-change: opacity; }
+      /* Prevent interactions/hover behind an open modal */
+      .modal-open main, .modal-open .navbar.jump { pointer-events: none; }
+      .modal-open .modal, .modal-open .modal * { pointer-events: auto; }
       /* Dropdown menu styling in dark mode */
       body.dark-mode .navbar.jump .dropdown-menu {
         background-color: #1f2937; /* slate-800 */
