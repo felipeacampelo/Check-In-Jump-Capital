@@ -26,13 +26,13 @@
     </style>
     <div class="d-lg-none mb-2 d-flex align-items-center justify-content-between">
       <span class="text-muted fw-semibold"><i class="fas fa-filter me-1"></i> Filtros</span>
-      <button id="filtersToggleBtnMobile" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="true" aria-controls="filtersCollapse">
+      <button id="filtersToggleBtnMobile" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse">
         <i class="fas fa-chevron-up"></i>
         <span class="visually-hidden">Mostrar/ocultar filtros</span>
       </button>
     </div>
 
-    <div class="collapse show d-lg-block" id="filtersCollapse">
+    <div class="collapse d-lg-block" id="filtersCollapse">
     <form method="get" id="filtroForm">
       <div class="row g-2 align-items-end">
         <div class="col-md-3">
@@ -91,6 +91,24 @@
       </div>
       
     </form>
+    <script>
+      (function() {
+        const form = document.getElementById('filtroForm');
+        if (form) {
+          form.addEventListener('keydown', function (e) {
+            // Ao apertar Enter em qualquer campo do formulário, aplica os filtros
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+              } else {
+                form.submit();
+              }
+            }
+          });
+        }
+      })();
+    </script>
     </div>
 
     <!-- Chips de filtros ativos -->

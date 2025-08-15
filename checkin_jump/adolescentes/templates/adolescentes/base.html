@@ -18,7 +18,8 @@
       body { padding-top: 72px; }
       /* Themed navbar (Glass style: dark translucent + stronger blur + gradient border) */
       .navbar.jump {
-        background: linear-gradient(90deg, #a8c5ff 0%, #cfe7ff 50%, #a8c5ff 100%) !important;
+        /* Gradiente ligeiramente mais escuro para melhor contraste */
+        background: linear-gradient(90deg, #8fb2ff 0%, #b9d8ff 50%, #8fb2ff 100%) !important;
         backdrop-filter: blur(12px) !important;
         -webkit-backdrop-filter: blur(12px) !important;
         padding-top: .3rem;
@@ -58,8 +59,11 @@
       .navbar.jump .navbar-brand { color: #fff; padding-top: 0; padding-bottom: 0; height: 48px; overflow: hidden; display: flex; align-items: center; }
       .navbar.jump .nav-logo { height: 110px; width: auto; display: block; transform: translateY(2px); }
       @media (max-width: 575.98px) {
-        .navbar.jump .navbar-brand { height: 44px; }
-        .navbar.jump .nav-logo { height: 84px; transform: translateY(0); }
+        /* Aumentar a logo no mobile e ajustar a altura da área da marca */
+        .navbar.jump .navbar-brand { height: 56px; }
+        .navbar.jump .nav-logo { height: 108px; transform: translateY(0); }
+        /* Compensar a navbar fixa mais alta para não sobrepor o conteúdo */
+        body { padding-top: 80px; }
       }
       .navbar.jump .navbar-brand span { display: none !important; }
       .navbar.jump .navbar-brand:hover { color: #fff; text-decoration: none; }
@@ -92,6 +96,63 @@
       }
       @media (min-width: 992px) {
         .navbar.jump .navbar-collapse { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+      }
+      /* Light mode: menu mobile "tudo branco" para máximo contraste/legibilidade */
+      @media (max-width: 991.98px) {
+        body:not(.dark-mode) .navbar.jump .navbar-collapse {
+          /* Fundo do menu com o mesmo gradiente, porém mais escuro para contraste */
+          background: linear-gradient(90deg, #6f98ff 0%, #9ec6ff 50%, #6f98ff 100%) !important;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+        }
+        body:not(.dark-mode) .navbar.jump .navbar-collapse .nav-link {
+          color: #111827; /* texto escuro sobre gradiente claro */
+          text-shadow: none;
+        }
+        body:not(.dark-mode) .navbar.jump .navbar-collapse .nav-link:hover {
+          color: #0d6efd;
+        }
+        /* Links ativos também em preto no mobile claro */
+        body:not(.dark-mode) .navbar.jump .navbar-collapse .nav-link.active {
+          color: #111827;
+        }
+        /* Botões e textos no menu mobile com gradiente, mas texto escuro */
+        body:not(.dark-mode) .navbar.jump .navbar-text,
+        body:not(.dark-mode) .navbar.jump .btn { color: #111827; }
+        body:not(.dark-mode) .navbar.jump .btn.btn-secondary {
+          background: rgba(0,0,0,0.06);
+          border: none;
+          color: #111827;
+        }
+        body:not(.dark-mode) .navbar.jump .btn.btn-secondary:hover { background: rgba(0,0,0,0.12); }
+        /* Texto do botão primário também preto no mobile claro */
+        body:not(.dark-mode) .navbar.jump .navbar-collapse .btn.btn-primary { color: #111827; }
+        body:not(.dark-mode) .navbar.jump .navbar-collapse .btn .fa,
+        body:not(.dark-mode) .navbar.jump .navbar-collapse .btn [class^="fa-"] { color: inherit; }
+        /* Dropdown do usuário no mobile: texto branco e fundo translúcido para contraste */
+        body:not(.dark-mode) .navbar.jump .user-dropdown { background: rgba(255,255,255,0.12); color: #ffffff; }
+        body:not(.dark-mode) .navbar.jump .user-dropdown:hover,
+        body:not(.dark-mode) .navbar.jump .user-dropdown:focus { background: rgba(255,255,255,0.2); color: #ffffff; }
+        /* Toggler (hambúrguer) branco no modo claro mobile */
+        body:not(.dark-mode) .navbar.jump .navbar-toggler { border-color: rgba(255,255,255,0.25); color: #ffffff; }
+        body:not(.dark-mode) .navbar.jump .navbar-toggler-icon {
+          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255,255,255, 0.95)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        /* Dropdown menu e itens com texto escuro */
+        body:not(.dark-mode) .navbar.jump .dropdown-menu {
+          background-color: #ffffff;
+          color: #111827;
+          border: 1px solid rgba(0,0,0,0.08);
+        }
+        body:not(.dark-mode) .navbar.jump .dropdown-item { color: #111827; }
+        body:not(.dark-mode) .navbar.jump .dropdown-item:hover { background-color: #f3f4f6; color: #111827; }
+        body:not(.dark-mode) .navbar.jump .dropdown-item-text { color: #111827; }
+        body:not(.dark-mode) .navbar.jump .dropdown-header { color: #111827; }
+        /* Caret do dropdown (setinha) branco */
+        body:not(.dark-mode) .navbar.jump .user-dropdown.dropdown-toggle::after { border-top-color: #ffffff; }
+        /* User chip com texto escuro no mobile claro */
+        body:not(.dark-mode) .navbar.jump .user-chip { background: rgba(0,0,0,0.06); }
+        body:not(.dark-mode) .navbar.jump .user-chip .user-name { color: #111827; }
       }
       .navbar.jump .navbar-text, .navbar.jump .btn { color: rgba(255,255,255,0.9); }
       .navbar.jump .btn.btn-secondary { background: rgba(255,255,255,0.12); border: none; }
