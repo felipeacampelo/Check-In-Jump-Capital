@@ -15,19 +15,29 @@
       /* Reset possible default spacing */
       html, body { margin: 0; padding: 0; }
       /* Reserve space for fixed navbar */
-      body { padding-top: 60px; }
+      body { padding-top: 72px; }
       /* Themed navbar (Glass style: dark translucent + stronger blur + gradient border) */
       .navbar.jump {
-        background: rgba(11, 19, 32, 0.85) !important;
+        background: linear-gradient(90deg, #a8c5ff 0%, #cfe7ff 50%, #a8c5ff 100%) !important;
         backdrop-filter: blur(12px) !important;
         -webkit-backdrop-filter: blur(12px) !important;
-        padding-top: .10rem;
-        padding-bottom: .10rem;
+        padding-top: .3rem;
+        padding-bottom: .3rem;
         position: fixed;
         top: 0; left: 0; right: 0;
         z-index: 1030; /* above content */
         margin: 0;
         width: 100%;
+        overflow: visible; /* permitir que dropdowns saiam da navbar */
+      }
+      /* Overlay escuro sutil para melhorar contraste do texto sobre o gradiente */
+      .navbar.jump::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.18) 50%, rgba(0,0,0,0.28) 100%);
+        pointer-events: none;
+        z-index: 0; /* manter overlay abaixo do conteúdo */
       }
       /* Subtle elevation */
       .navbar.jump { box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
@@ -39,17 +49,21 @@
         height: 2px;
         background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.45), rgba(255,255,255,0));
         pointer-events: none;
+        z-index: 0; /* manter a borda abaixo do conteúdo */
       }
+      /* Garantir que o conteúdo (incl. dropdown) fique acima do overlay */
+      .navbar.jump > .container-fluid { position: relative; z-index: 1; }
+      .navbar.jump .dropdown-menu { z-index: 2000; }
       /* Brand area: fixed height and overflow hidden to crop the logo if needed */
-      .navbar.jump .navbar-brand { color: #fff; padding-top: 0; padding-bottom: 0; height: 44px; overflow: hidden; display: flex; align-items: center; }
-      .navbar.jump .nav-logo { height: 112px; width: auto; display: block; transform: translateY(2px); }
+      .navbar.jump .navbar-brand { color: #fff; padding-top: 0; padding-bottom: 0; height: 48px; overflow: hidden; display: flex; align-items: center; }
+      .navbar.jump .nav-logo { height: 110px; width: auto; display: block; transform: translateY(2px); }
       @media (max-width: 575.98px) {
-        .navbar.jump .navbar-brand { height: 40px; }
+        .navbar.jump .navbar-brand { height: 44px; }
         .navbar.jump .nav-logo { height: 84px; transform: translateY(0); }
       }
       .navbar.jump .navbar-brand span { display: none !important; }
       .navbar.jump .navbar-brand:hover { color: #fff; text-decoration: none; }
-      .navbar.jump .nav-link { color: rgba(255,255,255,0.85); padding-top: .35rem; padding-bottom: .35rem; position: relative; transition: color .2s ease; }
+      .navbar.jump .nav-link { color: rgba(255,255,255,0.95); padding-top: .35rem; padding-bottom: .35rem; position: relative; transition: color .2s ease; text-shadow: 0 1px 1px rgba(0,0,0,0.25); }
       .navbar.jump .nav-link:hover { color: #fff; }
       /* Animated underline for hover/active */
       .navbar.jump .nav-link::after {
@@ -124,6 +138,66 @@
         /* Nudge dark-mode button 2px up on desktop */
         .btn-icon { top: 1px; }
       }
+
+      /* ===== Global bottom spacing to avoid content sticking to footer ===== */
+      main > .container { padding-bottom: 3rem; }
+      @media (min-width: 992px) {
+        main > .container { padding-bottom: 4rem; }
+      }
+
+      /* ===== Dark mode adjustments for navbar ===== */
+      body.dark-mode .navbar.jump {
+        /* darker, muted gradient for better contrast */
+        background: linear-gradient(90deg, #1b2735 0%, #111827 50%, #1b2735 100%) !important;
+      }
+      body.dark-mode .navbar.jump::before {
+        /* slightly stronger overlay in dark mode */
+        background: linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.42) 50%, rgba(0,0,0,0.55) 100%);
+      }
+      body.dark-mode .navbar.jump .nav-link { color: rgba(255,255,255,0.96); text-shadow: none; }
+      body.dark-mode .navbar.jump .nav-link.active { color: #93c5fd; }
+      body.dark-mode .navbar.jump .nav-link::after { background: linear-gradient(90deg, rgba(147,197,253,0), #93c5fd, rgba(147,197,253,0)); }
+      /* Dropdown menu styling in dark mode */
+      body.dark-mode .navbar.jump .dropdown-menu {
+        background-color: #1f2937; /* slate-800 */
+        color: #e5e7eb; /* gray-200 */
+        border: 1px solid rgba(255,255,255,0.08);
+      }
+      body.dark-mode .navbar.jump .dropdown-item { color: #e5e7eb; }
+      body.dark-mode .navbar.jump .dropdown-item:hover { background-color: #374151; color: #fff; }
+
+      /* ===== Dark mode form controls (global) ===== */
+      body.dark-mode .form-label,
+      body.dark-mode label { color: #e5e7eb; }
+      body.dark-mode .form-text { color: #9ca3af; }
+
+      body.dark-mode .form-control,
+      body.dark-mode .form-select,
+      body.dark-mode .form-control:disabled,
+      body.dark-mode .form-select:disabled {
+        background-color: #111827; /* gray-900 */
+        color: #e5e7eb; /* gray-200 */
+        border-color: #374151; /* gray-700 */
+      }
+      body.dark-mode .form-control::placeholder { color: #9ca3af; }
+      body.dark-mode .input-group-text { background-color: #1f2937; color: #e5e7eb; border-color: #374151; }
+
+      body.dark-mode .form-control:focus,
+      body.dark-mode .form-select:focus {
+        background-color: #0b1220;
+        color: #f3f4f6;
+        border-color: #60a5fa; /* blue-400 */
+        box-shadow: 0 0 0 .2rem rgba(96,165,250,.25);
+      }
+
+      body.dark-mode .form-check-input { background-color: #111827; border-color: #4b5563; }
+      body.dark-mode .form-check-input:checked { background-color: #60a5fa; border-color: #60a5fa; }
+      body.dark-mode .form-check-label { color: #e5e7eb; }
+
+      body.dark-mode .btn-outline-secondary { color: #e5e7eb; border-color: #6b7280; }
+      body.dark-mode .btn-outline-secondary:hover { background-color: #374151; color: #fff; border-color: #9ca3af; }
+      body.dark-mode .btn-outline-primary { color: #93c5fd; border-color: #60a5fa; }
+      body.dark-mode .btn-outline-primary:hover { background-color: #1e3a8a; color: #fff; border-color: #93c5fd; }
     </style>
 </head>
 
