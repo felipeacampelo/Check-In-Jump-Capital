@@ -1,10 +1,67 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" class="{{ html_class }}">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Check-in JUMP</title>
+    
+    <!-- Script para sincronizar localStorage com cookies e aplicar tema instantaneamente -->
+    <script>
+        (function() {
+            try {
+                const localStorageTheme = localStorage.getItem('dark-mode');
+                const isDarkMode = localStorageTheme === 'enabled';
+                
+                // Sincronizar localStorage com cookie para o servidor
+                if (localStorageTheme) {
+                    document.cookie = 'dark-mode=' + localStorageTheme + '; path=/; max-age=31536000'; // 1 ano
+                }
+                
+                // Garantir que a classe esteja aplicada (redundância para segurança)
+                if (isDarkMode && !document.documentElement.classList.contains('dark-mode')) {
+                    document.documentElement.classList.add('dark-mode');
+                }
+                
+                // Se o servidor não aplicou o tema mas o localStorage indica modo escuro, aplicar imediatamente
+                if (isDarkMode && !document.documentElement.classList.contains('dark-mode')) {
+                    document.documentElement.style.backgroundColor = '#1a1a1a';
+                    document.documentElement.style.color = '#e5e7eb';
+                    document.documentElement.classList.add('dark-mode');
+                }
+            } catch (e) {
+                // Fallback silencioso
+            }
+        })();
+    </script>
+    
+    <!-- CSS crítico aplicado imediatamente -->
+    <style>
+        /* Garantir que o modo escuro seja aplicado instantaneamente */
+        html.dark-mode {
+            background-color: #1a1a1a !important;
+            color: #e5e7eb !important;
+        }
+        
+        html.dark-mode body {
+            background-color: #1a1a1a !important;
+            color: #e5e7eb !important;
+        }
+        
+        /* Aplicar cores básicas do modo escuro imediatamente */
+        html.dark-mode * {
+            border-color: #374151 !important;
+        }
+        
+        html.dark-mode .card {
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+        }
+        
+        html.dark-mode .navbar {
+            background-color: #1f2937 !important;
+        }
+    </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="{% static 'adolescentes/css/style.css' %}" />
@@ -324,7 +381,7 @@
     </style>
 </head>
 
-<body class="{% block body_class %}d-flex flex-column min-vh-100{% endblock %}">
+<body class="{% block body_class %}d-flex flex-column min-vh-100{% endblock %} {{ body_class }}">
     {% block navbar %}
     <nav class="navbar navbar-expand-lg navbar-dark jump">
         <div class="container-fluid">
