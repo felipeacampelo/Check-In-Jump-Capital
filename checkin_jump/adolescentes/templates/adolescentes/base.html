@@ -259,6 +259,56 @@
       body.dark-mode .btn-outline-secondary:hover { background-color: #374151; color: #fff; border-color: #9ca3af; }
       body.dark-mode .btn-outline-primary { color: #93c5fd; border-color: #60a5fa; }
       body.dark-mode .btn-outline-primary:hover { background-color: #1e3a8a; color: #fff; border-color: #93c5fd; }
+
+      /* ===== Avatar component ===== */
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .avatar-sm { width: 36px; height: 36px; }
+      .avatar-xs { width: 28px; height: 28px; }
+      .avatar-initials {
+        background: #6b7280; /* gray-500 */
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        text-transform: uppercase;
+        line-height: 1;
+      }
+      .avatar-trigger { cursor: pointer; }
+
+      /* ===== Avatar overlay (desktop hover-only) ===== */
+      .avatar-wrap { position: relative; display: inline-block; }
+      .avatar-overlay {
+        position: absolute;
+        right: -6px;
+        top: -6px;
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        opacity: 0;
+        transform: scale(.9);
+        transition: opacity .15s ease, transform .15s ease;
+        box-shadow: 0 2px 6px rgba(0,0,0,.2);
+      }
+      /* Mostrar overlay apenas quando a linha está em hover (desktop) */
+      @media (min-width: 992px) {
+        tr:hover .avatar-overlay { opacity: 1; transform: scale(1); }
+      }
+      /* Não exibir overlay no mobile */
+      @media (max-width: 991.98px) {
+        .avatar-overlay { display: none !important; }
+      }
     </style>
 </head>
 

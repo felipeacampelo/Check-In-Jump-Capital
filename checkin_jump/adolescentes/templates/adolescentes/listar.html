@@ -175,22 +175,8 @@
       <tr>
         <th>
           <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-            Nome
+            Adolescente
             {% if ordenar_por == 'nome' %}
-              {% if direcao == 'asc' %}
-                <i class="fas fa-sort-up"></i>
-              {% else %}
-                <i class="fas fa-sort-down"></i>
-              {% endif %}
-            {% else %}
-              <i class="fas fa-sort text-muted"></i>
-            {% endif %}
-          </a>
-        </th>
-        <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=sobrenome&direcao={% if ordenar_por == 'sobrenome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-            Sobrenome
-            {% if ordenar_por == 'sobrenome' %}
               {% if direcao == 'asc' %}
                 <i class="fas fa-sort-up"></i>
               {% else %}
@@ -229,7 +215,6 @@
             {% endif %}
           </a>
         </th>
-        <th>Foto</th>
         <th>
           <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=pg&direcao={% if ordenar_por == 'pg' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             PG
@@ -263,20 +248,32 @@
     </thead>
     <tbody>
       {% for adolescente in adolescentes %}
-      <tr style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modal{{ adolescente.id }}">
-        <td>{{ adolescente.nome }}</td>
-        <td>{{ adolescente.sobrenome }}</td>
+      <tr class="row-modal" style="cursor: pointer;" data-row-target="modal{{ adolescente.id }}">
+        <td>
+          <div class="d-flex align-items-center gap-3">
+            {% if adolescente.foto %}
+              <div class="avatar-wrap">
+                <img src="{{ adolescente.foto.url }}"
+                     alt="Foto de {{ adolescente.nome }}"
+                     class="avatar avatar-sm"
+                     data-initials="{{ adolescente.nome|slice:":1" }}{{ adolescente.sobrenome|slice:":1" }}"
+                     onerror="(function(el){var wrap=el.closest('.avatar-wrap');var s=document.createElement('span');s.className='avatar avatar-sm avatar-initials';s.textContent=el.dataset.initials; if(wrap){wrap.replaceWith(s);} else {el.replaceWith(s);} })(this)">
+                <button type="button" class="avatar-overlay btn btn-primary btn-sm"
+                        title="Ver foto" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}"
+                        onclick="event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();">
+                  <i class="fas fa-image"></i>
+                </button>
+              </div>
+            {% else %}
+              <span class="avatar avatar-sm avatar-initials" onclick="event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();">{{ adolescente.nome|slice:":1" }}{{ adolescente.sobrenome|slice:":1" }}</span>
+            {% endif %}
+            <div class="min-w-0">
+              <div class="text-truncate">{{ adolescente.nome }} {{ adolescente.sobrenome }}</div>
+            </div>
+          </div>
+        </td>
         <td>{{ adolescente.genero }}</td>
         <td>{{ adolescente.data_nascimento }}</td>
-        <td>
-          {% if adolescente.foto %}
-            <img src="{{ adolescente.foto.url }}" class="photo-table" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}">
-          {% else %}
-            <div class="photo-placeholder">
-              <i class="fas fa-user"></i>
-            </div>
-          {% endif %}
-        </td>
         <td>{{ adolescente.pg }}</td>
         <td>{{ adolescente.imperio }}</td>
         <td>
@@ -297,6 +294,26 @@
   </table>
 </div>
 
+<!-- Script: controlar abertura do modal de detalhes apenas quando clicar fora de elementos interativos -->
+<script>
+  (function(){
+    document.addEventListener('click', function(e){
+      const row = e.target.closest('tr.row-modal');
+      if(!row) return;
+      // Ignorar cliques em elementos interativos dentro da linha
+      if (e.target.closest('.avatar-trigger, .btn, [data-bs-toggle], a, input, select, label')) {
+        return;
+      }
+      const targetId = row.getAttribute('data-row-target');
+      if (!targetId) return;
+      const modalEl = document.getElementById(targetId);
+      if (!modalEl) return;
+      const modal = new bootstrap.Modal(modalEl);
+      modal.show();
+    });
+  })();
+  </script>
+
 <!-- Cards Mobile (visível apenas em mobile) -->
 <div class="d-lg-none">
   <div class="row g-3 mt-3">
@@ -315,7 +332,7 @@
               {% endif %}
             </div>
             <div class="col-6 col-md-7">
-              <h6 class="card-title mb-1">{{ adolescente.nome }} {{ adolescente.sobrenome }}</h6>
+              <h6 class="card-title mb-1 fw-normal">{{ adolescente.nome }} {{ adolescente.sobrenome }}</h6>
               <p class="card-text small mb-1">
                 <i class="fas fa-venus-mars me-1"></i>{{ adolescente.get_genero_display }}
               </p>
