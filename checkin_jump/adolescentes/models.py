@@ -54,6 +54,17 @@ class Presenca(models.Model):
     adolescente = models.ForeignKey(Adolescente, on_delete=models.CASCADE)
     dia = models.ForeignKey(DiaEvento, on_delete=models.CASCADE)
     presente = models.BooleanField(default=False)
+    
+    class Meta:
+        # Evitar duplicatas e otimizar queries
+        unique_together = [('adolescente', 'dia')]
+        # Índices para melhorar performance
+        indexes = [
+            models.Index(fields=['adolescente', 'dia']),
+            models.Index(fields=['dia', 'presente']),
+            models.Index(fields=['adolescente', 'presente']),
+        ]
+        ordering = ['-dia', 'adolescente']
 
 class DuplicadoRejeitado(models.Model):
     """Par de perfis marcados como NÃO duplicados (rejeição persistida)."""
