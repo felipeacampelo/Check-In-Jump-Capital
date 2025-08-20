@@ -17,6 +17,19 @@ class AdolescenteForm(forms.ModelForm):
                 'placeholder': 'dd/mm/aaaa'
             }),
         }
+    
+    def __init__(self, *args, **kwargs):
+        # Otimização: receber querysets pré-carregados para evitar queries N+1
+        pgs_queryset = kwargs.pop('pgs_queryset', None)
+        imperios_queryset = kwargs.pop('imperios_queryset', None)
+        
+        super().__init__(*args, **kwargs)
+        
+        # Usar querysets otimizados se fornecidos
+        if pgs_queryset is not None:
+            self.fields['pg'].queryset = pgs_queryset
+        if imperios_queryset is not None:
+            self.fields['imperio'].queryset = imperios_queryset
 
     # não permite que a data de nascimento seja no futuro
     def clean_data_nascimento(self):

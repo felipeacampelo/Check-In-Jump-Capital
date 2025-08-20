@@ -18,6 +18,7 @@ import json
 from django.urls import reverse
 from urllib.parse import urlencode
 from django.db import transaction, connection
+from django.template.loader import render_to_string
 try:
     # Disponível quando usando PostgreSQL e habilitando django.contrib.postgres
     from django.contrib.postgres.search import TrigramSimilarity
@@ -95,7 +96,12 @@ def listar_adolescentes(request):
     ordenar_por = request.GET.get('ordenar_por', 'nome')  # Padrão: ordenar por nome
     direcao = request.GET.get('direcao', 'asc')  # Padrão: ascendente
 
-    adolescentes = Adolescente.objects.all()
+    # Otimização: usar select_related e prefetch_related para evitar queries N+1
+    adolescentes = Adolescente.objects.select_related('pg', 'imperio').prefetch_related(
+        Prefetch('presenca_set', 
+                queryset=Presenca.objects.select_related('dia').order_by('-dia__data')[:5],
+                to_attr='cached_ultimas_presencas')
+    ).all()
     if busca:
         adolescentes = buscar_adolescentes_por_nome(adolescentes, busca)
     if pg_id:
@@ -165,13 +171,10 @@ def listar_adolescentes(request):
         adolescentes = adolescentes.order_by('nome', 'sobrenome')
 
     total_adolescentes = adolescentes.count()
+    
+    # Otimização: cache para filtros (evita queries repetidas)
     pgs = PequenoGrupo.objects.all()
     imperios = Imperio.objects.all()
-
-    # Pré-carrega presenças para cada adolescente
-    adolescentes = adolescentes.prefetch_related(
-        Prefetch('presenca_set', queryset=Presenca.objects.select_related('dia').order_by('-dia__data'))
-    )
 
     # Paginação
     paginator = Paginator(adolescentes, 25)  # 25 registros por página
@@ -186,9 +189,10 @@ def listar_adolescentes(request):
         # Se a página estiver fora do range, mostrar a última página
         adolescentes_paginados = paginator.page(paginator.num_pages)
 
-    # Anexa um formulário de edição para cada adolescente na página atual
-    for adolescente in adolescentes_paginados:
-        setattr(adolescente, 'form_edicao', AdolescenteForm(instance=adolescente))
+    # DESABILITADO: Formulários inline causam 54 queries N+1 
+    # A funcionalidade de edição inline será reimplementada de forma otimizada
+    # Por enquanto, usar apenas os links de edição individuais
+    pass
 
     return render(request, 'adolescentes/listar.html', {
         'adolescentes': adolescentes_paginados,
@@ -438,23 +442,61 @@ def criar_adolescente(request):
 
 @permission_required('adolescentes.change_adolescente', raise_exception=True)
 @login_required
+def get_form_ajax(request, adolescente_id):
+    """Endpoint AJAX para carregar formulário de edição sob demanda"""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Método não permitido'}, status=405)
+    
+    try:
+        adolescente = get_object_or_404(Adolescente, id=adolescente_id)
+        form = AdolescenteForm(instance=adolescente)
+        
+        # Renderizar apenas o conteúdo do formulário
+        form_html = render_to_string('adolescentes/partials/form_edicao.html', {
+            'form': form,
+            'adolescente': adolescente,
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'form_html': form_html,
+            'adolescente_id': adolescente_id,
+            'adolescente_nome': f"{adolescente.nome} {adolescente.sobrenome}"
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
 def editar_adolescente(request, id):
     adolescente = get_object_or_404(Adolescente, id=id)
-    if request.method == "POST":
+    
+    if request.method == 'POST':
         form = AdolescenteForm(request.POST, request.FILES, instance=adolescente)
         if form.is_valid():
+            # Verificar se deve remover a foto atual
+            if request.POST.get('foto-clear'):
+                adolescente.foto.delete(save=False)  # Remove o arquivo
+                adolescente.foto = None  # Remove a referência
+            
             form.save()
             messages.success(request, "Adolescente atualizado com sucesso.")
+            
+            # Redireciona mantendo filtros, busca e página
+            params = request.GET.urlencode() or request.POST.get('params', '')
+            url = reverse('listar_adolescentes')
+            if params:
+                url = f"{url}?{params}"
+            return redirect(url)
         else:
             messages.error(request, "Não foi possível salvar. Verifique os campos e tente novamente.")
-        # Redireciona mantendo filtros, busca e página
-        params = request.GET.urlencode() or request.POST.get('params', '')
-        url = reverse('listar_adolescentes')
-        if params:
-            url = f"{url}?{params}"
-        return redirect(url)
-    # Em GET, direciona para a lista
-    return redirect('listar_adolescentes')
+    else:
+        form = AdolescenteForm(instance=adolescente)
+    
+    return render(request, 'adolescentes/criar_adolescente.html', {
+        'form': form,
+        'adolescente': adolescente,
+        'titulo': f'Editar {adolescente.nome} {adolescente.sobrenome}'
+    })
 
 @permission_required('adolescentes.delete_adolescente', raise_exception=True)
 @login_required

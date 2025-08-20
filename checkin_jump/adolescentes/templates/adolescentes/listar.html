@@ -614,7 +614,7 @@
         <hr>
         <h6>Histórico de Presenças:</h6>
         <ul class="list-group">
-          {% for presenca in adolescente.ultimas_presencas %}
+          {% for presenca in adolescente.cached_ultimas_presencas %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
               {{ presenca.dia.data|date:"d/m/Y" }}
               {% if presenca.presente %}
@@ -635,7 +635,7 @@
   </div>
 </div>
 
-<!-- Modal Editar Adolescente -->
+<!-- Modal Editar Adolescente (AJAX) -->
 {% if perms.adolescentes.change_adolescente %}
 <div class="modal fade" id="modalEditar{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalEditarLabel{{ adolescente.id }}" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -644,20 +644,18 @@
         <h5 class="modal-title" id="modalEditarLabel{{ adolescente.id }}">Editar {{ adolescente.nome }} {{ adolescente.sobrenome }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
-      <form method="post" action="{% url 'editar_adolescente' adolescente.id %}?{{ request.GET.urlencode }}" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="hidden" name="params" value="{{ request.GET.urlencode }}">
-        <div class="modal-body">
-          {{ adolescente.form_edicao.as_p }}
+      <!-- Conteúdo será carregado via AJAX -->
+      <div class="ajax-form-container" data-adolescente-id="{{ adolescente.id }}">
+        <div class="modal-body text-center">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Carregando...</span>
+          </div>
+          <p class="mt-2">Carregando formulário...</p>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar alterações</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
- </div>
+</div>
 {% endif %}
 
 <!-- Modal Confirmar Exclusão -->
@@ -750,6 +748,91 @@
       });
     }
   });
+</script>
+
+<!-- Script AJAX para Edição Inline Otimizada -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cache para formulários já carregados
+    const formCache = new Map();
+    
+    // Interceptar abertura de modais de edição
+    document.querySelectorAll('[data-bs-target^="#modalEditar"]').forEach(button => {
+        button.addEventListener('click', function() {
+            const modalId = this.getAttribute('data-bs-target').substring(1);
+            const modal = document.getElementById(modalId);
+            const container = modal.querySelector('.ajax-form-container');
+            const adolescenteId = container.getAttribute('data-adolescente-id');
+            
+            // Se já está carregado no cache, usar
+            if (formCache.has(adolescenteId)) {
+                container.innerHTML = formCache.get(adolescenteId);
+                setupFormHandlers(container);
+                return;
+            }
+            
+            // Carregar via AJAX
+            fetch(`/ajax/form/${adolescenteId}/`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Armazenar no cache
+                    formCache.set(adolescenteId, data.form_html);
+                    
+                    // Inserir no modal
+                    container.innerHTML = data.form_html;
+                    
+                    // Configurar handlers do formulário
+                    setupFormHandlers(container);
+                } else {
+                    container.innerHTML = `
+                        <div class="modal-body text-center">
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Erro ao carregar formulário: ${data.error || 'Erro desconhecido'}
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Erro AJAX:', error);
+                container.innerHTML = `
+                    <div class="modal-body text-center">
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Erro de conexão. Tente novamente.
+                        </div>
+                    </div>
+                `;
+            });
+        });
+    });
+    
+    // Configurar handlers do formulário carregado
+    function setupFormHandlers(container) {
+        const form = container.querySelector('.ajax-form');
+        if (form) {
+            // Aplicar classes Bootstrap aos campos
+            form.querySelectorAll('input, select, textarea').forEach(field => {
+                if (!field.classList.contains('form-control') && !field.classList.contains('form-check-input')) {
+                    field.classList.add('form-control');
+                }
+            });
+            
+            // Handler para submit do formulário (opcional - pode manter redirect padrão)
+            // form.addEventListener('submit', function(e) {
+            //     // Aqui poderia implementar submit via AJAX se necessário
+            // });
+        }
+    }
+});
 </script>
 
 {% endblock %}

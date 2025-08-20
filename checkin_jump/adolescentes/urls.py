@@ -16,6 +16,7 @@ urlpatterns = [
     path("adolescentes/novo/", views.criar_adolescente, name="criar_adolescente"),
     path("adolescentes/editar/<int:id>/", views.editar_adolescente, name="editar_adolescente"),
     path("adolescentes/excluir/<int:id>/", views.excluir_adolescente, name="excluir_adolescente"),
+    path("ajax/form/<int:adolescente_id>/", views.get_form_ajax, name="get_form_ajax"),
 
     # Check-in
     path("checkin/", views.lista_dias_evento, name="pagina_checkin"),
