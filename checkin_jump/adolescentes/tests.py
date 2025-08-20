@@ -1,18 +1,23 @@
 from django.test import TestCase
 from django.urls import reverse
-from .models import Adolescente
+from .models import Adolescente, PequenoGrupo
 from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission
 
 class AdolescenteViewTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(username='testuser', password='testpass')
+        # Grant required permissions for edit/delete views
+        perms = Permission.objects.filter(codename__in=['change_adolescente', 'delete_adolescente'])
+        self.user.user_permissions.add(*perms)
+        self.pg = PequenoGrupo.objects.create(nome='Test PG')
         self.adolescente = Adolescente.objects.create(
             nome='John',
             sobrenome='Doe',
             data_nascimento='2005-01-01',
             genero='M',
-            pg='Test PG'
+            pg=self.pg
         )
 
     def test_login_view(self):
@@ -27,28 +32,31 @@ class AdolescenteViewTests(TestCase):
 
     def test_create_adolescente_view(self):
         self.client.login(username='testuser', password='testpass')
+        new_pg = PequenoGrupo.objects.create(nome='PG Create')
         response = self.client.post(reverse('criar_adolescente'), {
             'nome': 'Jane',
             'sobrenome': 'Doe',
             'data_nascimento': '2006-01-01',
             'genero': 'F',
-            'pg': 'Test PG'
+            'pg': str(new_pg.id)
         })
         self.assertEqual(response.status_code, 302)  # Should redirect after creation
         self.assertEqual(Adolescente.objects.count(), 2)  # Check if the new record was created
 
     def test_edit_adolescente_view(self):
         self.client.login(username='testuser', password='testpass')
+        updated_pg = PequenoGrupo.objects.create(nome='Updated PG')
         response = self.client.post(reverse('editar_adolescente', args=[self.adolescente.id]), {
             'nome': 'John',
             'sobrenome': 'Doe',
             'data_nascimento': '2005-01-01',
             'genero': 'M',
-            'pg': 'Updated PG'
+            'pg': str(updated_pg.id)
         })
         self.assertEqual(response.status_code, 302)  # Should redirect after editing
         self.adolescente.refresh_from_db()
-        self.assertEqual(self.adolescente.pg, 'Updated PG')  # Check if the record was updated
+        self.assertIsNotNone(self.adolescente.pg)
+        self.assertEqual(self.adolescente.pg.nome, 'Updated PG')  # Check if the record was updated
 
     def test_delete_adolescente_view(self):
         self.client.login(username='testuser', password='testpass')

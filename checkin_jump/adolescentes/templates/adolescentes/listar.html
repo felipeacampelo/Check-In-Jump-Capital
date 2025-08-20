@@ -5,7 +5,7 @@
 
 <!-- Total de cadastrados -->
 <p class="mt-2">
-  <strong>Total cadastrados:</strong>
+  <strong>Total:</strong>
   <span class="badge bg-primary">{{ total_adolescentes }}</span>
   {% if adolescentes.has_other_pages %}
     <span class="badge bg-info ms-2">
@@ -18,11 +18,40 @@
 <!-- Filtros e busca -->
 <div class="card shadow-sm rounded-3 mb-4">
   <div class="card-body">
+    <!-- Header de filtros no mobile: título fixo + seta para mostrar/ocultar -->
+    <style>
+      /* Rotaciona a seta conforme o estado de expansão */
+      #filtersToggleBtnMobile i { transition: transform .2s ease; }
+      #filtersToggleBtnMobile[aria-expanded="true"] i { transform: rotate(180deg); }
+    </style>
+    <div class="d-lg-none mb-2 d-flex align-items-center justify-content-between">
+      <span class="text-muted fw-semibold"><i class="fas fa-filter me-1"></i> Filtros</span>
+      <button id="filtersToggleBtnMobile" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse">
+        <i class="fas fa-chevron-up"></i>
+        <span class="visually-hidden">Mostrar/ocultar filtros</span>
+      </button>
+    </div>
+
+    <div class="collapse d-lg-block" id="filtersCollapse">
     <form method="get" id="filtroForm">
       <div class="row g-2 align-items-end">
         <div class="col-md-3">
           <label for="busca" class="form-label">Buscar por nome:</label>
-          <input type="text" name="busca" id="buscaInput" class="form-control" value="{{ request.GET.busca }}">
+          <div class="input-group">
+            <input type="text" name="busca" id="buscaInput" class="form-control" value="{{ request.GET.busca }}" placeholder="Buscar por nome">
+            <button class="btn btn-outline-secondary" type="button" id="clearBusca" title="Limpar busca">
+              <i class="fas fa-times"></i>
+              <span class="visually-hidden">Limpar busca</span>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <label for="genero" class="form-label">Gênero:</label>
+          <select name="genero" id="genero" class="form-select">
+            <option value="">Todos</option>
+            <option value="M" {% if request.GET.genero == "M" %}selected{% endif %}>Masculino</option>
+            <option value="F" {% if request.GET.genero == "F" %}selected{% endif %}>Feminino</option>
+          </select>
         </div>
         <div class="col-md-2">
           <label for="pg" class="form-label">PG:</label>
@@ -35,14 +64,6 @@
           </select>
         </div>
         <div class="col-md-2">
-          <label for="genero" class="form-label">Gênero:</label>
-          <select name="genero" id="genero" class="form-select">
-            <option value="">Todos</option>
-            <option value="M" {% if request.GET.genero == "M" %}selected{% endif %}>Masculino</option>
-            <option value="F" {% if request.GET.genero == "F" %}selected{% endif %}>Feminino</option>
-          </select>
-        </div>
-        <div class="col-md-3">
           <label for="imperio" class="form-label">Império:</label>
           <select name="imperio" id="imperio" class="form-select">
             <option value="">Todos</option>
@@ -53,17 +74,291 @@
           </select>
         </div>
         <div class="col-md-2">
-          <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+          <label for="presenca" class="form-label">Presença:</label>
+          <select name="presenca" id="presenca" class="form-select">
+            <option value="">Todas</option>
+            <option value="presente_30" {% if request.GET.presenca == "presente_30" %}selected{% endif %}>Presentes nos últimos 30 dias</option>
+            <option value="ausente_30" {% if request.GET.presenca == "ausente_30" %}selected{% endif %}>Ausentes nos últimos 30 dias</option>
+            <option value="nunca" {% if request.GET.presenca == "nunca" %}selected{% endif %}>Nunca compareceu</option>
+          </select>
+        </div>
+        <div class="col-md-1">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="fas fa-search"></i>
+            <span class="visually-hidden">Filtrar</span>
+          </button>
         </div>
       </div>
+      
     </form>
+    <script>
+      (function() {
+        const form = document.getElementById('filtroForm');
+        if (form) {
+          form.addEventListener('keydown', function (e) {
+            // Ao apertar Enter em qualquer campo do formulário, aplica os filtros
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (typeof form.requestSubmit === 'function') {
+                form.requestSubmit();
+              } else {
+                form.submit();
+              }
+            }
+          });
+        }
+      })();
+    </script>
+
+{% if perms.adolescentes.review_duplicates %}
+<!-- Modal: Revisar Duplicados -->
+<div class="modal fade" id="modalDuplicados" tabindex="-1" aria-labelledby="modalDuplicadosLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalDuplicadosLabel">Possíveis Duplicados</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+          <div class="text-muted small">Exibindo pares por similaridade de nome com mesma data de nascimento</div>
+          <div class="d-flex align-items-center gap-2 mt-2 mt-sm-0">
+            <label class="form-label me-1 mb-0 small">Limiar</label>
+            <input type="number" id="dupThreshold" class="form-control form-control-sm" style="width: 90px;" step="0.01" min="0" max="1" value="0.75">
+            <button type="button" id="dupApplyBtn" class="btn btn-sm btn-primary">Aplicar</button>
+          </div>
+        </div>
+        <div id="duplicadosContainer" class="list-group small"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- Botão adicionar adolescente -->
-<div class="text-start mt-3">
+<script>
+(function(){
+  const modalEl = document.getElementById('modalDuplicados');
+  if (!modalEl) return;
+  // Move modal to body to avoid ancestor transforms affecting fixed positioning
+  if (modalEl.parentElement !== document.body) {
+    document.body.appendChild(modalEl);
+  }
+  modalEl.addEventListener('shown.bs.modal', async function(){
+    await carregarDuplicados();
+  });
+
+  // Apply button and Enter key on threshold
+  const applyBtn = document.getElementById('dupApplyBtn');
+  const thresholdInput = document.getElementById('dupThreshold');
+  if (applyBtn) {
+    applyBtn.addEventListener('click', function(){
+      carregarDuplicados();
+    });
+  }
+  if (thresholdInput) {
+    thresholdInput.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (applyBtn) applyBtn.click(); else carregarDuplicados();
+      }
+    });
+  }
+
+  // Delegated click handler (attach once)
+  const container = document.getElementById('duplicadosContainer');
+  let handlerAttached = false;
+  function attachHandlerOnce(){
+    if(handlerAttached || !container) return;
+    container.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      const action = btn.getAttribute('data-action');
+      const parent = btn.closest('.list-group-item');
+      if(action === 'merge'){
+        const winner = btn.getAttribute('data-winner');
+        const loser = btn.getAttribute('data-loser');
+        const winnerName = btn.getAttribute('data-winner-name') || 'perfil vencedor';
+        const loserName = btn.getAttribute('data-loser-name') || 'perfil perdedor';
+        const parentRow = btn.closest('.list-group-item');
+        const hasDifferentDob = parentRow && parentRow.querySelector('.badge.bg-warning');
+        const msg = hasDifferentDob
+          ? `ATENÇÃO: Datas de nascimento diferentes.\n\nConfirmar: mesclar \"${loserName}\" em \"${winnerName}\"?\n\nO perfil de \"${winnerName}\" será mantido.\nO perfil de \"${loserName}\" será removido.\n\nEsta ação é irreversível.`
+          : `Confirmar: mesclar \"${loserName}\" em \"${winnerName}\"?\n\nO perfil de \"${winnerName}\" será mantido.\nO perfil de \"${loserName}\" será removido.\n\nEsta ação é irreversível.`;
+        if(!confirm(msg)) return;
+        btn.disabled = true;
+        try{
+          const r = await fetch('{% url "merge_duplicados" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+            body: JSON.stringify({ winner_id: winner, loser_id: loser, allow_diff_dob: Boolean(hasDifferentDob) })
+          });
+          const jd = await r.json();
+          if(!jd.ok){ throw new Error(jd.error || 'Falha ao mesclar'); }
+          parent.classList.add('list-group-item-success');
+          parent.innerHTML += '<div class="small text-success mt-1">Mesclado com sucesso</div>';
+        }catch(err){
+          alert(err.message);
+        }finally{
+          btn.disabled = false;
+        }
+      } else if(action === 'rejeitar'){
+        try{
+          const r = await fetch('{% url "rejeitar_duplicado" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrfToken() },
+            body: JSON.stringify({ id_a: parent.dataset.idA, id_b: parent.dataset.idB })
+          });
+          const jd = await r.json();
+          if(!jd.ok){ throw new Error(jd.error || 'Falha ao rejeitar'); }
+          parent.remove();
+        }catch(err){
+          alert(err.message);
+        }
+      }
+    });
+    handlerAttached = true;
+  }
+  attachHandlerOnce();
+
+  async function carregarDuplicados(){
+    if(!container) return;
+    const threshold = document.getElementById('dupThreshold').value || 0.75;
+    container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" role="status"></div> Carregando...</div>';
+    try{
+      const resp = await fetch('{% url "sugestoes_duplicados" %}?threshold=' + encodeURIComponent(threshold));
+      const data = await resp.json();
+      if(!data.ok){ throw new Error(data.error || 'Erro ao buscar sugestões'); }
+      if(!data.results.length){
+        container.innerHTML = '<div class="alert alert-success">Nenhum possível duplicado encontrado com o limiar atual.</div>';
+        return;
+      }
+      // Build content using a DocumentFragment to reduce reflow
+      const frag = document.createDocumentFragment();
+      data.results.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'list-group-item';
+        row.dataset.idA = String(item.id_a);
+        row.dataset.idB = String(item.id_b);
+        if (item.recommended_winner) {
+          row.style.borderLeft = '4px solid var(--bs-success)';
+          row.style.paddingLeft = '10px';
+        }
+        row.style.overflow = 'hidden';
+        row.innerHTML = `
+          <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+            <div class="flex-fill min-w-0">
+              <div class="fw-semibold text-truncate text-nowrap">${item.nome_a} ${ (item.recommended_winner && item.recommended_winner === item.id_a) ? '<span class=\'badge bg-info text-dark ms-1\'>recomendado</span>' : '' } <span class="text-muted">vs</span> ${item.nome_b} ${ (item.recommended_winner && item.recommended_winner === item.id_b) ? '<span class=\'badge bg-info text-dark ms-1\'>recomendado</span>' : '' }</div>
+              ${ item.recommended_winner ? `
+                <div class="small text-success">Recomendação: manter 
+                  ${ item.recommended_winner === item.id_a ? item.nome_a : item.nome_b }
+                  (${ item.recommended_winner === item.id_a ? (item.a_has_pg ? 'tem PG' : (item.a_has_imp ? 'tem Império' : '')) : (item.b_has_pg ? 'tem PG' : (item.b_has_imp ? 'tem Império' : '')) })
+                </div>
+              ` : '' }
+              <div class="text-muted">
+                ${item.datas_diferentes
+                  ? `<span class="badge bg-warning text-dark me-2" title="Atenção: datas diferentes">datas diferentes</span>`
+                  : ''}
+                ${item.datas_diferentes
+                  ? `Datas: ${item.data_nascimento_a || '-'} vs ${item.data_nascimento_b || '-'}`
+                  : `Data nasc.: ${item.data_nascimento_a || '-'}`}
+                 · score: ${item.score.toFixed(3)}
+              </div>
+            </div>
+            <div class="d-flex flex-column align-items-end w-100 w-sm-auto mt-2 mt-sm-0">
+              <div class="d-flex flex-wrap gap-2 justify-content-end w-100">
+                <button class="btn btn-outline-primary d-inline-flex align-items-center flex-fill flex-sm-none" data-action="merge" data-winner="${item.id_a}" data-loser="${item.id_b}" data-winner-name="${item.nome_a.replace(/\"/g,'\\\"')}" data-loser-name="${item.nome_b.replace(/\"/g,'\\\"')}" title="Manter ${item.nome_a}; remover ${item.nome_b}" aria-label="Manter ${item.nome_a}; remover ${item.nome_b}">
+                  <i class="fas fa-check me-1"></i><span class="me-1">Manter</span><span class="text-truncate text-nowrap d-inline-block" style="max-width: 140px;">${item.nome_a}</span>
+                </button>
+                <button class="btn btn-outline-primary d-inline-flex align-items-center flex-fill flex-sm-none" data-action="merge" data-winner="${item.id_b}" data-loser="${item.id_a}" data-winner-name="${item.nome_b.replace(/\"/g,'\\\"')}" data-loser-name="${item.nome_a.replace(/\"/g,'\\\"')}" title="Manter ${item.nome_b}; remover ${item.nome_a}" aria-label="Manter ${item.nome_b}; remover ${item.nome_a}">
+                  <i class="fas fa-check me-1"></i><span class="me-1">Manter</span><span class="text-truncate text-nowrap d-inline-block" style="max-width: 140px;">${item.nome_b}</span>
+                </button>
+                <div class="w-100 d-block d-sm-none"></div>
+                <button class="btn btn-outline-secondary d-inline-flex align-items-center flex-fill flex-sm-none" data-action="rejeitar" aria-label="Rejeitar sugestão">Rejeitar</button>
+              </div>
+              <small class="text-muted mt-1 d-none d-lg-block">Escolha quem manter.</small>
+            </div>
+          </div>`;
+        frag.appendChild(row);
+      });
+      container.innerHTML = '';
+      container.appendChild(frag);
+
+    }catch(err){
+      container.innerHTML = `<div class=\"alert alert-danger\">${err.message}</div>`;
+    }
+  }
+
+  function getCsrfToken(){
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? match[1] : '';
+  }
+})();
+</script>
+{% endif %}
+    </div>
+
+    <!-- Chips de filtros ativos -->
+    <div class="mt-2">
+      {% if request.GET.busca or request.GET.pg or request.GET.genero or request.GET.imperio or request.GET.presenca or request.GET.ordenar_por %}
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <span class="text-muted small me-1">Filtros ativos:</span>
+
+          {% if request.GET.busca %}
+            <a class="badge rounded-pill bg-primary text-decoration-none" href="?{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
+              Busca: {{ request.GET.busca }} <i class="fas fa-times ms-1"></i>
+            </a>
+          {% endif %}
+
+          {% if request.GET.pg %}
+            <a class="badge rounded-pill bg-secondary text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
+              PG: {% if request.GET.pg == 'sem_pg' %}Sem PG{% else %}{% for pg in pgs %}{% if request.GET.pg == pg.id|stringformat:"s" %}{{ pg.nome }}{% endif %}{% endfor %}{% endif %} <i class="fas fa-times ms-1"></i>
+            </a>
+          {% endif %}
+
+          {% if request.GET.genero %}
+            <a class="badge rounded-pill bg-info text-dark text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
+              Gênero: {{ request.GET.genero }} <i class="fas fa-times ms-1"></i>
+            </a>
+          {% endif %}
+
+          {% if request.GET.imperio %}
+            <a class="badge rounded-pill bg-warning text-dark text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
+              Império: {% if request.GET.imperio == 'sem_imperio' %}Sem Império{% else %}{% for imp in imperios %}{% if request.GET.imperio == imp.id|stringformat:"s" %}{{ imp.nome }}{% endif %}{% endfor %}{% endif %} <i class="fas fa-times ms-1"></i>
+            </a>
+          {% endif %}
+
+          {% if request.GET.presenca %}
+            <a class="badge rounded-pill bg-success text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
+              Presença:
+              {% if request.GET.presenca == 'presente_30' %}Presentes (30d){% elif request.GET.presenca == 'ausente_30' %}Ausentes (30d){% elif request.GET.presenca == 'nunca' %}Nunca compareceu{% else %}{{ request.GET.presenca }}{% endif %}
+              <i class="fas fa-times ms-1"></i>
+            </a>
+          {% endif %}
+
+          {% if request.GET.ordenar_por %}
+            <a class="badge rounded-pill bg-light text-dark border text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}">
+              Ordenação: {{ request.GET.ordenar_por }} {% if request.GET.direcao %}({{ request.GET.direcao }}){% endif %} <i class="fas fa-times ms-1"></i>
+            </a>
+            <a class="btn btn-link btn-sm text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}">Limpar ordenação</a>
+          {% endif %}
+          <a class="btn btn-link btn-sm text-decoration-none" href="{% url 'listar_adolescentes' %}">Limpar todos</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Botões de ações -->
+  <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
     <a href="{% url 'criar_adolescente' %}" class="btn btn-primary">Adicionar Adolescente</a>
-    <a href="{% url 'exportar_adolescentes_csv' %}" class="btn btn-outline-secondary">Exportar CSV</a>
+    <a href="{% url 'exportar_adolescentes_csv' %}?{{ request.GET.urlencode }}" class="btn btn-outline-secondary">Exportar CSV</a>
+    {% if perms.adolescentes.review_duplicates %}
+      <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalDuplicados">
+        <i class="fas fa-user-astronaut me-1"></i> Revisar Duplicados
+      </button>
+    {% endif %}
   </div>
 
 <!-- Tabela Desktop (oculta em mobile) -->
@@ -72,8 +367,8 @@
     <thead>
       <tr>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-            Nome
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=nome&direcao={% if ordenar_por == 'nome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+            Adolescente
             {% if ordenar_por == 'nome' %}
               {% if direcao == 'asc' %}
                 <i class="fas fa-sort-up"></i>
@@ -86,21 +381,7 @@
           </a>
         </th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=sobrenome&direcao={% if ordenar_por == 'sobrenome' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
-            Sobrenome
-            {% if ordenar_por == 'sobrenome' %}
-              {% if direcao == 'asc' %}
-                <i class="fas fa-sort-up"></i>
-              {% else %}
-                <i class="fas fa-sort-down"></i>
-              {% endif %}
-            {% else %}
-              <i class="fas fa-sort text-muted"></i>
-            {% endif %}
-          </a>
-        </th>
-        <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=genero&direcao={% if ordenar_por == 'genero' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=genero&direcao={% if ordenar_por == 'genero' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Gênero
             {% if ordenar_por == 'genero' %}
               {% if direcao == 'asc' %}
@@ -114,7 +395,7 @@
           </a>
         </th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=data_nascimento&direcao={% if ordenar_por == 'data_nascimento' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=data_nascimento&direcao={% if ordenar_por == 'data_nascimento' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Data de Nascimento
             {% if ordenar_por == 'data_nascimento' %}
               {% if direcao == 'asc' %}
@@ -127,9 +408,8 @@
             {% endif %}
           </a>
         </th>
-        <th>Foto</th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=pg&direcao={% if ordenar_por == 'pg' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=pg&direcao={% if ordenar_por == 'pg' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             PG
             {% if ordenar_por == 'pg' %}
               {% if direcao == 'asc' %}
@@ -143,7 +423,7 @@
           </a>
         </th>
         <th>
-          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}ordenar_por=imperio&direcao={% if ordenar_por == 'imperio' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
+          <a href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}ordenar_por=imperio&direcao={% if ordenar_por == 'imperio' and direcao == 'asc' %}desc{% else %}asc{% endif %}" class="text-decoration-none text-dark">
             Império
             {% if ordenar_por == 'imperio' %}
               {% if direcao == 'asc' %}
@@ -161,20 +441,32 @@
     </thead>
     <tbody>
       {% for adolescente in adolescentes %}
-      <tr style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modal{{ adolescente.id }}">
-        <td>{{ adolescente.nome }}</td>
-        <td>{{ adolescente.sobrenome }}</td>
+      <tr class="row-modal" style="cursor: pointer;" data-row-target="modal{{ adolescente.id }}">
+        <td>
+          <div class="d-flex align-items-center gap-3">
+            {% if adolescente.foto %}
+              <div class="avatar-wrap">
+                <img src="{{ adolescente.foto.url }}"
+                     alt="Foto de {{ adolescente.nome }}"
+                     class="avatar avatar-sm"
+                     data-initials="{{ adolescente.nome|slice:":1" }}{{ adolescente.sobrenome|slice:":1" }}"
+                     onerror="(function(el){var wrap=el.closest('.avatar-wrap');var s=document.createElement('span');s.className='avatar avatar-sm avatar-initials';s.textContent=el.dataset.initials; if(wrap){wrap.replaceWith(s);} else {el.replaceWith(s);} })(this)">
+                <button type="button" class="avatar-overlay btn btn-primary btn-sm"
+                        title="Ver foto" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}"
+                        onclick="event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();">
+                  <i class="fas fa-image"></i>
+                </button>
+              </div>
+            {% else %}
+              <span class="avatar avatar-sm avatar-initials" onclick="event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();">{{ adolescente.nome|slice:":1" }}{{ adolescente.sobrenome|slice:":1" }}</span>
+            {% endif %}
+            <div class="min-w-0">
+              <div class="text-truncate">{{ adolescente.nome }} {{ adolescente.sobrenome }}</div>
+            </div>
+          </div>
+        </td>
         <td>{{ adolescente.genero }}</td>
         <td>{{ adolescente.data_nascimento }}</td>
-        <td>
-          {% if adolescente.foto %}
-            <img src="{{ adolescente.foto.url }}" class="photo-table" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}">
-          {% else %}
-            <div class="photo-placeholder">
-              <i class="fas fa-user"></i>
-            </div>
-          {% endif %}
-        </td>
         <td>{{ adolescente.pg }}</td>
         <td>{{ adolescente.imperio }}</td>
         <td>
@@ -195,6 +487,28 @@
   </table>
 </div>
 
+<!-- Script: controlar abertura do modal de detalhes apenas quando clicar fora de elementos interativos -->
+<script>
+  (function(){
+    document.addEventListener('click', function(e){
+      // Se o clique foi dentro de qualquer modal, não faça nada (evita interferência)
+      if (e.target.closest('.modal')) return;
+      const row = e.target.closest('tr.row-modal');
+      if(!row) return;
+      // Ignorar cliques em elementos interativos dentro da linha
+      if (e.target.closest('.avatar-trigger, .btn, [data-bs-toggle], a, input, select, label')) {
+        return;
+      }
+      const targetId = row.getAttribute('data-row-target');
+      if (!targetId) return;
+      const modalEl = document.getElementById(targetId);
+      if (!modalEl) return;
+      const modal = new bootstrap.Modal(modalEl);
+      modal.show();
+    });
+  })();
+  </script>
+
 <!-- Cards Mobile (visível apenas em mobile) -->
 <div class="d-lg-none">
   <div class="row g-3 mt-3">
@@ -213,7 +527,7 @@
               {% endif %}
             </div>
             <div class="col-6 col-md-7">
-              <h6 class="card-title mb-1">{{ adolescente.nome }} {{ adolescente.sobrenome }}</h6>
+              <h6 class="card-title mb-1 fw-normal">{{ adolescente.nome }} {{ adolescente.sobrenome }}</h6>
               <p class="card-text small mb-1">
                 <i class="fas fa-venus-mars me-1"></i>{{ adolescente.get_genero_display }}
               </p>
@@ -281,20 +595,26 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body">
+        <div class="text-center mb-3">
+          {% if adolescente.foto %}
+            <img src="{{ adolescente.foto.url }}" class="rounded-circle img-thumbnail" style="width: 96px; height: 96px; object-fit: cover;" alt="Foto de {{ adolescente.nome }}">
+          {% else %}
+            <span class="rounded-circle bg-secondary d-inline-block" style="width: 96px; height: 96px; line-height: 96px; text-align: center; color: #fff; font-size: 2em;">
+              {{ adolescente.nome|slice:":1" }}{{ adolescente.sobrenome|slice:":1" }}
+            </span>
+          {% endif %}
+        </div>
+
         <p><strong>Nome Completo:</strong> {{ adolescente.nome }} {{ adolescente.sobrenome }}</p>
         <p><strong>Gênero:</strong> {{ adolescente.get_genero_display }}</p>
         <p><strong>Data de Nascimento:</strong> {{ adolescente.data_nascimento|date:"d/m/Y" }}</p>
         <p><strong>Pequeno Grupo (PG):</strong> {{ adolescente.pg }}</p>
         <p><strong>Império:</strong> {{ adolescente.imperio }}</p>
-        {% if adolescente.foto %}
-          <p><strong>Foto:</strong></p>
-          <img src="{{ adolescente.foto.url }}" class="photo-modal" alt="Foto de {{ adolescente.nome }}">
-        {% endif %}
 
         <hr>
         <h6>Histórico de Presenças:</h6>
         <ul class="list-group">
-          {% for presenca in adolescente.ultimas_presencas %}
+          {% for presenca in adolescente.cached_ultimas_presencas %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
               {{ presenca.dia.data|date:"d/m/Y" }}
               {% if presenca.presente %}
@@ -315,7 +635,7 @@
   </div>
 </div>
 
-<!-- Modal Editar Adolescente -->
+<!-- Modal Editar Adolescente (AJAX) -->
 {% if perms.adolescentes.change_adolescente %}
 <div class="modal fade" id="modalEditar{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalEditarLabel{{ adolescente.id }}" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -324,20 +644,18 @@
         <h5 class="modal-title" id="modalEditarLabel{{ adolescente.id }}">Editar {{ adolescente.nome }} {{ adolescente.sobrenome }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
-      <form method="post" action="{% url 'editar_adolescente' adolescente.id %}?{{ request.GET.urlencode }}" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="hidden" name="params" value="{{ request.GET.urlencode }}">
-        <div class="modal-body">
-          {{ adolescente.form_edicao.as_p }}
+      <!-- Conteúdo será carregado via AJAX -->
+      <div class="ajax-form-container" data-adolescente-id="{{ adolescente.id }}">
+        <div class="modal-body text-center">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Carregando...</span>
+          </div>
+          <p class="mt-2">Carregando formulário...</p>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar alterações</button>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
- </div>
+</div>
 {% endif %}
 
 <!-- Modal Confirmar Exclusão -->
@@ -415,13 +733,106 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const buscaInput = document.getElementById("buscaInput");
+    const clearBtn = document.getElementById("clearBusca");
     buscaInput.addEventListener("input", function () {
       clearTimeout(buscaInput.dataset.timer);
       buscaInput.dataset.timer = setTimeout(() => {
         document.getElementById("filtroForm").submit();
       }, 500);
     });
+
+    if (clearBtn) {
+      clearBtn.addEventListener("click", function () {
+        buscaInput.value = "";
+        document.getElementById("filtroForm").submit();
+      });
+    }
   });
+</script>
+
+<!-- Script AJAX para Edição Inline Otimizada -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Cache para formulários já carregados
+    const formCache = new Map();
+    
+    // Interceptar abertura de modais de edição
+    document.querySelectorAll('[data-bs-target^="#modalEditar"]').forEach(button => {
+        button.addEventListener('click', function() {
+            const modalId = this.getAttribute('data-bs-target').substring(1);
+            const modal = document.getElementById(modalId);
+            const container = modal.querySelector('.ajax-form-container');
+            const adolescenteId = container.getAttribute('data-adolescente-id');
+            
+            // Se já está carregado no cache, usar
+            if (formCache.has(adolescenteId)) {
+                container.innerHTML = formCache.get(adolescenteId);
+                setupFormHandlers(container);
+                return;
+            }
+            
+            // Carregar via AJAX
+            fetch(`/ajax/form/${adolescenteId}/`, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Armazenar no cache
+                    formCache.set(adolescenteId, data.form_html);
+                    
+                    // Inserir no modal
+                    container.innerHTML = data.form_html;
+                    
+                    // Configurar handlers do formulário
+                    setupFormHandlers(container);
+                } else {
+                    container.innerHTML = `
+                        <div class="modal-body text-center">
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Erro ao carregar formulário: ${data.error || 'Erro desconhecido'}
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Erro AJAX:', error);
+                container.innerHTML = `
+                    <div class="modal-body text-center">
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Erro de conexão. Tente novamente.
+                        </div>
+                    </div>
+                `;
+            });
+        });
+    });
+    
+    // Configurar handlers do formulário carregado
+    function setupFormHandlers(container) {
+        const form = container.querySelector('.ajax-form');
+        if (form) {
+            // Aplicar classes Bootstrap aos campos
+            form.querySelectorAll('input, select, textarea').forEach(field => {
+                if (!field.classList.contains('form-control') && !field.classList.contains('form-check-input')) {
+                    field.classList.add('form-control');
+                }
+            });
+            
+            // Handler para submit do formulário (opcional - pode manter redirect padrão)
+            // form.addEventListener('submit', function(e) {
+            //     // Aqui poderia implementar submit via AJAX se necessário
+            // });
+        }
+    }
+});
 </script>
 
 {% endblock %}

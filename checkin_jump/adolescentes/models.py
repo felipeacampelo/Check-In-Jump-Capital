@@ -31,6 +31,8 @@ class Adolescente(models.Model):
     class Meta:
         permissions = [
             ("view_dashboard", "Pode visualizar o dashboard"),
+            ("view_pgs_page", "Pode ver página de PGs"),
+            ("review_duplicates", "Pode revisar e mesclar duplicados"),
         ]
 
     def __str__(self):
@@ -52,6 +54,35 @@ class Presenca(models.Model):
     adolescente = models.ForeignKey(Adolescente, on_delete=models.CASCADE)
     dia = models.ForeignKey(DiaEvento, on_delete=models.CASCADE)
     presente = models.BooleanField(default=False)
+    
+    class Meta:
+        # Evitar duplicatas e otimizar queries
+        unique_together = [('adolescente', 'dia')]
+        # Índices para melhorar performance
+        indexes = [
+            models.Index(fields=['adolescente', 'dia']),
+            models.Index(fields=['dia', 'presente']),
+            models.Index(fields=['adolescente', 'presente']),
+        ]
+        ordering = ['-dia', 'adolescente']
+
+class DuplicadoRejeitado(models.Model):
+    """Par de perfis marcados como NÃO duplicados (rejeição persistida)."""
+    adolescente_a = models.ForeignKey(Adolescente, on_delete=models.CASCADE, related_name='rejeicoes_como_a')
+    adolescente_b = models.ForeignKey(Adolescente, on_delete=models.CASCADE, related_name='rejeicoes_como_b')
+    criado_por = models.ForeignKey(User, on_delete=models.CASCADE)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    motivo = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        unique_together = [('adolescente_a', 'adolescente_b')]
+        ordering = ['-criado_em']
+
+    def save(self, *args, **kwargs):
+        # Garantir ordenação a.id < b.id para unicidade consistente
+        if self.adolescente_a_id and self.adolescente_b_id and self.adolescente_a_id > self.adolescente_b_id:
+            self.adolescente_a_id, self.adolescente_b_id = self.adolescente_b_id, self.adolescente_a_id
+        super().save(*args, **kwargs)
 
 class ContagemAuditorio(models.Model):
     dia = models.ForeignKey(DiaEvento, on_delete=models.CASCADE, related_name='contagens_auditorio')

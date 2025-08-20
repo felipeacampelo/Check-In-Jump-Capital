@@ -25,9 +25,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-1n4oqnk-++enx-r7hy%e+7se7y5y28#0#1^htqgh)h#c5#@(j3')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'False'
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.150.106', '.onrender.com', '.railway.app', '.up.railway.app']
+
+# URL base do site para geração de links (ex.: https://seu-dominio.railway.app)
+SITE_URL = os.environ.get('SITE_URL')
+
+# Remetente padrão para envio de e-mails
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'no-reply@example.com')
 
 
 # Application definition
@@ -43,6 +49,10 @@ INSTALLED_APPS = [
     'adolescentes',
 ]
 
+# Debug Toolbar (apenas em desenvolvimento)
+if DEBUG:
+    INSTALLED_APPS += ['debug_toolbar']
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -54,6 +64,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Debug Toolbar Middleware (apenas em desenvolvimento)
+if DEBUG:
+    MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
 
 ROOT_URLCONF = 'config.urls'
 
@@ -68,6 +82,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'adolescentes.context_processors.theme_context',
             ],
         },
     },
@@ -121,6 +136,9 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# Validade do token de redefinição de senha (24 horas)
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24  # 86400 segundos
 
 
 # Internationalization
@@ -193,3 +211,73 @@ if not DEBUG:
     
     # Configurações adicionais de CORS para maior compatibilidade
     CORS_ALLOW_ALL_ORIGINS = True  # Temporário para debug
+
+# Configuração de logging otimizada para Railway
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+            'level': 'INFO',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'handlers': ['console'],
+            'level': 'WARNING',  # Reduz logs de SQL em produção
+            'propagate': False,
+        },
+    },
+}
+
+# Django Debug Toolbar Configuration (apenas em desenvolvimento)
+if DEBUG:
+    INTERNAL_IPS = [
+        '127.0.0.1',
+        'localhost',
+    ]
+    
+    # Configurações do Debug Toolbar
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': lambda request: DEBUG,
+        'SHOW_COLLAPSED': True,
+        'PROFILER_MAX_DEPTH': 10,
+    }
+    
+    # Painéis do Debug Toolbar (removido ProfilingPanel para evitar conflitos)
+    DEBUG_TOOLBAR_PANELS = [
+        'debug_toolbar.panels.history.HistoryPanel',
+        'debug_toolbar.panels.versions.VersionsPanel',
+        'debug_toolbar.panels.timer.TimerPanel',
+        'debug_toolbar.panels.settings.SettingsPanel',
+        'debug_toolbar.panels.headers.HeadersPanel',
+        'debug_toolbar.panels.request.RequestPanel',
+        'debug_toolbar.panels.sql.SQLPanel',  # Mais importante para performance
+        'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+        'debug_toolbar.panels.templates.TemplatesPanel',
+        'debug_toolbar.panels.cache.CachePanel',
+        'debug_toolbar.panels.signals.SignalsPanel',
+        'debug_toolbar.panels.redirects.RedirectsPanel',
+        # 'debug_toolbar.panels.profiling.ProfilingPanel',  # Desabilitado - causa conflitos
+    ]

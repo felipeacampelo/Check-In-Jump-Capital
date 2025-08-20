@@ -76,12 +76,16 @@
     {% endif %}
   </div>
   <div class="d-flex gap-2 checkin-actions">
+    {% if perms.adolescentes.add_contagemauditorio %}
     <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalContagemAuditorio">
       <i class="fas fa-users me-1"></i>Contagem no Auditório
     </button>
+    {% endif %}
+    {% if perms.adolescentes.add_contagemvisitantes %}
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalContagemVisitantes">
       <i class="fas fa-user-plus me-1"></i>Visitantes
     </button>
+    {% endif %}
   </div>
 </div>
 
@@ -211,6 +215,7 @@
 </div>
 
 <!-- Modal de contagem de visitantes -->
+{% if perms.adolescentes.add_contagemvisitantes %}
 <div class="modal fade" id="modalContagemVisitantes" tabindex="-1" aria-labelledby="modalContagemVisitantesLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -236,6 +241,8 @@
     </div>
   </div>
   </div>
+</div>
+{% endif %}
 </div>
 
 <!-- Modais de detalhes dos adolescentes (padrão Bootstrap, sem customização) -->
@@ -286,6 +293,7 @@
 {% endfor %}
 
 <!-- Modal de contagem de auditório -->
+{% if perms.adolescentes.add_contagemauditorio %}
 <div class="modal fade" id="modalContagemAuditorio" tabindex="-1" aria-labelledby="modalContagemAuditorioLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -311,6 +319,7 @@
     </div>
   </div>
 </div>
+{% endif %}
 
 <script>
   // Função para pegar o CSRF token do cookie

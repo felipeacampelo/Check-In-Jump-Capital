@@ -1,6 +1,6 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio, ContagemAuditorio, ContagemVisitantes
+from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio, ContagemAuditorio, ContagemVisitantes, DuplicadoRejeitado
 from .forms import AdolescenteForm, DiaEventoForm, ContagemAuditorioForm, ContagemVisitantesForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -17,6 +17,13 @@ from django.http import HttpResponse
 import json
 from django.urls import reverse
 from urllib.parse import urlencode
+from django.db import transaction, connection
+from django.template.loader import render_to_string
+try:
+    # Disponível quando usando PostgreSQL e habilitando django.contrib.postgres
+    from django.contrib.postgres.search import TrigramSimilarity
+except Exception:  # pragma: no cover
+    TrigramSimilarity = None
 
 def buscar_adolescentes_por_nome(queryset, termo_busca):
     """
@@ -83,12 +90,18 @@ def listar_adolescentes(request):
     pg_id = request.GET.get('pg')
     genero = request.GET.get('genero')
     imperio_id = request.GET.get('imperio')
+    presenca_filtro = request.GET.get('presenca')
     
     # Parâmetros de ordenação
     ordenar_por = request.GET.get('ordenar_por', 'nome')  # Padrão: ordenar por nome
     direcao = request.GET.get('direcao', 'asc')  # Padrão: ascendente
 
-    adolescentes = Adolescente.objects.all()
+    # Otimização: usar select_related e prefetch_related para evitar queries N+1
+    adolescentes = Adolescente.objects.select_related('pg', 'imperio').prefetch_related(
+        Prefetch('presenca_set', 
+                queryset=Presenca.objects.select_related('dia').order_by('-dia__data')[:5],
+                to_attr='cached_ultimas_presencas')
+    ).all()
     if busca:
         adolescentes = buscar_adolescentes_por_nome(adolescentes, busca)
     if pg_id:
@@ -103,6 +116,24 @@ def listar_adolescentes(request):
             adolescentes = adolescentes.filter(imperio__isnull=True)
         else:
             adolescentes = adolescentes.filter(imperio__id=imperio_id)
+
+    # Filtro por presença
+    if presenca_filtro:
+        trinta_dias_atras = date.today() - timedelta(days=30)
+        if presenca_filtro == 'presente_30':
+            adolescentes = adolescentes.filter(
+                presenca__presente=True,
+                presenca__dia__data__gte=trinta_dias_atras,
+            ).distinct()
+        elif presenca_filtro == 'ausente_30':
+            # Não teve nenhuma presença (presente=True) nos últimos 30 dias
+            adolescentes = adolescentes.exclude(
+                presenca__presente=True,
+                presenca__dia__data__gte=trinta_dias_atras,
+            ).distinct()
+        elif presenca_filtro == 'nunca':
+            # Nunca compareceu (sem nenhum registro de presença)
+            adolescentes = adolescentes.filter(presenca__isnull=True).distinct()
 
     # Aplicar ordenação
     if ordenar_por == 'nome':
@@ -140,13 +171,10 @@ def listar_adolescentes(request):
         adolescentes = adolescentes.order_by('nome', 'sobrenome')
 
     total_adolescentes = adolescentes.count()
+    
+    # Otimização: cache para filtros (evita queries repetidas)
     pgs = PequenoGrupo.objects.all()
     imperios = Imperio.objects.all()
-
-    # Pré-carrega presenças para cada adolescente
-    adolescentes = adolescentes.prefetch_related(
-        Prefetch('presenca_set', queryset=Presenca.objects.select_related('dia').order_by('-dia__data'))
-    )
 
     # Paginação
     paginator = Paginator(adolescentes, 25)  # 25 registros por página
@@ -161,9 +189,10 @@ def listar_adolescentes(request):
         # Se a página estiver fora do range, mostrar a última página
         adolescentes_paginados = paginator.page(paginator.num_pages)
 
-    # Anexa um formulário de edição para cada adolescente na página atual
-    for adolescente in adolescentes_paginados:
-        setattr(adolescente, 'form_edicao', AdolescenteForm(instance=adolescente))
+    # DESABILITADO: Formulários inline causam 54 queries N+1 
+    # A funcionalidade de edição inline será reimplementada de forma otimizada
+    # Por enquanto, usar apenas os links de edição individuais
+    pass
 
     return render(request, 'adolescentes/listar.html', {
         'adolescentes': adolescentes_paginados,
@@ -174,9 +203,217 @@ def listar_adolescentes(request):
         'pg_selecionado': pg_id,
         'genero_selecionado': genero,
         'imperio_selecionado': imperio_id,
+        'presenca_selecionada': presenca_filtro,
         'ordenar_por': ordenar_por,
         'direcao': direcao
     })
+
+
+@login_required
+@permission_required('adolescentes.review_duplicates', raise_exception=True)
+@require_http_methods(["GET"])
+def sugestoes_duplicados(request):
+    """
+    Retorna pares candidatos a duplicados com mesma data_nascimento e alta similaridade de nome completo.
+    Usa função similarity do pg_trgm via SQL bruto para desempenho.
+    """
+    threshold = float(request.GET.get('threshold', '0.75'))
+    limit = int(request.GET.get('limit', '50'))
+
+    # Estratégias combinadas:
+    # 1) Mesma data de nascimento + similaridade >= threshold (pg_trgm)
+    # 2) Nome e sobrenome exatamente iguais e data de nascimento diferente (incluir mesmo se similarity < threshold)
+    #    - Para (2), o score é reduzido (ex.: 0.70) e marcamos datas_diferentes=true para a UI exibir aviso.
+    sql = """
+        (
+          SELECT a.id AS id_a, b.id AS id_b,
+                 a.nome || ' ' || a.sobrenome AS nome_a,
+                 b.nome || ' ' || b.sobrenome AS nome_b,
+                 a.data_nascimento AS data_nasc_a,
+                 b.data_nascimento AS data_nasc_b,
+                 similarity(a.nome || ' ' || a.sobrenome, b.nome || ' ' || b.sobrenome) AS score,
+                 FALSE AS datas_diferentes,
+                 (a.pg_id IS NOT NULL) AS a_has_pg,
+                 (a.imperio_id IS NOT NULL) AS a_has_imp,
+                 (b.pg_id IS NOT NULL) AS b_has_pg,
+                 (b.imperio_id IS NOT NULL) AS b_has_imp,
+                 CASE
+                   WHEN a.pg_id IS NOT NULL AND b.pg_id IS NULL THEN a.id
+                   WHEN b.pg_id IS NOT NULL AND a.pg_id IS NULL THEN b.id
+                   WHEN a.imperio_id IS NOT NULL AND b.imperio_id IS NULL THEN a.id
+                   WHEN b.imperio_id IS NOT NULL AND a.imperio_id IS NULL THEN b.id
+                   ELSE NULL
+                 END AS recommended_winner
+          FROM adolescentes_adolescente a
+          JOIN adolescentes_adolescente b
+            ON a.id < b.id
+           AND a.data_nascimento = b.data_nascimento
+          LEFT JOIN adolescentes_duplicadorejeitado r
+            ON r.adolescente_a_id = a.id AND r.adolescente_b_id = b.id
+          WHERE similarity(a.nome || ' ' || a.sobrenome, b.nome || ' ' || b.sobrenome) >= %s
+            AND r.id IS NULL
+        )
+        UNION ALL
+        (
+          SELECT a.id AS id_a, b.id AS id_b,
+                 a.nome || ' ' || a.sobrenome AS nome_a,
+                 b.nome || ' ' || b.sobrenome AS nome_b,
+                 a.data_nascimento AS data_nasc_a,
+                 b.data_nascimento AS data_nasc_b,
+                 0.70 AS score,
+                 TRUE AS datas_diferentes,
+                 (a.pg_id IS NOT NULL) AS a_has_pg,
+                 (a.imperio_id IS NOT NULL) AS a_has_imp,
+                 (b.pg_id IS NOT NULL) AS b_has_pg,
+                 (b.imperio_id IS NOT NULL) AS b_has_imp,
+                 CASE
+                   WHEN a.pg_id IS NOT NULL AND b.pg_id IS NULL THEN a.id
+                   WHEN b.pg_id IS NOT NULL AND a.pg_id IS NULL THEN b.id
+                   WHEN a.imperio_id IS NOT NULL AND b.imperio_id IS NULL THEN a.id
+                   WHEN b.imperio_id IS NOT NULL AND a.imperio_id IS NULL THEN b.id
+                   ELSE NULL
+                 END AS recommended_winner
+          FROM adolescentes_adolescente a
+          JOIN adolescentes_adolescente b
+            ON a.id < b.id
+           AND a.nome = b.nome
+           AND a.sobrenome = b.sobrenome
+           AND a.data_nascimento IS DISTINCT FROM b.data_nascimento
+          LEFT JOIN adolescentes_duplicadorejeitado r
+            ON r.adolescente_a_id = a.id AND r.adolescente_b_id = b.id
+          WHERE r.id IS NULL
+        )
+        ORDER BY score DESC
+        LIMIT %s
+    """
+    try:
+        with connection.cursor() as cur:
+            cur.execute(sql, [threshold, limit])
+            rows = cur.fetchall()
+    except Exception as e:
+        return JsonResponse({
+            'ok': False,
+            'error': str(e),
+            'hint': 'Certifique-se de que a extensão pg_trgm está habilitada.'
+        }, status=500)
+
+    results = []
+    for r in rows:
+        (
+            id_a, id_b, nome_a, nome_b,
+            dna, dnb, score, datas_dif,
+            a_has_pg, a_has_imp, b_has_pg, b_has_imp,
+            recommended_winner
+        ) = r
+        results.append({
+            'id_a': id_a,
+            'id_b': id_b,
+            'nome_a': nome_a,
+            'nome_b': nome_b,
+            'data_nascimento_a': dna.strftime('%Y-%m-%d') if dna else None,
+            'data_nascimento_b': dnb.strftime('%Y-%m-%d') if dnb else None,
+            'score': float(score),
+            'datas_diferentes': bool(datas_dif),
+            'a_has_pg': bool(a_has_pg),
+            'a_has_imp': bool(a_has_imp),
+            'b_has_pg': bool(b_has_pg),
+            'b_has_imp': bool(b_has_imp),
+            'recommended_winner': int(recommended_winner) if recommended_winner is not None else None,
+        })
+    return JsonResponse({'ok': True, 'results': results})
+
+
+@login_required
+@permission_required('adolescentes.review_duplicates', raise_exception=True)
+@require_http_methods(["POST"])
+def merge_duplicados(request):
+    """
+    Mescla dois perfis: winner_id mantém, loser_id é fundido e removido.
+    - Reatribui Presenças para o vencedor (evita duplicar por mesmo dia).
+    - Copia foto se vencedor não tiver.
+    """
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        payload = request.POST
+    winner_id = int(payload.get('winner_id'))
+    loser_id = int(payload.get('loser_id'))
+    dry_run = str(payload.get('dry_run', 'false')).lower() == 'true'
+    allow_diff_dob = str(payload.get('allow_diff_dob', 'false')).lower() == 'true'
+
+    if winner_id == loser_id:
+        return JsonResponse({'ok': False, 'error': 'IDs iguais'}, status=400)
+
+    winner = get_object_or_404(Adolescente, id=winner_id)
+    loser = get_object_or_404(Adolescente, id=loser_id)
+
+    # Proteção básica: bloquear datas diferentes salvo confirmação explícita
+    if winner.data_nascimento != loser.data_nascimento and not allow_diff_dob:
+        return JsonResponse({'ok': False, 'error': 'Datas de nascimento diferentes. Confirme para prosseguir.'}, status=400)
+
+    changes = {'presencas_movidas': 0, 'foto_copiada': False}
+
+    if dry_run:
+        return JsonResponse({'ok': True, 'dry_run': True, 'changes': changes})
+
+    with transaction.atomic():
+        # Reatribuir presenças do perdedor para o vencedor, evitando duplicar por mesmo dia
+        loser_presencas = Presenca.objects.filter(adolescente=loser)
+        for p in loser_presencas.select_related('dia'):
+            exists = Presenca.objects.filter(adolescente=winner, dia=p.dia, presente=p.presente).exists()
+            if not exists:
+                p.adolescente = winner
+                p.save(update_fields=['adolescente'])
+                changes['presencas_movidas'] += 1
+            else:
+                p.delete()
+
+        # Foto: se winner não tem e loser tem, copiar
+        if not winner.foto and loser.foto:
+            winner.foto = loser.foto
+            winner.save(update_fields=['foto'])
+            changes['foto_copiada'] = True
+
+        # Finalmente apagar perdedor
+        loser.delete()
+
+    return JsonResponse({'ok': True, 'changes': changes})
+
+
+@login_required
+@permission_required('adolescentes.review_duplicates', raise_exception=True)
+@require_http_methods(["POST"])
+def rejeitar_duplicado(request):
+    """Persiste a rejeição de um par para não sugerir novamente."""
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        payload = request.POST
+    try:
+        id_a = int(payload.get('id_a'))
+        id_b = int(payload.get('id_b'))
+    except Exception:
+        return JsonResponse({'ok': False, 'error': 'Par inválido'}, status=400)
+
+    if id_a == id_b:
+        return JsonResponse({'ok': False, 'error': 'IDs iguais'}, status=400)
+
+    # garantir ordem
+    a_id, b_id = (id_a, id_b) if id_a < id_b else (id_b, id_a)
+    a = get_object_or_404(Adolescente, id=a_id)
+    b = get_object_or_404(Adolescente, id=b_id)
+    motivo = payload.get('motivo') or ''
+    obj, created = DuplicadoRejeitado.objects.get_or_create(
+        adolescente_a=a, adolescente_b=b,
+        defaults={'criado_por': request.user, 'motivo': motivo}
+    )
+    if not created:
+        # atualizar quem rejeitou/motivo mais recente
+        obj.criado_por = request.user
+        if motivo:
+            obj.motivo = motivo
+        obj.save(update_fields=['criado_por', 'motivo'])
+    return JsonResponse({'ok': True, 'rejeitado': True})
 
 @login_required
 def pagina_checkin(request):
@@ -205,23 +442,61 @@ def criar_adolescente(request):
 
 @permission_required('adolescentes.change_adolescente', raise_exception=True)
 @login_required
+def get_form_ajax(request, adolescente_id):
+    """Endpoint AJAX para carregar formulário de edição sob demanda"""
+    if request.method != 'GET':
+        return JsonResponse({'error': 'Método não permitido'}, status=405)
+    
+    try:
+        adolescente = get_object_or_404(Adolescente, id=adolescente_id)
+        form = AdolescenteForm(instance=adolescente)
+        
+        # Renderizar apenas o conteúdo do formulário
+        form_html = render_to_string('adolescentes/partials/form_edicao.html', {
+            'form': form,
+            'adolescente': adolescente,
+        }, request=request)
+        
+        return JsonResponse({
+            'success': True,
+            'form_html': form_html,
+            'adolescente_id': adolescente_id,
+            'adolescente_nome': f"{adolescente.nome} {adolescente.sobrenome}"
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
 def editar_adolescente(request, id):
     adolescente = get_object_or_404(Adolescente, id=id)
-    if request.method == "POST":
+    
+    if request.method == 'POST':
         form = AdolescenteForm(request.POST, request.FILES, instance=adolescente)
         if form.is_valid():
+            # Verificar se deve remover a foto atual
+            if request.POST.get('foto-clear'):
+                adolescente.foto.delete(save=False)  # Remove o arquivo
+                adolescente.foto = None  # Remove a referência
+            
             form.save()
             messages.success(request, "Adolescente atualizado com sucesso.")
+            
+            # Redireciona mantendo filtros, busca e página
+            params = request.GET.urlencode() or request.POST.get('params', '')
+            url = reverse('listar_adolescentes')
+            if params:
+                url = f"{url}?{params}"
+            return redirect(url)
         else:
             messages.error(request, "Não foi possível salvar. Verifique os campos e tente novamente.")
-        # Redireciona mantendo filtros, busca e página
-        params = request.GET.urlencode() or request.POST.get('params', '')
-        url = reverse('listar_adolescentes')
-        if params:
-            url = f"{url}?{params}"
-        return redirect(url)
-    # Em GET, direciona para a lista
-    return redirect('listar_adolescentes')
+    else:
+        form = AdolescenteForm(instance=adolescente)
+    
+    return render(request, 'adolescentes/criar_adolescente.html', {
+        'form': form,
+        'adolescente': adolescente,
+        'titulo': f'Editar {adolescente.nome} {adolescente.sobrenome}'
+    })
 
 @permission_required('adolescentes.delete_adolescente', raise_exception=True)
 @login_required
@@ -254,11 +529,12 @@ def lista_dias_evento(request):
     return render(request, 'checkin/lista_dias.html', {
         'dias': dias,
         'media_presentes': media_presentes,
+        'pode_adicionar_dia': request.user.has_perm('adolescentes.add_diaevento'),
     })
 
 
 @login_required
-@permission_required('checkin.add_diaevento', raise_exception=True)
+@permission_required('adolescentes.add_diaevento', raise_exception=True)
 def adicionar_dia_evento(request):
     if request.method == 'POST':
         form = DiaEventoForm(request.POST)
@@ -296,8 +572,14 @@ def checkin_dia(request, dia_id):
     if busca:
         adolescentes = buscar_adolescentes_por_nome(adolescentes, busca)
 
-    # Ordena: primeiro os presentes
-    adolescentes = sorted(adolescentes, key=lambda x: x.id not in presentes_ids)
+    # Ordenação solicitada:
+    # 1) pela quantidade total de presenças (desc)
+    # 2) desempate por ordem alfabética (nome, sobrenome)
+    adolescentes = (
+        adolescentes
+        .annotate(total_presencas=Count('presenca', filter=Q(presenca__presente=True)))
+        .order_by('-total_presencas', 'nome', 'sobrenome')
+    )
 
     # Paginação
     paginator = Paginator(adolescentes, 20)  # 20 adolescentes por página
@@ -312,6 +594,10 @@ def checkin_dia(request, dia_id):
     if request.method == 'POST':
         # Se for o modal de contagem de auditório
         if request.POST.get('contagem_auditorio'):
+            # Verifica permissão de adicionar contagem de auditório
+            if not request.user.has_perm('adolescentes.add_contagemauditorio'):
+                messages.error(request, 'Você não tem permissão para registrar contagem de auditório.')
+                return redirect('checkin_dia', dia_id=dia.id)
             quantidade = request.POST.get('quantidade_pessoas')
             try:
                 quantidade = int(quantidade)
@@ -336,6 +622,10 @@ def checkin_dia(request, dia_id):
         
         # Se for o modal de contagem de visitantes
         if request.POST.get('contagem_visitantes'):
+            # Verifica permissão de adicionar contagem de visitantes
+            if not request.user.has_perm('adolescentes.add_contagemvisitantes'):
+                messages.error(request, 'Você não tem permissão para registrar visitantes.')
+                return redirect('checkin_dia', dia_id=dia.id)
             quantidade_v = request.POST.get('quantidade_visitantes')
             try:
                 quantidade_v = int(quantidade_v)
@@ -434,15 +724,17 @@ def adicionar_pg(request):
 
     return render(request, 'pgs/adicionar_pg.html')
 
+@permission_required('adolescentes.view_pgs_page', raise_exception=True)
 @login_required
 def lista_pgs(request):
     pgs = PequenoGrupo.objects.all()
     return render(request, 'pgs/lista_pgs.html', {'pgs': pgs})
 
+@permission_required('adolescentes.view_pgs_page', raise_exception=True)
 @login_required
 def detalhes_pg(request, pg_id):
     pg = get_object_or_404(PequenoGrupo, id=pg_id)
-    adolescentes = Adolescente.objects.filter(pg=pg)
+    adolescentes = Adolescente.objects.filter(pg=pg).order_by('nome', 'sobrenome')
     return render(request, 'pgs/pg.html', {'pg': pg, 'adolescentes': adolescentes})
 
 
@@ -701,6 +993,7 @@ def dashboard(request):
     
     return render(request, 'adolescentes/dashboard.html', context)
 
+@permission_required('adolescentes.add_contagemauditorio', raise_exception=True)
 @login_required
 def contagem_auditorio(request):
     """Gerencia contagens de auditório - adicionar, editar ou visualizar"""

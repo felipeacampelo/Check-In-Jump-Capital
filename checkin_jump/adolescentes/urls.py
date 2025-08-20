@@ -16,6 +16,7 @@ urlpatterns = [
     path("adolescentes/novo/", views.criar_adolescente, name="criar_adolescente"),
     path("adolescentes/editar/<int:id>/", views.editar_adolescente, name="editar_adolescente"),
     path("adolescentes/excluir/<int:id>/", views.excluir_adolescente, name="excluir_adolescente"),
+    path("ajax/form/<int:adolescente_id>/", views.get_form_ajax, name="get_form_ajax"),
 
     # Check-in
     path("checkin/", views.lista_dias_evento, name="pagina_checkin"),
@@ -38,5 +39,10 @@ urlpatterns = [
 
     # Contagem de Auditório
     path('contagem-auditorio/', views.contagem_auditorio, name='contagem_auditorio'),
+
+    # Duplicados (apenas com permissão review_duplicates)
+    path('adolescentes/duplicados/sugestoes/', views.sugestoes_duplicados, name='sugestoes_duplicados'),
+    path('adolescentes/duplicados/merge/', views.merge_duplicados, name='merge_duplicados'),
+    path('adolescentes/duplicados/rejeitar/', views.rejeitar_duplicado, name='rejeitar_duplicado'),
 ]
 

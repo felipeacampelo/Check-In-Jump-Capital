@@ -1,39 +1,147 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-br" class="{{ html_class }}">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Check-in JUMP</title>
+    
+    <!-- Script para sincronizar localStorage com cookies e aplicar tema instantaneamente -->
+    <script>
+        (function() {
+            try {
+                const localStorageTheme = localStorage.getItem('dark-mode');
+                const isDarkMode = localStorageTheme === 'enabled';
+                
+                // Sincronizar localStorage com cookie para o servidor
+                if (localStorageTheme) {
+                    document.cookie = 'dark-mode=' + localStorageTheme + '; path=/; max-age=31536000'; // 1 ano
+                }
+                
+                // Garantir que a classe esteja aplicada (redundância para segurança)
+                if (isDarkMode && !document.documentElement.classList.contains('dark-mode')) {
+                    document.documentElement.classList.add('dark-mode');
+                }
+                
+                // Se o servidor não aplicou o tema mas o localStorage indica modo escuro, aplicar imediatamente
+                if (isDarkMode && !document.documentElement.classList.contains('dark-mode')) {
+                    document.documentElement.style.backgroundColor = '#1a1a1a';
+                    document.documentElement.style.color = '#e5e7eb';
+                    document.documentElement.classList.add('dark-mode');
+                }
+            } catch (e) {
+                // Fallback silencioso
+            }
+        })();
+    </script>
+    
+    <!-- CSS crítico aplicado imediatamente -->
+    <style>
+        /* Garantir que o modo escuro seja aplicado instantaneamente */
+        html.dark-mode {
+            background-color: #1a1a1a !important;
+            color: #e5e7eb !important;
+        }
+        
+        html.dark-mode body {
+            background-color: #1a1a1a !important;
+            color: #e5e7eb !important;
+        }
+        
+        /* Aplicar cores básicas do modo escuro imediatamente */
+        html.dark-mode * {
+            border-color: #374151 !important;
+        }
+        
+        html.dark-mode .card {
+            background-color: #374151 !important;
+            border-color: #4b5563 !important;
+        }
+        
+        html.dark-mode .navbar {
+            background-color: #1f2937 !important;
+        }
+    </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="{% static 'adolescentes/css/style.css' %}" />
 
+    {% block extra_head %}{% endblock %}
+
     <style>
-      /* Themed navbar (dark translucent with blur) */
-      .navbar.jump { 
-        background: rgba(11, 19, 32, 0.75);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-        padding-top: .10rem;
-        padding-bottom: .10rem;
+      /* Reset possible default spacing */
+      html, body { margin: 0; padding: 0; }
+      /* Reserve scrollbar gutter to avoid layout shift when modal opens */
+      html { scrollbar-gutter: stable both-edges; }
+      /* Reserve space for fixed navbar */
+      body { padding-top: 72px; }
+      /* Themed navbar (Glass style: dark translucent + stronger blur + gradient border) */
+      .navbar.jump {
+        /* Gradiente ligeiramente mais escuro para melhor contraste */
+        background: linear-gradient(90deg, #8fb2ff 0%, #b9d8ff 50%, #8fb2ff 100%) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        padding-top: .3rem;
+        padding-bottom: .3rem;
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 1030; /* above content */
+        margin: 0;
+        width: 100%;
+        overflow: visible; /* permitir que dropdowns saiam da navbar */
       }
+      /* Overlay escuro sutil para melhorar contraste do texto sobre o gradiente */
+      .navbar.jump::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.18) 50%, rgba(0,0,0,0.28) 100%);
+        pointer-events: none;
+        z-index: 0; /* manter overlay abaixo do conteúdo */
+      }
+      /* Subtle elevation */
+      .navbar.jump { box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+      /* Gradient bottom border */
+      .navbar.jump::after {
+        content: "";
+        position: absolute;
+        left: 0; right: 0; bottom: 0;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.45), rgba(255,255,255,0));
+        pointer-events: none;
+        z-index: 0; /* manter a borda abaixo do conteúdo */
+      }
+      /* Garantir que o conteúdo (incl. dropdown) fique acima do overlay */
+      .navbar.jump > .container-fluid { position: relative; z-index: 1; }
+      .navbar.jump .dropdown-menu { z-index: 2000; }
       /* Brand area: fixed height and overflow hidden to crop the logo if needed */
-      .navbar.jump .navbar-brand { color: #fff; padding-top: 0; padding-bottom: 0; height: 44px; overflow: hidden; display: flex; align-items: center; }
-      .navbar.jump .nav-logo { height: 112px; width: auto; display: block; transform: translateY(-2px); }
+      .navbar.jump .navbar-brand { color: #fff; padding-top: 0; padding-bottom: 0; height: 48px; overflow: hidden; display: flex; align-items: center; }
+      .navbar.jump .nav-logo { height: 110px; width: auto; display: block; transform: translateY(2px); }
       @media (max-width: 575.98px) {
-        .navbar.jump .navbar-brand { height: 40px; }
-        .navbar.jump .nav-logo { height: 84px; transform: translateY(0); }
+        /* Aumentar a logo no mobile e ajustar a altura da área da marca */
+        .navbar.jump .navbar-brand { height: 56px; }
+        .navbar.jump .nav-logo { height: 108px; transform: translateY(0); }
+        /* Compensar a navbar fixa mais alta para não sobrepor o conteúdo */
+        body { padding-top: 80px; }
       }
       .navbar.jump .navbar-brand span { display: none !important; }
       .navbar.jump .navbar-brand:hover { color: #fff; text-decoration: none; }
-      .navbar.jump .nav-link { color: rgba(255,255,255,0.85); padding-top: .35rem; padding-bottom: .35rem; }
-      .navbar.jump .nav-link:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
-      .navbar.jump .nav-link.active { color: #0d6efd; position: relative; }
-      .navbar.jump .nav-link.active::after {
-        content: ""; position: absolute; left: 0; bottom: -6px; width: 100%; height: 2px; background: #0d6efd; border-radius: 2px;
+      .navbar.jump .nav-link { color: rgba(255,255,255,0.95); padding-top: .35rem; padding-bottom: .35rem; position: relative; transition: color .2s ease; text-shadow: 0 1px 1px rgba(0,0,0,0.25); }
+      .navbar.jump .nav-link:hover { color: #fff; }
+      /* Animated underline for hover/active */
+      .navbar.jump .nav-link::after {
+        content: "";
+        position: absolute;
+        left: 10%; right: 10%; bottom: -6px;
+        height: 2px; border-radius: 2px;
+        background: linear-gradient(90deg, rgba(13,110,253,0), #0d6efd, rgba(13,110,253,0));
+        transform: scaleX(0);
+        transform-origin: center;
+        transition: transform .25s ease;
       }
+      .navbar.jump .nav-link:hover::after,
+      .navbar.jump .nav-link.active::after { transform: scaleX(1); }
+      .navbar.jump .nav-link.active { color: #0d6efd; }
       .navbar.jump .navbar-toggler { padding: .2rem .4rem; }
       /* Force white hamburger icon and dark collapse background on mobile */
       .navbar.jump .navbar-toggler { border-color: rgba(255,255,255,0.25); color: #fff; }
@@ -41,25 +149,239 @@
         background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255,255,255, 0.9)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
       }
       .navbar.jump .navbar-collapse {
-        background: rgba(11, 19, 32, 0.92);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        background: rgba(11, 19, 32, 0.90);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
       }
       @media (min-width: 992px) {
         .navbar.jump .navbar-collapse { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+      }
+      /* Light mode: menu mobile "tudo branco" para máximo contraste/legibilidade */
+      @media (max-width: 991.98px) {
+        body:not(.dark-mode) .navbar.jump .navbar-collapse {
+          /* Fundo do menu com o mesmo gradiente, porém mais escuro para contraste */
+          background: linear-gradient(90deg, #6f98ff 0%, #9ec6ff 50%, #6f98ff 100%) !important;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+        }
+        body:not(.dark-mode) .navbar.jump .navbar-collapse .nav-link {
+          color: #111827; /* texto escuro sobre gradiente claro */
+          text-shadow: none;
+        }
+        body:not(.dark-mode) .navbar.jump .navbar-collapse .nav-link:hover {
+          color: #0d6efd;
+        }
+        /* Links ativos também em preto no mobile claro */
+        body:not(.dark-mode) .navbar.jump .navbar-collapse .nav-link.active {
+          color: #111827;
+        }
+        /* Botões e textos no menu mobile com gradiente, mas texto escuro */
+        body:not(.dark-mode) .navbar.jump .navbar-text,
+        body:not(.dark-mode) .navbar.jump .btn { color: #111827; }
+        body:not(.dark-mode) .navbar.jump .btn.btn-secondary {
+          background: rgba(0,0,0,0.06);
+          border: none;
+          color: #111827;
+        }
+        body:not(.dark-mode) .navbar.jump .btn.btn-secondary:hover { background: rgba(0,0,0,0.12); }
+        /* Texto do botão primário também preto no mobile claro */
+        body:not(.dark-mode) .navbar.jump .navbar-collapse .btn.btn-primary { color: #111827; }
+        body:not(.dark-mode) .navbar.jump .navbar-collapse .btn .fa,
+        body:not(.dark-mode) .navbar.jump .navbar-collapse .btn [class^="fa-"] { color: inherit; }
+        /* Dropdown do usuário no mobile: texto branco e fundo translúcido para contraste */
+        body:not(.dark-mode) .navbar.jump .user-dropdown { background: rgba(255,255,255,0.12); color: #ffffff; }
+        body:not(.dark-mode) .navbar.jump .user-dropdown:hover,
+        body:not(.dark-mode) .navbar.jump .user-dropdown:focus { background: rgba(255,255,255,0.2); color: #ffffff; }
+        /* Toggler (hambúrguer) branco no modo claro mobile */
+        body:not(.dark-mode) .navbar.jump .navbar-toggler { border-color: rgba(255,255,255,0.25); color: #ffffff; }
+        body:not(.dark-mode) .navbar.jump .navbar-toggler-icon {
+          background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255,255,255, 0.95)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+        }
+        /* Dropdown menu e itens com texto escuro */
+        body:not(.dark-mode) .navbar.jump .dropdown-menu {
+          background-color: #ffffff;
+          color: #111827;
+          border: 1px solid rgba(0,0,0,0.08);
+        }
+        body:not(.dark-mode) .navbar.jump .dropdown-item { color: #111827; }
+        body:not(.dark-mode) .navbar.jump .dropdown-item:hover { background-color: #f3f4f6; color: #111827; }
+        body:not(.dark-mode) .navbar.jump .dropdown-item-text { color: #111827; }
+        body:not(.dark-mode) .navbar.jump .dropdown-header { color: #111827; }
+        /* Caret do dropdown (setinha) branco */
+        body:not(.dark-mode) .navbar.jump .user-dropdown.dropdown-toggle::after { border-top-color: #ffffff; }
+        /* User chip com texto escuro no mobile claro */
+        body:not(.dark-mode) .navbar.jump .user-chip { background: rgba(0,0,0,0.06); }
+        body:not(.dark-mode) .navbar.jump .user-chip .user-name { color: #111827; }
       }
       .navbar.jump .navbar-text, .navbar.jump .btn { color: rgba(255,255,255,0.9); }
       .navbar.jump .btn.btn-secondary { background: rgba(255,255,255,0.12); border: none; }
       .navbar.jump .btn.btn-secondary:hover { background: rgba(255,255,255,0.2); }
       .navbar.jump .btn.btn-danger { background: #dc3545; border: none; }
       .navbar.jump .btn.btn-primary { background: #0d6efd; border: none; }
-      /* Icon-only dark mode button: hide any text nodes/elements other than the icon */
+      /* Spacing between dark mode button and user area */
+      .navbar.jump .navbar-nav.align-items-center { gap: .5rem; }
+      /* Icon-only dark mode button: square size around the icon */
       #dark-mode-toggle { white-space: nowrap; }
       #dark-mode-toggle > :not(i) { display: none !important; }
+      .btn-icon { width: 36px; height: 36px; padding: 0; display: inline-flex; align-items: center; justify-content: center; line-height: 1; vertical-align: middle; position: relative; top: 3px; }
+      /* User chip */
+      .user-chip { display: inline-flex; align-items: center; gap: .5rem; padding: .25rem .6rem; background: rgba(255,255,255,0.12); border-radius: 9999px; }
+      .user-chip .user-name { color: #fff; }
+      .user-chip .btn-logout { padding: .25rem .55rem; line-height: 1; }
+      /* User dropdown styling to match navbar */
+      .user-dropdown { background: rgba(255,255,255,0.12); border: none; color: #fff; }
+      .user-dropdown:hover, .user-dropdown:focus { background: rgba(255,255,255,0.2); color: #fff; }
+      /* Make dropdown visually align with 36px dark-mode button */
+      .user-dropdown { height: 36px; padding: 0 .6rem; display: inline-flex; align-items: center; gap: .35rem; line-height: 1; border-radius: .5rem; }
+      .user-dropdown .fa-user { font-size: 0.95rem; }
+      .user-dropdown.dropdown-toggle::after { margin-left: .4rem; vertical-align: middle; }
+      /* Make dropdown menu same width as trigger and align item height */
+      .navbar.jump .dropdown { display: inline-flex; }
+      .navbar.jump .dropdown .dropdown-menu { min-width: 100%; width: 100%; }
+      .navbar.jump .dropdown .dropdown-item { height: 36px; display: flex; align-items: center; }
+
+      /* Right controls layout */
+      .navbar.jump .right-controls { display: flex; align-items: center; gap: 0.75rem; min-width: 0; flex-direction: row !important; flex-wrap: nowrap; flex: 1 1 auto; }
+      .navbar.jump .right-controls > * { flex: 0 0 auto; }
+      .navbar.jump .right-controls .spacer { flex: 1 1 auto; }
+      /* Avoid layout shift when Bootstrap hides body scrollbar on modal open */
+      .modal-open .navbar.jump { padding-right: var(--bs-scrollbar-width); }
+      /* Mobile alignment for right-side controls */
+      @media (max-width: 991.98px) {
+        .navbar.jump .right-controls { width: auto; min-width: 0; }
+        .user-chip { width: 100%; justify-content: space-between; }
+        .user-chip .btn { width: auto; }
+        #dark-mode-toggle { width: 36px; }
+      }
+      /* Desktop alignment: keep dark-mode next to dropdown on the right */
+      @media (min-width: 992px) {
+        .navbar.jump .right-controls { flex: 0 0 auto; justify-content: flex-end; }
+        .navbar.jump .right-controls .spacer { display: none !important; }
+        /* Nudge dark-mode button 2px up on desktop */
+        .btn-icon { top: 1px; }
+      }
+
+      /* ===== Global bottom spacing to avoid content sticking to footer ===== */
+      main > .container { padding-bottom: 3rem; }
+      @media (min-width: 992px) {
+        main > .container { padding-bottom: 4rem; }
+      }
+
+      /* ===== Dark mode adjustments for navbar ===== */
+      body.dark-mode .navbar.jump {
+        /* darker, muted gradient for better contrast */
+        background: linear-gradient(90deg, #1b2735 0%, #111827 50%, #1b2735 100%) !important;
+      }
+      body.dark-mode .navbar.jump::before {
+        /* slightly stronger overlay in dark mode */
+        background: linear-gradient(90deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.42) 50%, rgba(0,0,0,0.55) 100%);
+      }
+      body.dark-mode .navbar.jump .nav-link { color: rgba(255,255,255,0.96); text-shadow: none; }
+      body.dark-mode .navbar.jump .nav-link.active { color: #93c5fd; }
+      body.dark-mode .navbar.jump .nav-link::after { background: linear-gradient(90deg, rgba(147,197,253,0), #93c5fd, rgba(147,197,253,0)); }
+
+      /* Modal stability tweaks to reduce flicker during repaints */
+      .modal { will-change: transform, opacity; backface-visibility: hidden; }
+      .modal .modal-dialog { transform: translateZ(0); }
+      .modal-backdrop { will-change: opacity; }
+      /* Prevent interactions/hover behind an open modal */
+      .modal-open main, .modal-open .navbar.jump { pointer-events: none; }
+      .modal-open .modal, .modal-open .modal * { pointer-events: auto; }
+      /* Dropdown menu styling in dark mode */
+      body.dark-mode .navbar.jump .dropdown-menu {
+        background-color: #1f2937; /* slate-800 */
+        color: #e5e7eb; /* gray-200 */
+        border: 1px solid rgba(255,255,255,0.08);
+      }
+      body.dark-mode .navbar.jump .dropdown-item { color: #e5e7eb; }
+      body.dark-mode .navbar.jump .dropdown-item:hover { background-color: #374151; color: #fff; }
+
+      /* ===== Dark mode form controls (global) ===== */
+      body.dark-mode .form-label,
+      body.dark-mode label { color: #e5e7eb; }
+      body.dark-mode .form-text { color: #9ca3af; }
+
+      body.dark-mode .form-control,
+      body.dark-mode .form-select,
+      body.dark-mode .form-control:disabled,
+      body.dark-mode .form-select:disabled {
+        background-color: #111827; /* gray-900 */
+        color: #e5e7eb; /* gray-200 */
+        border-color: #374151; /* gray-700 */
+      }
+      body.dark-mode .form-control::placeholder { color: #9ca3af; }
+      body.dark-mode .input-group-text { background-color: #1f2937; color: #e5e7eb; border-color: #374151; }
+
+      body.dark-mode .form-control:focus,
+      body.dark-mode .form-select:focus {
+        background-color: #0b1220;
+        color: #f3f4f6;
+        border-color: #60a5fa; /* blue-400 */
+        box-shadow: 0 0 0 .2rem rgba(96,165,250,.25);
+      }
+
+      body.dark-mode .form-check-input { background-color: #111827; border-color: #4b5563; }
+      body.dark-mode .form-check-input:checked { background-color: #60a5fa; border-color: #60a5fa; }
+      body.dark-mode .form-check-label { color: #e5e7eb; }
+
+      body.dark-mode .btn-outline-secondary { color: #e5e7eb; border-color: #6b7280; }
+      body.dark-mode .btn-outline-secondary:hover { background-color: #374151; color: #fff; border-color: #9ca3af; }
+      body.dark-mode .btn-outline-primary { color: #93c5fd; border-color: #60a5fa; }
+      body.dark-mode .btn-outline-primary:hover { background-color: #1e3a8a; color: #fff; border-color: #93c5fd; }
+
+      /* ===== Avatar component ===== */
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: inline-block;
+        vertical-align: middle;
+      }
+      .avatar-sm { width: 36px; height: 36px; }
+      .avatar-xs { width: 28px; height: 28px; }
+      .avatar-initials {
+        background: #6b7280; /* gray-500 */
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        text-transform: uppercase;
+        line-height: 1;
+      }
+      .avatar-trigger { cursor: pointer; }
+
+      /* ===== Avatar overlay (desktop hover-only) ===== */
+      .avatar-wrap { position: relative; display: inline-block; }
+      .avatar-overlay {
+        position: absolute;
+        right: -6px;
+        top: -6px;
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        opacity: 0;
+        transform: scale(.9);
+        transition: opacity .15s ease, transform .15s ease;
+        box-shadow: 0 2px 6px rgba(0,0,0,.2);
+      }
+      /* Mostrar overlay apenas quando a linha está em hover (desktop) */
+      @media (min-width: 992px) {
+        tr:hover .avatar-overlay { opacity: 1; transform: scale(1); }
+      }
+      /* Não exibir overlay no mobile */
+      @media (max-width: 991.98px) {
+        .avatar-overlay { display: none !important; }
+      }
     </style>
 </head>
 
-<body class="{% block body_class %}container d-flex flex-column min-vh-100{% endblock %}">
+<body class="{% block body_class %}d-flex flex-column min-vh-100{% endblock %} {{ body_class }}">
     {% block navbar %}
     <nav class="navbar navbar-expand-lg navbar-dark jump">
         <div class="container-fluid">
@@ -86,11 +408,13 @@
                             <i class="fas fa-check-circle me-1"></i>Check-in
                         </a>
                     </li>
+                    {% if perms.adolescentes.view_pgs_page %}
                     <li class="nav-item">
                         <a class="nav-link{% if request.resolver_match.url_name == 'lista_pgs' %} active{% endif %}" href="{% url 'lista_pgs' %}">
                             <i class="fas fa-layer-group me-1"></i>PGs
                         </a>
                     </li>
+                    {% endif %}
                     {% if perms.adolescentes.view_dashboard %}
                     <li class="nav-item">
                         <a class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}" href="{% url 'dashboard' %}">
@@ -101,24 +425,50 @@
                 </ul>
 
                 <!-- Área do usuário -->
-                <div class="navbar-nav align-items-center">
-                    <!-- Botão modo escuro (apenas ícone) -->
-                    <button id="dark-mode-toggle" class="btn btn-secondary me-2 p-2" aria-label="Alternar modo escuro/claro" title="Alternar tema">
-                        <i class="fas fa-moon"></i>
-                    </button>
-                    
-                    {% if user.is_authenticated %}
-                        <span class="navbar-text me-3">
-                            <i class="fas fa-user me-1"></i><strong>{{ user.get_full_name|default:user.username }}</strong>
-                        </span>
-                        <a class="nav-link btn btn-danger" href="{% url 'logout' %}">
-                            <i class="fas fa-sign-out-alt me-1"></i>Sair
-                        </a>
-                    {% else %}
-                        <a class="nav-link btn btn-primary" href="{% url 'login' %}">
-                            <i class="fas fa-sign-in-alt me-1"></i>Entrar
-                        </a>
-                    {% endif %}
+                <div class="right-controls d-flex align-items-center ms-auto">
+                  <!-- Botão modo escuro (apenas ícone) -->
+                  <button id="dark-mode-toggle" class="btn btn-secondary btn-icon" aria-label="Alternar modo escuro/claro" title="Alternar tema">
+                    <i class="fas fa-moon"></i>
+                  </button>
+                  <span class="spacer d-block d-lg-none"></span>
+
+                  {% if user.is_authenticated %}
+                    <div class="dropdown">
+                      <button class="btn user-dropdown dropdown-toggle" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user me-1"></i><strong>{{ user.get_full_name|default:user.username }}</strong>
+                      </button>
+                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                        <li><h6 class="dropdown-header">Suas permissões</h6></li>
+                        {% with groups=user.groups.all %}
+                          {% if groups %}
+                            {% for g in groups %}
+                              <li><span class="dropdown-item-text text-muted"><i class="fas fa-shield-alt me-2"></i>{{ g.name }}</span></li>
+                            {% endfor %}
+                          {% else %}
+                            <li><span class="dropdown-item-text text-muted">Sem grupo de permissão</span></li>
+                          {% endif %}
+                        {% endwith %}
+                        <li><hr class="dropdown-divider"></li>
+                        {% if user.is_staff or user.is_superuser %}
+                        <li>
+                          <a class="dropdown-item" href="{% url 'admin:index' %}">
+                            <i class="fas fa-toolbox me-2"></i>Admin
+                          </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
+                        <li>
+                          <a class="dropdown-item" href="{% url 'logout' %}">
+                            <i class="fas fa-sign-out-alt me-2"></i>Sair
+                          </a>
+                        </li>
+                      </ul>
+                    </div>
+                  {% else %}
+                    <a class="btn btn-primary" href="{% url 'login' %}">
+                      <i class="fas fa-sign-in-alt me-1"></i>Entrar
+                    </a>
+                  {% endif %}
                 </div>
             </div>
         </div>
@@ -127,7 +477,7 @@
     <!-- <hr /> Removido para eliminar a linha -->
 
     <main class="flex-grow-1">
-        <div class="container-fluid p-0">
+        <div class="container">
             {% if messages %}
               <div class="mt-2">
                 {% for message in messages %}
@@ -147,8 +497,9 @@
                 {% endfor %}
               </div>
             {% endif %}
+
+            {% block content %}{% endblock %}
         </div>
-        {% block content %}{% endblock %}
     </main>
 
     {% block footer %}

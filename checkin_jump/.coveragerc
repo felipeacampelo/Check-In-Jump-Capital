@@ -1,0 +1,17 @@
+[run]
+source = adolescentes,config
+omit =
+    */migrations/*
+    venv/*
+
+[report]
+show_missing = True
+skip_covered = False
+precision = 1
+exclude_lines =
+    pragma: no cover
+
+[html]
+directory = htmlcov
+title = Check-in Jump Coverage
+show_contexts = False

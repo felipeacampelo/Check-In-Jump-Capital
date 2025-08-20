@@ -1,624 +1,6 @@
 [
 {
-  "model": "admin.logentry",
-  "pk": 1,
-  "fields": {
-    "action_time": "2025-07-02T16:31:02.713Z",
-    "user": 1,
-    "content_type": 11,
-    "object_id": "1",
-    "object_repr": "Egito",
-    "action_flag": 1,
-    "change_message": "[{\"added\": {}}]"
-  }
-},
-{
-  "model": "admin.logentry",
-  "pk": 2,
-  "fields": {
-    "action_time": "2025-07-02T16:31:08.567Z",
-    "user": 1,
-    "content_type": 11,
-    "object_id": "2",
-    "object_repr": "Grécia",
-    "action_flag": 1,
-    "change_message": "[{\"added\": {}}]"
-  }
-},
-{
-  "model": "admin.logentry",
-  "pk": 3,
-  "fields": {
-    "action_time": "2025-07-02T16:31:14.277Z",
-    "user": 1,
-    "content_type": 11,
-    "object_id": "3",
-    "object_repr": "Pérsia",
-    "action_flag": 1,
-    "change_message": "[{\"added\": {}}]"
-  }
-},
-{
-  "model": "admin.logentry",
-  "pk": 4,
-  "fields": {
-    "action_time": "2025-07-02T16:31:16.829Z",
-    "user": 1,
-    "content_type": 11,
-    "object_id": "4",
-    "object_repr": "Roma",
-    "action_flag": 1,
-    "change_message": "[{\"added\": {}}]"
-  }
-},
-{
-  "model": "admin.logentry",
-  "pk": 5,
-  "fields": {
-    "action_time": "2025-07-03T14:20:24.421Z",
-    "user": 1,
-    "content_type": 4,
-    "object_id": "2",
-    "object_repr": "checkin",
-    "action_flag": 1,
-    "change_message": "[{\"added\": {}}]"
-  }
-},
-{
-  "model": "admin.logentry",
-  "pk": 6,
-  "fields": {
-    "action_time": "2025-07-04T22:30:55.732Z",
-    "user": 1,
-    "content_type": 4,
-    "object_id": "3",
-    "object_repr": "lider",
-    "action_flag": 1,
-    "change_message": "[{\"added\": {}}]"
-  }
-},
-{
-  "model": "admin.logentry",
-  "pk": 7,
-  "fields": {
-    "action_time": "2025-07-04T22:44:17.028Z",
-    "user": 1,
-    "content_type": 4,
-    "object_id": "2",
-    "object_repr": "checkin",
-    "action_flag": 2,
-    "change_message": "[{\"changed\": {\"fields\": [\"password\"]}}]"
-  }
-},
-{
-  "model": "admin.logentry",
-  "pk": 8,
-  "fields": {
-    "action_time": "2025-08-09T17:35:52.947Z",
-    "user": 1,
-    "content_type": 8,
-    "object_id": "3",
-    "object_repr": "18/07/2025",
-    "action_flag": 3,
-    "change_message": ""
-  }
-},
-{
-  "model": "admin.logentry",
-  "pk": 9,
-  "fields": {
-    "action_time": "2025-08-09T17:35:52.947Z",
-    "user": 1,
-    "content_type": 8,
-    "object_id": "2",
-    "object_repr": "11/07/2025",
-    "action_flag": 3,
-    "change_message": ""
-  }
-},
-{
-  "model": "admin.logentry",
-  "pk": 10,
-  "fields": {
-    "action_time": "2025-08-09T17:35:52.947Z",
-    "user": 1,
-    "content_type": 8,
-    "object_id": "1",
-    "object_repr": "04/07/2025",
-    "action_flag": 3,
-    "change_message": ""
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 1,
-  "fields": {
-    "name": "Can add log entry",
-    "content_type": 1,
-    "codename": "add_logentry"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 2,
-  "fields": {
-    "name": "Can change log entry",
-    "content_type": 1,
-    "codename": "change_logentry"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 3,
-  "fields": {
-    "name": "Can delete log entry",
-    "content_type": 1,
-    "codename": "delete_logentry"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 4,
-  "fields": {
-    "name": "Can view log entry",
-    "content_type": 1,
-    "codename": "view_logentry"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 5,
-  "fields": {
-    "name": "Can add permission",
-    "content_type": 2,
-    "codename": "add_permission"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 6,
-  "fields": {
-    "name": "Can change permission",
-    "content_type": 2,
-    "codename": "change_permission"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 7,
-  "fields": {
-    "name": "Can delete permission",
-    "content_type": 2,
-    "codename": "delete_permission"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 8,
-  "fields": {
-    "name": "Can view permission",
-    "content_type": 2,
-    "codename": "view_permission"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 9,
-  "fields": {
-    "name": "Can add group",
-    "content_type": 3,
-    "codename": "add_group"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 10,
-  "fields": {
-    "name": "Can change group",
-    "content_type": 3,
-    "codename": "change_group"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 11,
-  "fields": {
-    "name": "Can delete group",
-    "content_type": 3,
-    "codename": "delete_group"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 12,
-  "fields": {
-    "name": "Can view group",
-    "content_type": 3,
-    "codename": "view_group"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 13,
-  "fields": {
-    "name": "Can add user",
-    "content_type": 4,
-    "codename": "add_user"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 14,
-  "fields": {
-    "name": "Can change user",
-    "content_type": 4,
-    "codename": "change_user"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 15,
-  "fields": {
-    "name": "Can delete user",
-    "content_type": 4,
-    "codename": "delete_user"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 16,
-  "fields": {
-    "name": "Can view user",
-    "content_type": 4,
-    "codename": "view_user"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 17,
-  "fields": {
-    "name": "Can add content type",
-    "content_type": 5,
-    "codename": "add_contenttype"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 18,
-  "fields": {
-    "name": "Can change content type",
-    "content_type": 5,
-    "codename": "change_contenttype"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 19,
-  "fields": {
-    "name": "Can delete content type",
-    "content_type": 5,
-    "codename": "delete_contenttype"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 20,
-  "fields": {
-    "name": "Can view content type",
-    "content_type": 5,
-    "codename": "view_contenttype"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 21,
-  "fields": {
-    "name": "Can add session",
-    "content_type": 6,
-    "codename": "add_session"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 22,
-  "fields": {
-    "name": "Can change session",
-    "content_type": 6,
-    "codename": "change_session"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 23,
-  "fields": {
-    "name": "Can delete session",
-    "content_type": 6,
-    "codename": "delete_session"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 24,
-  "fields": {
-    "name": "Can view session",
-    "content_type": 6,
-    "codename": "view_session"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 25,
-  "fields": {
-    "name": "Can add adolescente",
-    "content_type": 7,
-    "codename": "add_adolescente"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 26,
-  "fields": {
-    "name": "Can change adolescente",
-    "content_type": 7,
-    "codename": "change_adolescente"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 27,
-  "fields": {
-    "name": "Can delete adolescente",
-    "content_type": 7,
-    "codename": "delete_adolescente"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 28,
-  "fields": {
-    "name": "Can view adolescente",
-    "content_type": 7,
-    "codename": "view_adolescente"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 29,
-  "fields": {
-    "name": "Can add dia evento",
-    "content_type": 8,
-    "codename": "add_diaevento"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 30,
-  "fields": {
-    "name": "Can change dia evento",
-    "content_type": 8,
-    "codename": "change_diaevento"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 31,
-  "fields": {
-    "name": "Can delete dia evento",
-    "content_type": 8,
-    "codename": "delete_diaevento"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 32,
-  "fields": {
-    "name": "Can view dia evento",
-    "content_type": 8,
-    "codename": "view_diaevento"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 33,
-  "fields": {
-    "name": "Can add presenca",
-    "content_type": 9,
-    "codename": "add_presenca"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 34,
-  "fields": {
-    "name": "Can change presenca",
-    "content_type": 9,
-    "codename": "change_presenca"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 35,
-  "fields": {
-    "name": "Can delete presenca",
-    "content_type": 9,
-    "codename": "delete_presenca"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 36,
-  "fields": {
-    "name": "Can view presenca",
-    "content_type": 9,
-    "codename": "view_presenca"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 37,
-  "fields": {
-    "name": "Can add pequeno grupo",
-    "content_type": 10,
-    "codename": "add_pequenogrupo"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 38,
-  "fields": {
-    "name": "Can change pequeno grupo",
-    "content_type": 10,
-    "codename": "change_pequenogrupo"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 39,
-  "fields": {
-    "name": "Can delete pequeno grupo",
-    "content_type": 10,
-    "codename": "delete_pequenogrupo"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 40,
-  "fields": {
-    "name": "Can view pequeno grupo",
-    "content_type": 10,
-    "codename": "view_pequenogrupo"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 41,
-  "fields": {
-    "name": "Can add imperio",
-    "content_type": 11,
-    "codename": "add_imperio"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 42,
-  "fields": {
-    "name": "Can change imperio",
-    "content_type": 11,
-    "codename": "change_imperio"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 43,
-  "fields": {
-    "name": "Can delete imperio",
-    "content_type": 11,
-    "codename": "delete_imperio"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 44,
-  "fields": {
-    "name": "Can view imperio",
-    "content_type": 11,
-    "codename": "view_imperio"
-  }
-},
-{
-  "model": "auth.permission",
-  "pk": 45,
-  "fields": {
-    "name": "Pode visualizar o dashboard",
-    "content_type": 7,
-    "codename": "view_dashboard"
-  }
-},
-{
-  "model": "auth.group",
-  "pk": 1,
-  "fields": {
-    "name": "Administradores",
-    "permissions": [
-      25,
-      26,
-      27,
-      28,
-      29,
-      30,
-      31,
-      32
-    ]
-  }
-},
-{
-  "model": "auth.group",
-  "pk": 2,
-  "fields": {
-    "name": "Usuários Normais",
-    "permissions": [
-      25,
-      28
-    ]
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 1,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$jI6ihOK7e3OfCcZI0PVreo$YMr6KyKndWLHvHYO3b2Jq+ETvajfSik0TNwABUx0cnM=",
-    "last_login": "2025-08-09T18:33:19.980Z",
-    "is_superuser": true,
-    "username": "felipecampelo",
-    "first_name": "",
-    "last_name": "",
-    "email": "felipeaquinocamp@gmail.com",
-    "is_staff": true,
-    "is_active": true,
-    "date_joined": "2025-07-02T16:24:25.982Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 2,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$dhwkxbaCUnOWgXYNYS2a3R$FA7innFkWkwCFoCWXeMaSRC9FgFpVkemOf+FOIIEu9E=",
-    "last_login": "2025-07-29T12:23:13.387Z",
-    "is_superuser": false,
-    "username": "checkin",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2025-07-03T14:20:24.207Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "auth.user",
-  "pk": 3,
-  "fields": {
-    "password": "pbkdf2_sha256$1000000$rYjzbYKeCyBVe1hmgNezH4$s3MaUML692JV3g9I68oNXI5Jlua/Gpfq7XeBkorQ6s0=",
-    "last_login": null,
-    "is_superuser": false,
-    "username": "lider",
-    "first_name": "",
-    "last_name": "",
-    "email": "",
-    "is_staff": false,
-    "is_active": true,
-    "date_joined": "2025-07-04T22:30:55.516Z",
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
   "model": "contenttypes.contenttype",
-  "pk": 1,
   "fields": {
     "app_label": "admin",
     "model": "logentry"
@@ -626,7 +8,6 @@
 },
 {
   "model": "contenttypes.contenttype",
-  "pk": 2,
   "fields": {
     "app_label": "auth",
     "model": "permission"
@@ -634,7 +15,6 @@
 },
 {
   "model": "contenttypes.contenttype",
-  "pk": 3,
   "fields": {
     "app_label": "auth",
     "model": "group"
@@ -642,7 +22,6 @@
 },
 {
   "model": "contenttypes.contenttype",
-  "pk": 4,
   "fields": {
     "app_label": "auth",
     "model": "user"
@@ -650,7 +29,6 @@
 },
 {
   "model": "contenttypes.contenttype",
-  "pk": 5,
   "fields": {
     "app_label": "contenttypes",
     "model": "contenttype"
@@ -658,7 +36,6 @@
 },
 {
   "model": "contenttypes.contenttype",
-  "pk": 6,
   "fields": {
     "app_label": "sessions",
     "model": "session"
@@ -666,7 +43,6 @@
 },
 {
   "model": "contenttypes.contenttype",
-  "pk": 7,
   "fields": {
     "app_label": "adolescentes",
     "model": "adolescente"
@@ -674,7 +50,6 @@
 },
 {
   "model": "contenttypes.contenttype",
-  "pk": 8,
   "fields": {
     "app_label": "adolescentes",
     "model": "diaevento"
@@ -682,7 +57,6 @@
 },
 {
   "model": "contenttypes.contenttype",
-  "pk": 9,
   "fields": {
     "app_label": "adolescentes",
     "model": "presenca"
@@ -690,7 +64,6 @@
 },
 {
   "model": "contenttypes.contenttype",
-  "pk": 10,
   "fields": {
     "app_label": "adolescentes",
     "model": "pequenogrupo"
@@ -698,10 +71,31 @@
 },
 {
   "model": "contenttypes.contenttype",
-  "pk": 11,
   "fields": {
     "app_label": "adolescentes",
     "model": "imperio"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "adolescentes",
+    "model": "contagemauditorio"
+  }
+},
+{
+  "model": "contenttypes.contenttype",
+  "fields": {
+    "app_label": "adolescentes",
+    "model": "contagemvisitantes"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "765yfibpzaetp22flnhqkxcbqf1aqykz",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2hBohjJx6d4zkBkGpGogKe2q8e6GpAvd_vfeP1SgfSth72kNi6irsuryuzHFV6oDyJPqo-nY6rYurIeiT9r1vUl6307376BQL6MGATsz24mzeLJuwijWMRCR9z4JMZgEwoiM2RmEjIKeeXZOjCf1-QIGRzi7:1ulzx1:K7Cx7Jkfp8EHwZyzd1YCZ-Mt2U2pb9MGlI-r0b_TbWY",
+    "expire_date": "2025-08-27T01:06:47.372Z"
   }
 },
 {
@@ -710,6 +104,14 @@
   "fields": {
     "session_data": ".eJxVjEEOwiAQRe_C2hBohjJx6d4zkBkGpGogKe2q8e6GpAvd_vfeP1SgfSth72kNi6irsuryuzHFV6oDyJPqo-nY6rYurIeiT9r1vUl6307376BQL6MGATsz24mzeLJuwijWMRCR9z4JMZgEwoiM2RmEjIKeeXZOjCf1-QIGRzi7:1uj8w5:rTSi25ytklGIvDJH1VWkuFM18SwKJPHdaEq7aWV6gec",
     "expire_date": "2025-08-19T04:06:01.368Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "bqto3y8rekvkdl68f9w9qlm139g4eot3",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2hBohjJx6d4zkBkGpGogKe2q8e6GpAvd_vfeP1SgfSth72kNi6irsuryuzHFV6oDyJPqo-nY6rYurIeiT9r1vUl6307376BQL6MGATsz24mzeLJuwijWMRCR9z4JMZgEwoiM2RmEjIKeeXZOjCf1-QIGRzi7:1ulkLO:OsttH4FXtJXYAP1FCc7jW22Jj2Q_I-QXoXxzLewy6A4",
+    "expire_date": "2025-08-26T08:26:54.397Z"
   }
 },
 {
@@ -900,13 +302,13 @@
   "model": "adolescentes.adolescente",
   "pk": 2221,
   "fields": {
-    "nome": "Bernand",
+    "nome": "Bernard",
     "sobrenome": "Luiz de Lima Santos",
     "foto": "Adolescents_Images/79.Profile Photo.231403.jpg",
     "data_nascimento": "2007-01-05",
     "genero": "M",
     "pg": 113,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -920,7 +322,7 @@
     "data_nascimento": "2007-01-11",
     "genero": "M",
     "pg": 113,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -934,7 +336,7 @@
     "data_nascimento": "2007-01-11",
     "genero": "M",
     "pg": 113,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -948,7 +350,7 @@
     "data_nascimento": "2007-01-17",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -1088,7 +490,7 @@
     "data_nascimento": "2007-04-02",
     "genero": "F",
     "pg": 101,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -1214,7 +616,7 @@
     "data_nascimento": "2007-06-01",
     "genero": "M",
     "pg": 113,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -1228,7 +630,7 @@
     "data_nascimento": "2007-06-07",
     "genero": "M",
     "pg": 113,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -1242,7 +644,7 @@
     "data_nascimento": "2007-06-11",
     "genero": "F",
     "pg": 101,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -1256,7 +658,7 @@
     "data_nascimento": "2007-06-19",
     "genero": "F",
     "pg": 101,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -1270,7 +672,7 @@
     "data_nascimento": "2007-06-20",
     "genero": "F",
     "pg": 104,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -1283,8 +685,8 @@
     "foto": "",
     "data_nascimento": "2007-06-23",
     "genero": "F",
-    "pg": null,
-    "imperio": null,
+    "pg": 101,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -1312,7 +714,7 @@
     "data_nascimento": "2007-06-25",
     "genero": "F",
     "pg": 101,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -1326,7 +728,7 @@
     "data_nascimento": "2007-06-25",
     "genero": "F",
     "pg": 101,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -1340,7 +742,7 @@
     "data_nascimento": "2007-07-06",
     "genero": "F",
     "pg": 101,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -1368,7 +770,7 @@
     "data_nascimento": "2007-07-09",
     "genero": "F",
     "pg": 101,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -1382,7 +784,7 @@
     "data_nascimento": "2007-07-13",
     "genero": "M",
     "pg": 113,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -1452,7 +854,7 @@
     "data_nascimento": "2007-08-15",
     "genero": "M",
     "pg": 113,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -1493,8 +895,8 @@
     "foto": "",
     "data_nascimento": "2007-08-22",
     "genero": "F",
-    "pg": null,
-    "imperio": null,
+    "pg": 101,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -1550,7 +952,7 @@
     "data_nascimento": "2007-09-26",
     "genero": "M",
     "pg": 113,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -1592,7 +994,7 @@
     "data_nascimento": "2007-10-15",
     "genero": "F",
     "pg": 101,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -1620,7 +1022,7 @@
     "data_nascimento": "2007-11-13",
     "genero": "M",
     "pg": 113,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -1648,7 +1050,7 @@
     "data_nascimento": "2007-11-19",
     "genero": "M",
     "pg": 113,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -1690,20 +1092,6 @@
     "data_nascimento": "2007-12-22",
     "genero": "M",
     "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2278,
-  "fields": {
-    "nome": "Calebe",
-    "sobrenome": "Cavalcanti",
-    "foto": "",
-    "data_nascimento": "2007-12-26",
-    "genero": "M",
-    "pg": 113,
     "imperio": null,
     "data_inicio": null
   }
@@ -1886,7 +1274,7 @@
     "data_nascimento": "2008-02-27",
     "genero": "M",
     "pg": 112,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -1928,7 +1316,7 @@
     "data_nascimento": "2008-03-22",
     "genero": "M",
     "pg": 112,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -2138,7 +1526,7 @@
     "data_nascimento": "2008-06-20",
     "genero": "F",
     "pg": 104,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -2180,7 +1568,7 @@
     "data_nascimento": "2008-07-01",
     "genero": "F",
     "pg": 104,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -2217,12 +1605,12 @@
   "pk": 2315,
   "fields": {
     "nome": "Rodrigo",
-    "sobrenome": "Carvalho de souza",
+    "sobrenome": "Carvalho de Souza",
     "foto": "Adolescents_Images/175.Profile Photo.232736.jpg",
     "data_nascimento": "2008-07-27",
     "genero": "M",
     "pg": 111,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -2236,7 +1624,7 @@
     "data_nascimento": "2008-07-27",
     "genero": "M",
     "pg": 112,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -2292,7 +1680,7 @@
     "data_nascimento": "2008-08-07",
     "genero": "F",
     "pg": 104,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -2306,21 +1694,7 @@
     "data_nascimento": "2008-08-08",
     "genero": "M",
     "pg": 112,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2322,
-  "fields": {
-    "nome": "geverson",
-    "sobrenome": "marques",
-    "foto": "",
-    "data_nascimento": "2008-08-08",
-    "genero": "M",
-    "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -2399,12 +1773,12 @@
   "pk": 2328,
   "fields": {
     "nome": "Andressa",
-    "sobrenome": "Alves rocha",
+    "sobrenome": "Alves Rocha",
     "foto": "Adolescents_Images/188.Profile Photo.230109.jpg",
     "data_nascimento": "2008-09-14",
     "genero": "F",
     "pg": 104,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -2474,7 +1848,7 @@
     "data_nascimento": "2008-09-27",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -2482,13 +1856,13 @@
   "model": "adolescentes.adolescente",
   "pk": 2334,
   "fields": {
-    "nome": "Andre",
-    "sobrenome": "Luis Von",
+    "nome": "André Luis",
+    "sobrenome": "von Paumgartenn",
     "foto": "",
     "data_nascimento": "2008-09-27",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -2502,7 +1876,7 @@
     "data_nascimento": "2008-09-28",
     "genero": "F",
     "pg": 104,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -2544,7 +1918,7 @@
     "data_nascimento": "2008-10-17",
     "genero": "M",
     "pg": 112,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -2620,20 +1994,6 @@
 },
 {
   "model": "adolescentes.adolescente",
-  "pk": 2344,
-  "fields": {
-    "nome": "Sara",
-    "sobrenome": "Bussinger",
-    "foto": "",
-    "data_nascimento": "2008-11-04",
-    "genero": "F",
-    "pg": 105,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
   "pk": 2345,
   "fields": {
     "nome": "Nicolas",
@@ -2684,7 +2044,7 @@
     "data_nascimento": "2008-11-09",
     "genero": "M",
     "pg": 112,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -2754,7 +2114,7 @@
     "data_nascimento": "2008-11-18",
     "genero": "F",
     "pg": 104,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -2796,7 +2156,7 @@
     "data_nascimento": "2008-11-29",
     "genero": "F",
     "pg": 104,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -2852,7 +2212,7 @@
     "data_nascimento": "2008-12-20",
     "genero": "F",
     "pg": 105,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -2922,7 +2282,7 @@
     "data_nascimento": "2009-01-18",
     "genero": "F",
     "pg": 105,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -2936,7 +2296,7 @@
     "data_nascimento": "2009-01-19",
     "genero": "F",
     "pg": 105,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -2978,7 +2338,7 @@
     "data_nascimento": "2009-02-06",
     "genero": "F",
     "pg": 105,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -2992,7 +2352,7 @@
     "data_nascimento": "2009-02-09",
     "genero": "M",
     "pg": 111,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -3202,7 +2562,7 @@
     "data_nascimento": "2009-03-06",
     "genero": "M",
     "pg": 112,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -3216,7 +2576,7 @@
     "data_nascimento": "2009-03-07",
     "genero": "M",
     "pg": 112,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -3328,7 +2688,7 @@
     "data_nascimento": "2009-03-30",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -3370,7 +2730,7 @@
     "data_nascimento": "2009-04-06",
     "genero": "F",
     "pg": 105,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -3496,7 +2856,7 @@
     "data_nascimento": "2009-05-09",
     "genero": "F",
     "pg": 105,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -3566,7 +2926,7 @@
     "data_nascimento": "2009-05-18",
     "genero": "F",
     "pg": 105,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -3692,7 +3052,7 @@
     "data_nascimento": "2009-06-01",
     "genero": "F",
     "pg": 105,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -3762,7 +3122,7 @@
     "data_nascimento": "2009-06-17",
     "genero": "M",
     "pg": 111,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -3818,7 +3178,7 @@
     "data_nascimento": "2009-06-27",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -3860,7 +3220,7 @@
     "data_nascimento": "2009-07-04",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -3916,7 +3276,7 @@
     "data_nascimento": "2009-08-07",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -3930,7 +3290,7 @@
     "data_nascimento": "2009-08-09",
     "genero": "F",
     "pg": 102,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -3958,7 +3318,7 @@
     "data_nascimento": "2009-08-23",
     "genero": "F",
     "pg": 102,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -4000,7 +3360,7 @@
     "data_nascimento": "2009-09-01",
     "genero": "M",
     "pg": 111,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -4084,7 +3444,7 @@
     "data_nascimento": "2009-09-11",
     "genero": "F",
     "pg": 102,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -4098,7 +3458,7 @@
     "data_nascimento": "2009-09-12",
     "genero": "F",
     "pg": 102,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -4112,7 +3472,7 @@
     "data_nascimento": "2009-09-15",
     "genero": "F",
     "pg": 102,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -4140,7 +3500,7 @@
     "data_nascimento": "2009-09-18",
     "genero": "M",
     "pg": 111,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -4280,7 +3640,7 @@
     "data_nascimento": "2009-11-01",
     "genero": "F",
     "pg": 102,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -4350,7 +3710,7 @@
     "data_nascimento": "2009-11-18",
     "genero": "F",
     "pg": 102,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -4434,7 +3794,7 @@
     "data_nascimento": "2009-11-27",
     "genero": "M",
     "pg": 111,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -4532,7 +3892,7 @@
     "data_nascimento": "2009-12-10",
     "genero": "F",
     "pg": 102,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -4546,7 +3906,7 @@
     "data_nascimento": "2009-12-13",
     "genero": "M",
     "pg": 111,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -4574,7 +3934,7 @@
     "data_nascimento": "2009-12-21",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -4588,7 +3948,7 @@
     "data_nascimento": "2009-12-27",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -4616,7 +3976,7 @@
     "data_nascimento": "2010-01-01",
     "genero": "M",
     "pg": 111,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -4658,7 +4018,7 @@
     "data_nascimento": "2010-01-06",
     "genero": "F",
     "pg": 106,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -4686,7 +4046,7 @@
     "data_nascimento": "2010-01-08",
     "genero": "F",
     "pg": 106,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -4700,7 +4060,7 @@
     "data_nascimento": "2010-01-09",
     "genero": "M",
     "pg": 110,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -4868,7 +4228,7 @@
     "data_nascimento": "2010-02-10",
     "genero": "M",
     "pg": 111,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -4910,7 +4270,7 @@
     "data_nascimento": "2010-02-18",
     "genero": "F",
     "pg": 106,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -4994,7 +4354,7 @@
     "data_nascimento": "2010-03-01",
     "genero": "M",
     "pg": 110,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -5022,7 +4382,7 @@
     "data_nascimento": "2010-03-21",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -5288,7 +4648,7 @@
     "data_nascimento": "2010-05-18",
     "genero": "M",
     "pg": 110,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -5372,7 +4732,7 @@
     "data_nascimento": "2010-05-30",
     "genero": "F",
     "pg": 106,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -5400,7 +4760,7 @@
     "data_nascimento": "2010-06-14",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -5428,7 +4788,7 @@
     "data_nascimento": "2010-06-28",
     "genero": "M",
     "pg": 110,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -5470,7 +4830,7 @@
     "data_nascimento": "2010-07-16",
     "genero": "F",
     "pg": 106,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -5512,7 +4872,7 @@
     "data_nascimento": "2010-07-19",
     "genero": "M",
     "pg": 110,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -5540,7 +4900,7 @@
     "data_nascimento": "2010-07-22",
     "genero": "F",
     "pg": 106,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -5694,7 +5054,7 @@
     "data_nascimento": "2010-09-14",
     "genero": "M",
     "pg": 110,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -5722,7 +5082,7 @@
     "data_nascimento": "2010-09-16",
     "genero": "F",
     "pg": 106,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -5736,7 +5096,7 @@
     "data_nascimento": "2010-09-19",
     "genero": "F",
     "pg": 106,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -5806,7 +5166,7 @@
     "data_nascimento": "2010-10-04",
     "genero": "M",
     "pg": 110,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -5820,7 +5180,7 @@
     "data_nascimento": "2010-10-06",
     "genero": "F",
     "pg": 106,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -5848,7 +5208,7 @@
     "data_nascimento": "2010-10-10",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -5960,7 +5320,7 @@
     "data_nascimento": "2010-10-29",
     "genero": "F",
     "pg": 106,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -6002,7 +5362,7 @@
     "data_nascimento": "2010-11-08",
     "genero": "F",
     "pg": 106,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -6086,7 +5446,7 @@
     "data_nascimento": "2010-12-05",
     "genero": "M",
     "pg": 110,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -6184,7 +5544,7 @@
     "data_nascimento": "2010-12-23",
     "genero": "M",
     "pg": 110,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -6282,7 +5642,7 @@
     "data_nascimento": "2011-01-01",
     "genero": "M",
     "pg": 109,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -6310,7 +5670,7 @@
     "data_nascimento": "2011-01-04",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -6358,20 +5718,6 @@
 },
 {
   "model": "adolescentes.adolescente",
-  "pk": 2616,
-  "fields": {
-    "nome": "Guilherme",
-    "sobrenome": "Andrade",
-    "foto": "",
-    "data_nascimento": "2011-01-09",
-    "genero": "M",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
   "pk": 2617,
   "fields": {
     "nome": "Guilherme",
@@ -6394,7 +5740,7 @@
     "data_nascimento": "2011-01-15",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -6428,20 +5774,6 @@
 },
 {
   "model": "adolescentes.adolescente",
-  "pk": 2621,
-  "fields": {
-    "nome": "Beatriz",
-    "sobrenome": "Alves",
-    "foto": "",
-    "data_nascimento": "2011-01-30",
-    "genero": "F",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
   "pk": 2622,
   "fields": {
     "nome": "Davi",
@@ -6464,7 +5796,7 @@
     "data_nascimento": "2011-02-09",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -6562,7 +5894,7 @@
     "data_nascimento": "2011-03-10",
     "genero": "M",
     "pg": 109,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -6604,7 +5936,7 @@
     "data_nascimento": "2011-03-25",
     "genero": "M",
     "pg": 109,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -6660,7 +5992,7 @@
     "data_nascimento": "2011-04-15",
     "genero": "M",
     "pg": 109,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -6674,7 +6006,7 @@
     "data_nascimento": "2011-04-17",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -6716,7 +6048,7 @@
     "data_nascimento": "2011-05-05",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -6828,7 +6160,7 @@
     "data_nascimento": "2011-05-18",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -6870,7 +6202,7 @@
     "data_nascimento": "2011-05-23",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -6912,7 +6244,7 @@
     "data_nascimento": "2011-05-27",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -6940,7 +6272,7 @@
     "data_nascimento": "2011-06-02",
     "genero": "M",
     "pg": 109,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -6968,7 +6300,7 @@
     "data_nascimento": "2011-07-01",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -7024,7 +6356,7 @@
     "data_nascimento": "2011-07-05",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -7066,7 +6398,7 @@
     "data_nascimento": "2011-08-03",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -7136,7 +6468,7 @@
     "data_nascimento": "2011-09-12",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -7192,7 +6524,7 @@
     "data_nascimento": "2011-10-03",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -7304,7 +6636,7 @@
     "data_nascimento": "2011-12-04",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -7318,7 +6650,7 @@
     "data_nascimento": "2011-12-12",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -7360,7 +6692,7 @@
     "data_nascimento": "2012-01-13",
     "genero": "M",
     "pg": 109,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -7416,7 +6748,7 @@
     "data_nascimento": "2012-02-13",
     "genero": "F",
     "pg": 107,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -7458,7 +6790,7 @@
     "data_nascimento": "2012-03-12",
     "genero": "F",
     "pg": 107,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -7472,7 +6804,7 @@
     "data_nascimento": "2012-03-24",
     "genero": "F",
     "pg": 107,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -7514,7 +6846,7 @@
     "data_nascimento": "2012-04-13",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -7565,12 +6897,12 @@
   "pk": 2702,
   "fields": {
     "nome": "Levi",
-    "sobrenome": "borges",
+    "sobrenome": "Borges",
     "foto": "Adolescents_Images/562.Profile Photo.223859.jpg",
     "data_nascimento": "2012-05-14",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -7612,7 +6944,7 @@
     "data_nascimento": "2012-09-06",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -7640,7 +6972,7 @@
     "data_nascimento": "2012-12-29",
     "genero": "F",
     "pg": 107,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -7654,7 +6986,7 @@
     "data_nascimento": "2013-01-15",
     "genero": "F",
     "pg": 107,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -7710,7 +7042,7 @@
     "data_nascimento": "2008-03-18",
     "genero": "F",
     "pg": 104,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -7738,7 +7070,7 @@
     "data_nascimento": "2007-04-04",
     "genero": "F",
     "pg": 101,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -7786,20 +7118,6 @@
 },
 {
   "model": "adolescentes.adolescente",
-  "pk": 2718,
-  "fields": {
-    "nome": "Teste",
-    "sobrenome": "Teste",
-    "foto": "Adolescents_Images/578.Profile Photo.223321.jpg",
-    "data_nascimento": "2005-02-07",
-    "genero": "F",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
   "pk": 2719,
   "fields": {
     "nome": "Luisa",
@@ -7808,7 +7126,7 @@
     "data_nascimento": "2009-10-08",
     "genero": "F",
     "pg": 102,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -7836,7 +7154,7 @@
     "data_nascimento": "2011-08-30",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -7864,7 +7182,7 @@
     "data_nascimento": "2012-12-13",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -7878,7 +7196,7 @@
     "data_nascimento": "2011-08-15",
     "genero": "M",
     "pg": 109,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -7934,7 +7252,7 @@
     "data_nascimento": "2012-10-11",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -7948,7 +7266,7 @@
     "data_nascimento": "2013-01-26",
     "genero": "F",
     "pg": 107,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -8018,7 +7336,7 @@
     "data_nascimento": "2011-01-22",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -8116,7 +7434,7 @@
     "data_nascimento": "2008-11-04",
     "genero": "F",
     "pg": 105,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -8144,7 +7462,7 @@
     "data_nascimento": "2012-05-03",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -8270,7 +7588,7 @@
     "data_nascimento": "2012-07-09",
     "genero": "F",
     "pg": 107,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -8284,7 +7602,7 @@
     "data_nascimento": "2011-12-09",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -8382,7 +7700,7 @@
     "data_nascimento": "2013-04-14",
     "genero": "F",
     "pg": 107,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -8396,7 +7714,7 @@
     "data_nascimento": "2010-07-23",
     "genero": "M",
     "pg": 110,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -8452,7 +7770,7 @@
     "data_nascimento": "2013-04-16",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -8460,7 +7778,7 @@
   "model": "adolescentes.adolescente",
   "pk": 2768,
   "fields": {
-    "nome": "Menuella",
+    "nome": "Manuella",
     "sobrenome": "Amorim",
     "foto": "Adolescents_Images/4025545356.Profile Photo.223233.jpg",
     "data_nascimento": "2012-01-26",
@@ -8536,7 +7854,7 @@
     "data_nascimento": "2011-03-04",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -8564,7 +7882,7 @@
     "data_nascimento": "2012-05-17",
     "genero": "F",
     "pg": 107,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -8592,7 +7910,7 @@
     "data_nascimento": "2008-01-15",
     "genero": "M",
     "pg": 112,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -8634,21 +7952,7 @@
     "data_nascimento": "2012-09-15",
     "genero": "F",
     "pg": 107,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2781,
-  "fields": {
-    "nome": "Sophia",
-    "sobrenome": "Malcher",
-    "foto": "Adolescents_Images/4331189693.Profile Photo.224911.jpg",
-    "data_nascimento": "2025-02-14",
-    "genero": "F",
-    "pg": null,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -8685,25 +7989,11 @@
   "pk": 2784,
   "fields": {
     "nome": "João",
-    "sobrenome": "Pedro dr Oliveira Vinhal",
+    "sobrenome": "Pedro de Oliveira Vinhal",
     "foto": "Adolescents_Images/4431267774.Profile Photo.225615.jpg",
     "data_nascimento": "2013-07-14",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2785,
-  "fields": {
-    "nome": "Maria",
-    "sobrenome": "Clara Carrias",
-    "foto": "Adolescents_Images/6442009235.Profile Photo.230121.jpg",
-    "data_nascimento": "2025-02-14",
-    "genero": "F",
-    "pg": null,
     "imperio": null,
     "data_inicio": null
   }
@@ -8774,7 +8064,7 @@
     "data_nascimento": "2007-12-26",
     "genero": "M",
     "pg": 113,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -8802,21 +8092,7 @@
     "data_nascimento": "2009-04-04",
     "genero": "M",
     "pg": 111,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2794,
-  "fields": {
-    "nome": "Aziz",
-    "sobrenome": "Aziz",
-    "foto": "Adolescents_Images/5336965181.Profile Photo.231301.jpg",
-    "data_nascimento": "2001-04-21",
-    "genero": "M",
-    "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -8844,7 +8120,7 @@
     "data_nascimento": "2007-07-27",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -8956,7 +8232,7 @@
     "data_nascimento": "2012-05-28",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -8993,12 +8269,12 @@
   "pk": 2807,
   "fields": {
     "nome": "Fernanda",
-    "sobrenome": "cordeiro",
+    "sobrenome": "Cordeiro",
     "foto": "Adolescents_Images/2619662437.Profile Photo.224514.jpg",
     "data_nascimento": "2008-05-22",
     "genero": "F",
     "pg": 104,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -9124,7 +8400,7 @@
     "data_nascimento": "2011-01-30",
     "genero": "F",
     "pg": 103,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -9236,21 +8512,7 @@
     "data_nascimento": "2007-12-07",
     "genero": "F",
     "pg": 101,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2826,
-  "fields": {
-    "nome": "laura",
-    "sobrenome": "fernandes Souza",
-    "foto": "Adolescents_Images/3637437885.Profile Photo.223112.jpg",
-    "data_nascimento": "2009-12-07",
-    "genero": "F",
-    "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -9264,20 +8526,6 @@
     "data_nascimento": "2011-05-18",
     "genero": "M",
     "pg": 109,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2828,
-  "fields": {
-    "nome": "Maria",
-    "sobrenome": "Clara de Oliveira",
-    "foto": "Adolescents_Images/2793600735.Profile Photo.223222.jpg",
-    "data_nascimento": "2013-02-21",
-    "genero": "F",
-    "pg": null,
     "imperio": null,
     "data_inicio": null
   }
@@ -9334,7 +8582,7 @@
     "data_nascimento": "2012-11-15",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -9396,20 +8644,6 @@
 },
 {
   "model": "adolescentes.adolescente",
-  "pk": 2837,
-  "fields": {
-    "nome": "Debora",
-    "sobrenome": "de Andrade escobar",
-    "foto": "Adolescents_Images/1926089094.Profile Photo.225415.jpg",
-    "data_nascimento": "2007-06-23",
-    "genero": "F",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
   "pk": 2838,
   "fields": {
     "nome": "Heitor",
@@ -9446,7 +8680,7 @@
     "data_nascimento": "2010-11-24",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -9502,7 +8736,7 @@
     "data_nascimento": "2010-10-10",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -9676,20 +8910,6 @@
 },
 {
   "model": "adolescentes.adolescente",
-  "pk": 2857,
-  "fields": {
-    "nome": "Manuela",
-    "sobrenome": "Graçano",
-    "foto": "Adolescents_Images/3558900339.Profile Photo.224423.jpg",
-    "data_nascimento": "2013-01-30",
-    "genero": "F",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
   "pk": 2858,
   "fields": {
     "nome": "Bruno",
@@ -9837,8 +9057,8 @@
     "foto": "Adolescents_Images/8882585985.Profile Photo.230411.jpg",
     "data_nascimento": "2009-05-03",
     "genero": "M",
-    "pg": null,
-    "imperio": null,
+    "pg": 112,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -9850,20 +9070,6 @@
     "sobrenome": "Fernando veras oliveira",
     "foto": "Adolescents_Images/2273114298.Profile Photo.230417.jpg",
     "data_nascimento": "2012-04-17",
-    "genero": "M",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2870,
-  "fields": {
-    "nome": "Vinicius",
-    "sobrenome": "carvalho",
-    "foto": "Adolescents_Images/5068515602.Profile Photo.230426.jpg",
-    "data_nascimento": "1995-06-06",
     "genero": "M",
     "pg": null,
     "imperio": null,
@@ -9928,29 +9134,15 @@
 },
 {
   "model": "adolescentes.adolescente",
-  "pk": 2875,
-  "fields": {
-    "nome": "Maria",
-    "sobrenome": "Luiza de Jesus",
-    "foto": "Adolescents_Images/9108575508.Profile Photo.231655.jpg",
-    "data_nascimento": "2006-06-23",
-    "genero": "F",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
   "pk": 2876,
   "fields": {
     "nome": "Gabriela",
     "sobrenome": "Canuto",
     "foto": "Adolescents_Images/1747389424.Profile Photo.231734.jpg",
-    "data_nascimento": "2025-04-04",
+    "data_nascimento": "2008-04-04",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -9964,7 +9156,7 @@
     "data_nascimento": "2012-09-14",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -9978,7 +9170,7 @@
     "data_nascimento": "2011-02-03",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -10012,20 +9204,6 @@
 },
 {
   "model": "adolescentes.adolescente",
-  "pk": 2881,
-  "fields": {
-    "nome": "Vitor",
-    "sobrenome": "ingles",
-    "foto": "Adolescents_Images/1239764088.Profile Photo.220812.jpg",
-    "data_nascimento": "2006-03-10",
-    "genero": "M",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
   "pk": 2882,
   "fields": {
     "nome": "Lucas",
@@ -10034,20 +9212,6 @@
     "data_nascimento": "2007-05-20",
     "genero": "M",
     "pg": 113,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2883,
-  "fields": {
-    "nome": "Davi",
-    "sobrenome": "veras de andrade",
-    "foto": "Adolescents_Images/7695741284.Profile Photo.221736.jpg",
-    "data_nascimento": "2009-05-03",
-    "genero": "M",
-    "pg": null,
     "imperio": null,
     "data_inicio": null
   }
@@ -10110,20 +9274,6 @@
 },
 {
   "model": "adolescentes.adolescente",
-  "pk": 2888,
-  "fields": {
-    "nome": "Luiza",
-    "sobrenome": "montoril",
-    "foto": "Adolescents_Images/7550776135.Profile Photo.224026.jpg",
-    "data_nascimento": "2009-12-12",
-    "genero": "F",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
   "pk": 2889,
   "fields": {
     "nome": "Samuel",
@@ -10132,7 +9282,7 @@
     "data_nascimento": "2011-04-11",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -10152,40 +9302,12 @@
 },
 {
   "model": "adolescentes.adolescente",
-  "pk": 2891,
-  "fields": {
-    "nome": "Maria",
-    "sobrenome": "luiza graçano",
-    "foto": "Adolescents_Images/1995151816.Profile Photo.224515.jpg",
-    "data_nascimento": "2005-11-27",
-    "genero": "F",
-    "pg": 101,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
   "pk": 2892,
   "fields": {
     "nome": "Silvia",
     "sobrenome": "amorim",
     "foto": "Adolescents_Images/3079297281.Profile Photo.224843.jpg",
     "data_nascimento": "2008-12-02",
-    "genero": "F",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2893,
-  "fields": {
-    "nome": "Mariana",
-    "sobrenome": "leão",
-    "foto": "Adolescents_Images/4312155092.Profile Photo.225255.jpg",
-    "data_nascimento": "2006-08-07",
     "genero": "F",
     "pg": null,
     "imperio": null,
@@ -10215,34 +9337,6 @@
     "foto": "Adolescents_Images/4579817212.Profile Photo.222335.jpg",
     "data_nascimento": "2013-07-26",
     "genero": "M",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2896,
-  "fields": {
-    "nome": "Miguel",
-    "sobrenome": "Roriz campelo",
-    "foto": "Adolescents_Images/4714443050.Profile Photo.222509.jpg",
-    "data_nascimento": "2010-12-05",
-    "genero": "M",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2897,
-  "fields": {
-    "nome": "Deborah",
-    "sobrenome": "Cavalcante Ribeiro",
-    "foto": "Adolescents_Images/5716363067.Profile Photo.222722.jpg",
-    "data_nascimento": "2012-02-13",
-    "genero": "F",
     "pg": null,
     "imperio": null,
     "data_inicio": null
@@ -10300,7 +9394,7 @@
     "data_nascimento": "2012-03-30",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -10342,7 +9436,7 @@
     "data_nascimento": "2013-05-03",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -10412,7 +9506,7 @@
     "data_nascimento": "2010-03-26",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -10510,7 +9604,7 @@
     "data_nascimento": "2010-08-30",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -10532,13 +9626,13 @@
   "model": "adolescentes.adolescente",
   "pk": 2918,
   "fields": {
-    "nome": "Julia",
-    "sobrenome": "vitoria torres",
+    "nome": "Julia Vitória",
+    "sobrenome": "Fantini Torres",
     "foto": "Adolescents_Images/5699098156.Profile Photo.223941.jpg",
     "data_nascimento": "2009-06-15",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -10552,7 +9646,7 @@
     "data_nascimento": "2013-04-13",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -10580,7 +9674,7 @@
     "data_nascimento": "2007-10-13",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -10642,20 +9736,6 @@
 },
 {
   "model": "adolescentes.adolescente",
-  "pk": 2926,
-  "fields": {
-    "nome": "João",
-    "sobrenome": "Pedro de Oliveira vinial melo",
-    "foto": "Adolescents_Images/3401026450.Profile Photo.223610.jpg",
-    "data_nascimento": "2025-05-16",
-    "genero": "M",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
   "pk": 2927,
   "fields": {
     "nome": "Alice",
@@ -10706,7 +9786,7 @@
     "data_nascimento": "2011-09-01",
     "genero": "M",
     "pg": 108,
-    "imperio": null,
+    "imperio": 1,
     "data_inicio": null
   }
 },
@@ -10729,26 +9809,12 @@
   "pk": 2932,
   "fields": {
     "nome": "Pedro",
-    "sobrenome": "Guilhermes Lessa",
+    "sobrenome": "Guilherme Lessa",
     "foto": "Adolescents_Images/6871535999.Profile Photo.215401.jpg",
     "data_nascimento": "2012-12-03",
     "genero": "M",
     "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2933,
-  "fields": {
-    "nome": "Daniel",
-    "sobrenome": "Carvalho de Oliveira",
-    "foto": "Adolescents_Images/1732328392.Profile Photo.215651.jpg",
-    "data_nascimento": "2010-03-26",
-    "genero": "M",
-    "pg": null,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -10759,24 +9825,10 @@
     "nome": "Natalia",
     "sobrenome": "Maria",
     "foto": "Adolescents_Images/7066510922.Profile Photo.224258.jpg",
-    "data_nascimento": "2025-06-06",
+    "data_nascimento": "2011-06-06",
     "genero": "F",
     "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2935,
-  "fields": {
-    "nome": "Maria",
-    "sobrenome": "Eduarda Santos de Moraes",
-    "foto": "Adolescents_Images/5613085136.Profile Photo.224442.jpg",
-    "data_nascimento": "2025-06-06",
-    "genero": "F",
-    "pg": null,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -10888,7 +9940,7 @@
     "data_nascimento": "2010-11-04",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -11014,7 +10066,7 @@
     "data_nascimento": "2007-08-24",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -11084,7 +10136,7 @@
     "data_nascimento": "2010-09-13",
     "genero": "M",
     "pg": 110,
-    "imperio": null,
+    "imperio": 3,
     "data_inicio": null
   }
 },
@@ -11112,21 +10164,7 @@
     "data_nascimento": "2012-06-30",
     "genero": "F",
     "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2960,
-  "fields": {
-    "nome": "Ana",
-    "sobrenome": "Beatriz Figueiredo coimbrã",
-    "foto": "Adolescents_Images/4159525364.Profile Photo.230256.jpg",
-    "data_nascimento": "2025-07-11",
-    "genero": "F",
-    "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -11134,13 +10172,13 @@
   "model": "adolescentes.adolescente",
   "pk": 2961,
   "fields": {
-    "nome": "Marcus",
-    "sobrenome": "Vinícius",
+    "nome": "Marcus Vinícius",
+    "sobrenome": "Teixeira",
     "foto": "Adolescents_Images/9362695612.Profile Photo.230521.jpg",
-    "data_nascimento": "2025-07-11",
+    "data_nascimento": "2009-07-11",
     "genero": "M",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -11182,7 +10220,7 @@
     "data_nascimento": "2012-03-05",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 2,
     "data_inicio": null
   }
 },
@@ -11238,7 +10276,7 @@
     "data_nascimento": "2011-04-29",
     "genero": "F",
     "pg": null,
-    "imperio": null,
+    "imperio": 4,
     "data_inicio": null
   }
 },
@@ -11293,20 +10331,6 @@
     "foto": "Adolescents_Images/2664338833.Profile Photo.231349.jpg",
     "data_nascimento": "2009-05-30",
     "genero": "M",
-    "pg": null,
-    "imperio": null,
-    "data_inicio": null
-  }
-},
-{
-  "model": "adolescentes.adolescente",
-  "pk": 2973,
-  "fields": {
-    "nome": "Beatriz",
-    "sobrenome": "Flugel",
-    "foto": "Adolescents_Images/6788562607.Profile Photo.222722.jpg",
-    "data_nascimento": "2008-01-28",
-    "genero": "F",
     "pg": null,
     "imperio": null,
     "data_inicio": null
@@ -11470,7 +10494,16 @@
   "model": "adolescentes.diaevento",
   "pk": 4,
   "fields": {
-    "data": "2025-08-15"
+    "data": "2025-08-12",
+    "titulo": "Teste"
+  }
+},
+{
+  "model": "adolescentes.diaevento",
+  "pk": 5,
+  "fields": {
+    "data": "2025-08-16",
+    "titulo": null
   }
 },
 {
@@ -11534,6 +10567,1812 @@
     "adolescente": 2276,
     "dia": 4,
     "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 122,
+  "fields": {
+    "adolescente": 2586,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 123,
+  "fields": {
+    "adolescente": 2603,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 124,
+  "fields": {
+    "adolescente": 2610,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 125,
+  "fields": {
+    "adolescente": 2614,
+    "dia": 4,
+    "presente": false
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 126,
+  "fields": {
+    "adolescente": 2641,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 127,
+  "fields": {
+    "adolescente": 2698,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 128,
+  "fields": {
+    "adolescente": 2702,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 129,
+  "fields": {
+    "adolescente": 2707,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 130,
+  "fields": {
+    "adolescente": 2716,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 131,
+  "fields": {
+    "adolescente": 2270,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 132,
+  "fields": {
+    "adolescente": 2686,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 133,
+  "fields": {
+    "adolescente": 2454,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 134,
+  "fields": {
+    "adolescente": 2312,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 135,
+  "fields": {
+    "adolescente": 2273,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 136,
+  "fields": {
+    "adolescente": 2334,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 137,
+  "fields": {
+    "adolescente": 2275,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 138,
+  "fields": {
+    "adolescente": 2341,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 139,
+  "fields": {
+    "adolescente": 2423,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 140,
+  "fields": {
+    "adolescente": 2382,
+    "dia": 4,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 141,
+  "fields": {
+    "adolescente": 2334,
+    "dia": 5,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 142,
+  "fields": {
+    "adolescente": 2275,
+    "dia": 5,
+    "presente": true
+  }
+},
+{
+  "model": "adolescentes.presenca",
+  "pk": 143,
+  "fields": {
+    "adolescente": 2273,
+    "dia": 5,
+    "presente": true
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "add_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "change_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "delete_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view log entry",
+    "content_type": [
+      "admin",
+      "logentry"
+    ],
+    "codename": "view_logentry"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "add_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "change_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "delete_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view permission",
+    "content_type": [
+      "auth",
+      "permission"
+    ],
+    "codename": "view_permission"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "add_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "change_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "delete_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view group",
+    "content_type": [
+      "auth",
+      "group"
+    ],
+    "codename": "view_group"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add user",
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "codename": "add_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change user",
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "codename": "change_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete user",
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "codename": "delete_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view user",
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "codename": "view_user"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "add_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "change_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "delete_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view content type",
+    "content_type": [
+      "contenttypes",
+      "contenttype"
+    ],
+    "codename": "view_contenttype"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "add_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "change_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "delete_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view session",
+    "content_type": [
+      "sessions",
+      "session"
+    ],
+    "codename": "view_session"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add adolescente",
+    "content_type": [
+      "adolescentes",
+      "adolescente"
+    ],
+    "codename": "add_adolescente"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change adolescente",
+    "content_type": [
+      "adolescentes",
+      "adolescente"
+    ],
+    "codename": "change_adolescente"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete adolescente",
+    "content_type": [
+      "adolescentes",
+      "adolescente"
+    ],
+    "codename": "delete_adolescente"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view adolescente",
+    "content_type": [
+      "adolescentes",
+      "adolescente"
+    ],
+    "codename": "view_adolescente"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add dia evento",
+    "content_type": [
+      "adolescentes",
+      "diaevento"
+    ],
+    "codename": "add_diaevento"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change dia evento",
+    "content_type": [
+      "adolescentes",
+      "diaevento"
+    ],
+    "codename": "change_diaevento"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete dia evento",
+    "content_type": [
+      "adolescentes",
+      "diaevento"
+    ],
+    "codename": "delete_diaevento"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view dia evento",
+    "content_type": [
+      "adolescentes",
+      "diaevento"
+    ],
+    "codename": "view_diaevento"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add presenca",
+    "content_type": [
+      "adolescentes",
+      "presenca"
+    ],
+    "codename": "add_presenca"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change presenca",
+    "content_type": [
+      "adolescentes",
+      "presenca"
+    ],
+    "codename": "change_presenca"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete presenca",
+    "content_type": [
+      "adolescentes",
+      "presenca"
+    ],
+    "codename": "delete_presenca"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view presenca",
+    "content_type": [
+      "adolescentes",
+      "presenca"
+    ],
+    "codename": "view_presenca"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add pequeno grupo",
+    "content_type": [
+      "adolescentes",
+      "pequenogrupo"
+    ],
+    "codename": "add_pequenogrupo"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change pequeno grupo",
+    "content_type": [
+      "adolescentes",
+      "pequenogrupo"
+    ],
+    "codename": "change_pequenogrupo"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete pequeno grupo",
+    "content_type": [
+      "adolescentes",
+      "pequenogrupo"
+    ],
+    "codename": "delete_pequenogrupo"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view pequeno grupo",
+    "content_type": [
+      "adolescentes",
+      "pequenogrupo"
+    ],
+    "codename": "view_pequenogrupo"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can add imperio",
+    "content_type": [
+      "adolescentes",
+      "imperio"
+    ],
+    "codename": "add_imperio"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can change imperio",
+    "content_type": [
+      "adolescentes",
+      "imperio"
+    ],
+    "codename": "change_imperio"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can delete imperio",
+    "content_type": [
+      "adolescentes",
+      "imperio"
+    ],
+    "codename": "delete_imperio"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Can view imperio",
+    "content_type": [
+      "adolescentes",
+      "imperio"
+    ],
+    "codename": "view_imperio"
+  }
+},
+{
+  "model": "auth.permission",
+  "fields": {
+    "name": "Pode visualizar o dashboard",
+    "content_type": [
+      "adolescentes",
+      "adolescente"
+    ],
+    "codename": "view_dashboard"
+  }
+},
+{
+  "model": "auth.group",
+  "fields": {
+    "name": "Administradores",
+    "permissions": [
+      [
+        "add_adolescente",
+        "adolescentes",
+        "adolescente"
+      ],
+      [
+        "change_adolescente",
+        "adolescentes",
+        "adolescente"
+      ],
+      [
+        "delete_adolescente",
+        "adolescentes",
+        "adolescente"
+      ],
+      [
+        "view_adolescente",
+        "adolescentes",
+        "adolescente"
+      ],
+      [
+        "add_diaevento",
+        "adolescentes",
+        "diaevento"
+      ],
+      [
+        "change_diaevento",
+        "adolescentes",
+        "diaevento"
+      ],
+      [
+        "delete_diaevento",
+        "adolescentes",
+        "diaevento"
+      ],
+      [
+        "view_diaevento",
+        "adolescentes",
+        "diaevento"
+      ]
+    ]
+  }
+},
+{
+  "model": "auth.group",
+  "fields": {
+    "name": "Usuários Normais",
+    "permissions": [
+      [
+        "add_adolescente",
+        "adolescentes",
+        "adolescente"
+      ],
+      [
+        "view_adolescente",
+        "adolescentes",
+        "adolescente"
+      ]
+    ]
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$jI6ihOK7e3OfCcZI0PVreo$YMr6KyKndWLHvHYO3b2Jq+ETvajfSik0TNwABUx0cnM=",
+    "last_login": "2025-08-13T01:06:47.364Z",
+    "is_superuser": true,
+    "username": "felipecampelo",
+    "first_name": "Felipe",
+    "last_name": "Campelo",
+    "email": "felipeaquinocamp@gmail.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-07-02T16:24:25Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$dhwkxbaCUnOWgXYNYS2a3R$FA7innFkWkwCFoCWXeMaSRC9FgFpVkemOf+FOIIEu9E=",
+    "last_login": "2025-08-12T08:25:59.495Z",
+    "is_superuser": false,
+    "username": "voluntario",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-07-03T14:20:24Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$rYjzbYKeCyBVe1hmgNezH4$s3MaUML692JV3g9I68oNXI5Jlua/Gpfq7XeBkorQ6s0=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "lorenalessa",
+    "first_name": "Lorena",
+    "last_name": "Lessa",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-07-04T22:30:55Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$cR8sa2cbeqBvSdtBwUG1xw$hq25Pof7omTMLvSkFfE1kGmqhAXjsjLdBilGvz2XIh4=",
+    "last_login": "2025-08-11T22:29:05.038Z",
+    "is_superuser": true,
+    "username": "leticiaalves",
+    "first_name": "Letícia",
+    "last_name": "Alves",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-08-09T20:30:53Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$y1Nl35VGFExuOT7nUTJVUv$OgztzPhVpm6/IyHRrZiFWbAS1H1Uk9sTt3sFFWlA5aQ=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "eduardoamaral",
+    "first_name": "Eduardo",
+    "last_name": "Amaral",
+    "email": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-08-09T20:31:03Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$aMu0sAPB8vuY8eKt3zwRtH$bgqQ0ccqeifWsaUVcP96w0UIk9w32MGhOTPK5b3XXwQ=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "lucascardoso",
+    "first_name": "Lucas",
+    "last_name": "Cardoso",
+    "email": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-08-09T20:31:11Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$Ea3FhMfj9QbVcqpuNU6lDT$B0tcPgtAegNcdUwz4aZO1wW2N4fa/C6JR/tihQZWIjw=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "jonatasnunes",
+    "first_name": "Jonatas",
+    "last_name": "Nunes",
+    "email": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2025-08-09T20:31:19Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$faUxL3Dc7mEjRoTFCXT67u$oAQoMGaz4Ird4rFSr2CvV4eaj71kJsd3m9b3AnTrGz8=",
+    "last_login": "2025-08-12T07:50:20.938Z",
+    "is_superuser": true,
+    "username": "matheuslessa",
+    "first_name": "Matheus",
+    "last_name": "Lessa",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-08-09T20:31:26Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1000000$oyp6K1oaLXmVXXvvoyKywN$i8Hp6ehz3kX2d73y7kmx7tWSCe6+lLd4Onfs1I1lDec=",
+    "last_login": "2025-08-11T08:51:11.615Z",
+    "is_superuser": false,
+    "username": "anasudre",
+    "first_name": "Ana",
+    "last_name": "Sudré",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2025-08-09T20:31:34Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "adolescentes.contagemauditorio",
+  "pk": 1,
+  "fields": {
+    "dia": 4,
+    "quantidade_pessoas": 143,
+    "usuario_registro": [
+      "felipecampelo"
+    ],
+    "data_registro": "2025-08-11T08:45:53.278Z"
+  }
+},
+{
+  "model": "adolescentes.contagemauditorio",
+  "pk": 2,
+  "fields": {
+    "dia": 5,
+    "quantidade_pessoas": 120,
+    "usuario_registro": [
+      "felipecampelo"
+    ],
+    "data_registro": "2025-08-12T20:39:33.576Z"
+  }
+},
+{
+  "model": "adolescentes.contagemvisitantes",
+  "pk": 1,
+  "fields": {
+    "dia": 4,
+    "quantidade_visitantes": 16,
+    "usuario_registro": [
+      "felipecampelo"
+    ],
+    "data_registro": "2025-08-12T06:25:10.320Z"
+  }
+},
+{
+  "model": "adolescentes.contagemvisitantes",
+  "pk": 2,
+  "fields": {
+    "dia": 5,
+    "quantidade_visitantes": 15,
+    "usuario_registro": [
+      "felipecampelo"
+    ],
+    "data_registro": "2025-08-12T20:39:36.773Z"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 1,
+  "fields": {
+    "action_time": "2025-07-02T16:31:02.713Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "adolescentes",
+      "imperio"
+    ],
+    "object_id": "1",
+    "object_repr": "Egito",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 2,
+  "fields": {
+    "action_time": "2025-07-02T16:31:08.567Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "adolescentes",
+      "imperio"
+    ],
+    "object_id": "2",
+    "object_repr": "Grécia",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 3,
+  "fields": {
+    "action_time": "2025-07-02T16:31:14.277Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "adolescentes",
+      "imperio"
+    ],
+    "object_id": "3",
+    "object_repr": "Pérsia",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 4,
+  "fields": {
+    "action_time": "2025-07-02T16:31:16.829Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "adolescentes",
+      "imperio"
+    ],
+    "object_id": "4",
+    "object_repr": "Roma",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 5,
+  "fields": {
+    "action_time": "2025-07-03T14:20:24.421Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "2",
+    "object_repr": "checkin",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 6,
+  "fields": {
+    "action_time": "2025-07-04T22:30:55.732Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "3",
+    "object_repr": "lider",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 7,
+  "fields": {
+    "action_time": "2025-07-04T22:44:17.028Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "2",
+    "object_repr": "checkin",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"password\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 8,
+  "fields": {
+    "action_time": "2025-08-09T17:35:52.947Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "adolescentes",
+      "diaevento"
+    ],
+    "object_id": "3",
+    "object_repr": "18/07/2025",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 9,
+  "fields": {
+    "action_time": "2025-08-09T17:35:52.947Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "adolescentes",
+      "diaevento"
+    ],
+    "object_id": "2",
+    "object_repr": "11/07/2025",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 10,
+  "fields": {
+    "action_time": "2025-08-09T17:35:52.947Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "adolescentes",
+      "diaevento"
+    ],
+    "object_id": "1",
+    "object_repr": "04/07/2025",
+    "action_flag": 3,
+    "change_message": ""
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 11,
+  "fields": {
+    "action_time": "2025-08-09T19:51:01.276Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "1",
+    "object_repr": "felipecampelo",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 12,
+  "fields": {
+    "action_time": "2025-08-09T19:51:12.125Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "2",
+    "object_repr": "voluntario",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Username\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 13,
+  "fields": {
+    "action_time": "2025-08-09T20:30:10.707Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "3",
+    "object_repr": "lider",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"password\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 14,
+  "fields": {
+    "action_time": "2025-08-09T20:30:29.267Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "3",
+    "object_repr": "lucasluz",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Username\", \"First name\", \"Last name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 15,
+  "fields": {
+    "action_time": "2025-08-09T20:30:54.203Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "4",
+    "object_repr": "leticiaalves",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 16,
+  "fields": {
+    "action_time": "2025-08-09T20:31:04.058Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "5",
+    "object_repr": "eduardoamaral",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 17,
+  "fields": {
+    "action_time": "2025-08-09T20:31:11.915Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "6",
+    "object_repr": "lucascardoso",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 18,
+  "fields": {
+    "action_time": "2025-08-09T20:31:19.861Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "7",
+    "object_repr": "jonatasnunes",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 19,
+  "fields": {
+    "action_time": "2025-08-09T20:31:27.223Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "8",
+    "object_repr": "matheuslessa",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 20,
+  "fields": {
+    "action_time": "2025-08-09T20:31:34.549Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "9",
+    "object_repr": "anasudre",
+    "action_flag": 1,
+    "change_message": "[{\"added\": {}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 21,
+  "fields": {
+    "action_time": "2025-08-09T20:31:45.167Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "5",
+    "object_repr": "eduardoamaral",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Staff status\", \"Superuser status\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 22,
+  "fields": {
+    "action_time": "2025-08-09T20:31:53.083Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "7",
+    "object_repr": "jonatasnunes",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Staff status\", \"Superuser status\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 23,
+  "fields": {
+    "action_time": "2025-08-09T20:32:00.431Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "6",
+    "object_repr": "lucascardoso",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Staff status\", \"Superuser status\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 24,
+  "fields": {
+    "action_time": "2025-08-09T20:32:08.940Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "3",
+    "object_repr": "lucasluz",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Superuser status\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 25,
+  "fields": {
+    "action_time": "2025-08-09T20:32:20.426Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "4",
+    "object_repr": "leticiaalves",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Superuser status\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 26,
+  "fields": {
+    "action_time": "2025-08-09T20:32:39.629Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "9",
+    "object_repr": "anasudre",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 27,
+  "fields": {
+    "action_time": "2025-08-09T20:32:48.465Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "5",
+    "object_repr": "eduardoamaral",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 28,
+  "fields": {
+    "action_time": "2025-08-09T20:32:58.630Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "5",
+    "object_repr": "eduardoamaral",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 29,
+  "fields": {
+    "action_time": "2025-08-09T20:33:08.305Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "7",
+    "object_repr": "jonatasnunes",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 30,
+  "fields": {
+    "action_time": "2025-08-09T20:33:18.054Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "4",
+    "object_repr": "leticiaalves",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 31,
+  "fields": {
+    "action_time": "2025-08-09T20:33:28.065Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "6",
+    "object_repr": "lucascardoso",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 32,
+  "fields": {
+    "action_time": "2025-08-09T20:33:38.099Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "8",
+    "object_repr": "matheuslessa",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 33,
+  "fields": {
+    "action_time": "2025-08-11T08:52:36.839Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "8",
+    "object_repr": "matheuslessa",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Superuser status\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 34,
+  "fields": {
+    "action_time": "2025-08-11T09:00:03.755Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "2",
+    "object_repr": "voluntario",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Username\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 35,
+  "fields": {
+    "action_time": "2025-08-11T09:00:28.868Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "3",
+    "object_repr": "carolsuhet",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Username\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 36,
+  "fields": {
+    "action_time": "2025-08-11T09:00:43.569Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "3",
+    "object_repr": "carolsuhet",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 37,
+  "fields": {
+    "action_time": "2025-08-11T09:01:11.978Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "1",
+    "object_repr": "felipecampelo",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 38,
+  "fields": {
+    "action_time": "2025-08-11T21:15:34.905Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "4",
+    "object_repr": "LeticiaAlves",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Username\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 39,
+  "fields": {
+    "action_time": "2025-08-11T22:27:07.299Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "4",
+    "object_repr": "LeticiaAlves",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"password\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 40,
+  "fields": {
+    "action_time": "2025-08-11T22:27:12.045Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "4",
+    "object_repr": "LeticiaAlves",
+    "action_flag": 2,
+    "change_message": "[]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 41,
+  "fields": {
+    "action_time": "2025-08-11T22:27:56.674Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "4",
+    "object_repr": "leticiaalves",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Username\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 42,
+  "fields": {
+    "action_time": "2025-08-12T05:58:48.183Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "1",
+    "object_repr": "felipecampelo",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 43,
+  "fields": {
+    "action_time": "2025-08-12T05:59:10.050Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "3",
+    "object_repr": "lorenalessa",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Username\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 44,
+  "fields": {
+    "action_time": "2025-08-12T05:59:21.262Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "3",
+    "object_repr": "lorenalessa",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"First name\", \"Last name\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 45,
+  "fields": {
+    "action_time": "2025-08-12T05:59:39.801Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "auth",
+      "user"
+    ],
+    "object_id": "2",
+    "object_repr": "voluntario",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Username\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 46,
+  "fields": {
+    "action_time": "2025-08-12T06:24:48.294Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "adolescentes",
+      "diaevento"
+    ],
+    "object_id": "4",
+    "object_repr": "15/08/2025 - Teste",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Titulo\"]}}]"
+  }
+},
+{
+  "model": "admin.logentry",
+  "pk": 47,
+  "fields": {
+    "action_time": "2025-08-12T08:28:24.617Z",
+    "user": [
+      "felipecampelo"
+    ],
+    "content_type": [
+      "adolescentes",
+      "diaevento"
+    ],
+    "object_id": "4",
+    "object_repr": "12/08/2025 - Teste",
+    "action_flag": 2,
+    "change_message": "[{\"changed\": {\"fields\": [\"Data\"]}}]"
   }
 }
 ]
