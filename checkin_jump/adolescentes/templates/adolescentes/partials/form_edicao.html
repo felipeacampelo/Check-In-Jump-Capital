@@ -1,4 +1,5 @@
 <!-- Formulário de edição inline otimizado -->
+{% load image_utils %}
 <form method="post" action="{% url 'editar_adolescente' adolescente.id %}?{{ request.GET.urlencode }}" enctype="multipart/form-data" class="ajax-form">
   {% csrf_token %}
   <input type="hidden" name="params" value="{{ request.GET.urlencode }}">
@@ -77,7 +78,7 @@
         <div class="text-danger small">{{ form.foto.errors.0 }}</div>
       {% endif %}
       
-      {% if adolescente.foto %}
+      {% if adolescente.foto and adolescente.foto|file_exists %}
         <div class="mt-2 d-flex align-items-center gap-3">
           <div>
             <small class="text-muted">Foto atual:</small>
@@ -87,6 +88,19 @@
             <input class="form-check-input" type="checkbox" name="foto-clear" id="foto-clear-{{ adolescente.id }}">
             <label class="form-check-label text-danger" for="foto-clear-{{ adolescente.id }}">
               <i class="fas fa-trash-alt me-1"></i>Remover foto atual
+            </label>
+          </div>
+        </div>
+      {% elif adolescente.foto %}
+        <div class="mt-2">
+          <small class="text-muted text-warning">
+            <i class="fas fa-exclamation-triangle me-1"></i>
+            Arquivo de foto não encontrado (referência órfã)
+          </small>
+          <div class="form-check mt-1">
+            <input class="form-check-input" type="checkbox" name="foto-clear" id="foto-clear-{{ adolescente.id }}">
+            <label class="form-check-label text-danger" for="foto-clear-{{ adolescente.id }}">
+              <i class="fas fa-trash-alt me-1"></i>Limpar referência órfã
             </label>
           </div>
         </div>

@@ -1,4 +1,5 @@
 {% extends 'adolescentes/base.html' %}
+{% load image_utils %}
 {% block content %}
 
 <h2>Lista de Adolescentes</h2>
@@ -444,13 +445,11 @@
       <tr class="row-modal" style="cursor: pointer;" data-row-target="modal{{ adolescente.id }}">
         <td>
           <div class="d-flex align-items-center gap-3">
-            {% if adolescente.foto %}
+            {% if adolescente.foto and adolescente.foto|file_exists %}
               <div class="avatar-wrap">
                 <img src="{{ adolescente.foto.url }}"
                      alt="Foto de {{ adolescente.nome }}"
-                     class="avatar avatar-sm"
-                     data-initials="{{ adolescente.nome|slice:":1" }}{{ adolescente.sobrenome|slice:":1" }}"
-                     onerror="(function(el){var wrap=el.closest('.avatar-wrap');var s=document.createElement('span');s.className='avatar avatar-sm avatar-initials';s.textContent=el.dataset.initials; if(wrap){wrap.replaceWith(s);} else {el.replaceWith(s);} })(this)">
+                     class="avatar avatar-sm">
                 <button type="button" class="avatar-overlay btn btn-primary btn-sm"
                         title="Ver foto" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}"
                         onclick="event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();">
@@ -596,7 +595,7 @@
       </div>
       <div class="modal-body">
         <div class="text-center mb-3">
-          {% if adolescente.foto %}
+          {% if adolescente.foto and adolescente.foto|file_exists %}
             <img src="{{ adolescente.foto.url }}" class="rounded-circle img-thumbnail" style="width: 96px; height: 96px; object-fit: cover;" alt="Foto de {{ adolescente.nome }}">
           {% else %}
             <span class="rounded-circle bg-secondary d-inline-block" style="width: 96px; height: 96px; line-height: 96px; text-align: center; color: #fff; font-size: 2em;">
