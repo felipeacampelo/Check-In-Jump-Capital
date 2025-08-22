@@ -66,6 +66,17 @@ def buscar_adolescentes_por_nome(queryset, termo_busca):
         
         return queryset.filter(query)
 
+def pagina_inicial(request):
+    """
+    Página inicial que redireciona adequadamente sem causar loops.
+    Se usuário está logado, vai para lista de adolescentes.
+    Se não está logado, vai para login.
+    """
+    if request.user.is_authenticated:
+        return redirect('listar_adolescentes')
+    else:
+        return redirect('login')
+
 def login_view(request):
     if request.method == "POST":
         username = request.POST["username"]
