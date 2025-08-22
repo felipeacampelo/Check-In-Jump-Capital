@@ -25,8 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-1n4oqnk-++enx-r7hy%e+7se7y5y28#0#1^htqgh)h#c5#@(j3')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG deve ser False por padrão em produção
-DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes', 'on')
+# Temporariamente True para Railway funcionar - DEVE ser configurado como False em produção
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '192.168.150.106', '.onrender.com', '.railway.app', '.up.railway.app']
 
@@ -206,7 +206,7 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_REDIRECT_EXEMPT = []
-    SECURE_SSL_REDIRECT = True
+    # SECURE_SSL_REDIRECT = True  # Desabilitado temporariamente - causava loop no Railway
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     

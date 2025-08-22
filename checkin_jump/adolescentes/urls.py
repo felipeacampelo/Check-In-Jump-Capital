@@ -8,8 +8,8 @@ urlpatterns = [
     path("login/", login_view, name="login"),
     path("logout/", logout_view, name="logout"),
 
-    # Página inicial - redireciona para login se não autenticado, senão para lista
-    path("", views.pagina_inicial, name="pagina_inicial"),
+    # Página inicial (escolha uma)
+    path("", views.lista_dias_evento, name="pagina_checkin"),
 
     # Adolescentes
     path("adolescentes/", listar_adolescentes, name="listar_adolescentes"),
