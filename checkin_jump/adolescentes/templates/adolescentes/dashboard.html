@@ -321,9 +321,9 @@
                                 <td>{{ evento.visitantes }}</td>
                                 <td>{{ evento.percentual }}%</td>
                                 <td>
-                                    {% if evento.percentual >= 80 %}
+                                    {% if evento.percentual >= 22 %}
                                         <span class="badge bg-success">Excelente</span>
-                                    {% elif evento.percentual >= 60 %}
+                                    {% elif evento.percentual >= 15 %}
                                         <span class="badge bg-warning">Bom</span>
                                     {% else %}
                                         <span class="badge bg-danger">Baixo</span>
