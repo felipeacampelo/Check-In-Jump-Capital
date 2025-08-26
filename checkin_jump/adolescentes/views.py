@@ -583,7 +583,7 @@ def checkin_dia(request, dia_id):
     if busca:
         adolescentes = buscar_adolescentes_por_nome(adolescentes, busca)
 
-    # Ordenação solicitada:
+    # Ordenação:
     # 1) pela quantidade total de presenças (desc)
     # 2) desempate por ordem alfabética (nome, sobrenome)
     adolescentes = (
@@ -754,7 +754,7 @@ def exportar_adolescentes_csv(request):
     response['Content-Disposition'] = 'attachment; filename="adolescentes.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['Nome', 'Sobrenome', 'Data de Nascimento', 'Gênero', 'PG', 'Império'])
+    writer.writerow(['Nome', 'Sobrenome', 'Data de Nascimento', 'Sexo', 'PG', 'Império'])
 
     for adolescente in Adolescente.objects.select_related('pg', 'imperio').all():
         writer.writerow([
