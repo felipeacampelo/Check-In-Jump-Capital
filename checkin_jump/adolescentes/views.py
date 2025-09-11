@@ -66,6 +66,17 @@ def buscar_adolescentes_por_nome(queryset, termo_busca):
         
         return queryset.filter(query)
 
+def pagina_inicial(request):
+    """
+    Página inicial que redireciona adequadamente sem causar loops.
+    Se usuário está logado, vai para lista de adolescentes.
+    Se não está logado, vai para login.
+    """
+    if request.user.is_authenticated:
+        return redirect('listar_adolescentes')
+    else:
+        return redirect('login')
+
 def login_view(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -572,7 +583,7 @@ def checkin_dia(request, dia_id):
     if busca:
         adolescentes = buscar_adolescentes_por_nome(adolescentes, busca)
 
-    # Ordenação solicitada:
+    # Ordenação:
     # 1) pela quantidade total de presenças (desc)
     # 2) desempate por ordem alfabética (nome, sobrenome)
     adolescentes = (
@@ -743,7 +754,7 @@ def exportar_adolescentes_csv(request):
     response['Content-Disposition'] = 'attachment; filename="adolescentes.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(['Nome', 'Sobrenome', 'Data de Nascimento', 'Gênero', 'PG', 'Império'])
+    writer.writerow(['Nome', 'Sobrenome', 'Data de Nascimento', 'Sexo', 'PG', 'Império'])
 
     for adolescente in Adolescente.objects.select_related('pg', 'imperio').all():
         writer.writerow([
