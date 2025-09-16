@@ -16,37 +16,64 @@
 </p>
 
 
-<!-- Filtros e busca -->
+<!-- Busca -->
+<div class="card shadow-sm rounded-3 mb-3">
+  <div class="card-body py-3">
+    <form method="get" id="buscaForm">
+      <!-- Preservar filtros existentes -->
+      {% if request.GET.genero %}<input type="hidden" name="genero" value="{{ request.GET.genero }}">{% endif %}
+      {% if request.GET.pg %}<input type="hidden" name="pg" value="{{ request.GET.pg }}">{% endif %}
+      {% if request.GET.imperio %}<input type="hidden" name="imperio" value="{{ request.GET.imperio }}">{% endif %}
+      {% if request.GET.presenca %}<input type="hidden" name="presenca" value="{{ request.GET.presenca }}">{% endif %}
+      {% if request.GET.ordenar_por %}<input type="hidden" name="ordenar_por" value="{{ request.GET.ordenar_por }}">{% endif %}
+      {% if request.GET.direcao %}<input type="hidden" name="direcao" value="{{ request.GET.direcao }}">{% endif %}
+      
+      <div class="row g-2 align-items-center">
+        <div class="col">
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input type="text" name="busca" id="buscaInput" class="form-control" value="{{ request.GET.busca }}" placeholder="Buscar adolescente por nome...">
+            <button class="btn btn-outline-secondary" type="button" id="clearBusca" title="Limpar busca">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-auto">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Filtros -->
 <div class="card shadow-sm rounded-3 mb-4">
-  <div class="card-body">
+  <div class="card-body py-2">
     <!-- Header de filtros no mobile: título fixo + seta para mostrar/ocultar -->
     <style>
       /* Rotaciona a seta conforme o estado de expansão */
       #filtersToggleBtnMobile i { transition: transform .2s ease; }
       #filtersToggleBtnMobile[aria-expanded="true"] i { transform: rotate(180deg); }
+      /* Reduzir altura do dropdown quando fechado */
+      .filters-collapsed { max-height: 0; overflow: hidden; }
     </style>
-    <div class="d-lg-none mb-2 d-flex align-items-center justify-content-between">
+    <div class="d-lg-none mb-1 d-flex align-items-center justify-content-between">
       <span class="text-muted fw-semibold"><i class="fas fa-filter me-1"></i> Filtros</span>
-      <button id="filtersToggleBtnMobile" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse">
-        <i class="fas fa-chevron-up"></i>
+      <button id="filtersToggleBtnMobile" class="btn btn-outline-secondary btn-sm py-1" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse">
+        <i class="fas fa-chevron-down"></i>
         <span class="visually-hidden">Mostrar/ocultar filtros</span>
       </button>
     </div>
 
     <div class="collapse d-lg-block" id="filtersCollapse">
     <form method="get" id="filtroForm">
+      <!-- Preservar busca existente -->
+      {% if request.GET.busca %}<input type="hidden" name="busca" value="{{ request.GET.busca }}">{% endif %}
+      
       <div class="row g-2 align-items-end">
         <div class="col-md-3">
-          <label for="busca" class="form-label">Buscar por nome:</label>
-          <div class="input-group">
-            <input type="text" name="busca" id="buscaInput" class="form-control" value="{{ request.GET.busca }}" placeholder="Buscar por nome">
-            <button class="btn btn-outline-secondary" type="button" id="clearBusca" title="Limpar busca">
-              <i class="fas fa-times"></i>
-              <span class="visually-hidden">Limpar busca</span>
-            </button>
-          </div>
-        </div>
-        <div class="col-md-2">
           <label for="genero" class="form-label">Sexo:</label>
           <select name="genero" id="genero" class="form-select">
             <option value="">Todos</option>
@@ -54,7 +81,7 @@
             <option value="F" {% if request.GET.genero == "F" %}selected{% endif %}>Feminino</option>
           </select>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3">
           <label for="pg" class="form-label">PG:</label>
           <select name="pg" id="pg" class="form-select">
             <option value="">Todos</option>
@@ -64,7 +91,7 @@
             {% endfor %}
           </select>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-3">
           <label for="imperio" class="form-label">Império:</label>
           <select name="imperio" id="imperio" class="form-select">
             <option value="">Todos</option>
@@ -78,15 +105,14 @@
           <label for="presenca" class="form-label">Presença:</label>
           <select name="presenca" id="presenca" class="form-select">
             <option value="">Todas</option>
-            <option value="presente_30" {% if request.GET.presenca == "presente_30" %}selected{% endif %}>Presentes nos últimos 30 dias</option>
-            <option value="ausente_30" {% if request.GET.presenca == "ausente_30" %}selected{% endif %}>Ausentes nos últimos 30 dias</option>
-            <option value="nunca" {% if request.GET.presenca == "nunca" %}selected{% endif %}>Nunca compareceu</option>
+            <option value="presente_30" {% if request.GET.presenca == "presente_30" %}selected{% endif %}>Últimos 30d</option>
+            <option value="ausente_30" {% if request.GET.presenca == "ausente_30" %}selected{% endif %}>Ausentes 30d</option>
+            <option value="nunca" {% if request.GET.presenca == "nunca" %}selected{% endif %}>Nunca</option>
           </select>
         </div>
         <div class="col-md-1">
           <button type="submit" class="btn btn-primary w-100">
-            <i class="fas fa-search"></i>
-            <span class="visually-hidden">Filtrar</span>
+            Filtrar
           </button>
         </div>
       </div>
@@ -94,17 +120,46 @@
     </form>
     <script>
       (function() {
-        const form = document.getElementById('filtroForm');
-        if (form) {
-          form.addEventListener('keydown', function (e) {
-            // Ao apertar Enter em qualquer campo do formulário, aplica os filtros
+        // Handle filter form
+        const filterForm = document.getElementById('filtroForm');
+        if (filterForm) {
+          filterForm.addEventListener('keydown', function (e) {
             if (e.key === 'Enter') {
               e.preventDefault();
-              if (typeof form.requestSubmit === 'function') {
-                form.requestSubmit();
+              if (typeof filterForm.requestSubmit === 'function') {
+                filterForm.requestSubmit();
               } else {
-                form.submit();
+                filterForm.submit();
               }
+            }
+          });
+        }
+
+        // Handle search form
+        const searchForm = document.getElementById('buscaForm');
+        if (searchForm) {
+          searchForm.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (typeof searchForm.requestSubmit === 'function') {
+                searchForm.requestSubmit();
+              } else {
+                searchForm.submit();
+              }
+            }
+          });
+        }
+
+        // Handle clear search button
+        const clearBtn = document.getElementById('clearBusca');
+        const searchInput = document.getElementById('buscaInput');
+        if (clearBtn && searchInput) {
+          clearBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            if (typeof searchForm.requestSubmit === 'function') {
+              searchForm.requestSubmit();
+            } else {
+              searchForm.submit();
             }
           });
         }

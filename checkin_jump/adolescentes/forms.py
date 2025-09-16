@@ -1,7 +1,7 @@
 from django import forms
 from .models import Adolescente, DiaEvento, ContagemAuditorio, ContagemVisitantes
 from django.core.exceptions import ValidationError
-from datetime import datetime
+from datetime import datetime, date
 
 class AdolescenteForm(forms.ModelForm):
     class Meta:
@@ -14,7 +14,8 @@ class AdolescenteForm(forms.ModelForm):
             }),
             'data_inicio': forms.TextInput(attrs={
                 'class': 'mascara-data',
-                'placeholder': 'dd/mm/aaaa'
+                'placeholder': 'dd/mm/aaaa',
+                'readonly': True
             }),
         }
     
@@ -30,6 +31,12 @@ class AdolescenteForm(forms.ModelForm):
             self.fields['pg'].queryset = pgs_queryset
         if imperios_queryset is not None:
             self.fields['imperio'].queryset = imperios_queryset
+        
+        # Auto-preencher data_inicio com data atual para novos adolescentes
+        if not self.instance.pk:  # Novo adolescente (não está editando)
+            self.fields['data_inicio'].initial = date.today()
+            # Adicionar texto explicativo
+            self.fields['data_inicio'].help_text = "(preenchida automaticamente com a data atual)"
 
     # não permite que a data de nascimento seja no futuro
     def clean_data_nascimento(self):

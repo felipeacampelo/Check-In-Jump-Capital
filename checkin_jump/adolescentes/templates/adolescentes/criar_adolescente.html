@@ -3,6 +3,16 @@
 {% block content %}
   <h2>Cadastrar Adolescente</h2>
 
+  {% if dia_checkin %}
+    <div class="alert alert-info">
+      <i class="fas fa-calendar-check me-2"></i>
+      <strong>Check-in Automático:</strong> Este adolescente será automaticamente marcado como presente no evento de <strong>{{ dia_checkin.data|date:"d/m/Y" }}</strong>
+      {% if dia_checkin.titulo %}
+        - {{ dia_checkin.titulo }}
+      {% endif %}
+    </div>
+  {% endif %}
+
   {% if messages %}
     {% for message in messages %}
       <div class="alert alert-{{ message.tags }}">{{ message }}</div>

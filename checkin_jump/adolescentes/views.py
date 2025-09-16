@@ -436,6 +436,21 @@ def pagina_pgs(request):
 
 @login_required
 def criar_adolescente(request):
+    # Detecta se está vindo da página de check-in
+    next_url = request.GET.get('next', '')
+    dia_id = None
+    
+    # Extrai o dia_id da URL de check-in (formato: /checkin/123/)
+    if '/checkin/' in next_url and next_url.count('/') >= 3:
+        try:
+            parts = next_url.strip('/').split('/')
+            if len(parts) >= 2 and parts[0] == 'checkin':
+                dia_id = int(parts[1])
+                # Verifica se o dia existe
+                DiaEvento.objects.get(id=dia_id)
+        except (ValueError, DiaEvento.DoesNotExist):
+            dia_id = None
+    
     if request.method == "POST":
         form = AdolescenteForm(request.POST, request.FILES)
         if form.is_valid():
@@ -445,11 +460,40 @@ def criar_adolescente(request):
                 messages.error(request, "A data de nascimento não pode ser no futuro.")
                 return redirect('criar_adolescente')
 
-            form.save()
+            adolescente = form.save()
+            
+            # Se veio da página de check-in, cria automaticamente o check-in para aquele dia
+            if dia_id:
+                try:
+                    dia = DiaEvento.objects.get(id=dia_id)
+                    Presenca.objects.update_or_create(
+                        adolescente=adolescente,
+                        dia=dia,
+                        defaults={'presente': True}
+                    )
+                    messages.success(request, f"Adolescente {adolescente.nome} criado e check-in confirmado para {dia.data.strftime('%d/%m/%Y')}!")
+                    return redirect('checkin_dia', dia_id=dia_id)
+                except DiaEvento.DoesNotExist:
+                    messages.warning(request, "Adolescente criado, mas não foi possível fazer o check-in automático.")
+            else:
+                messages.success(request, "Adolescente criado com sucesso!")
+            
+            # Redireciona para a página de origem ou lista padrão
+            if next_url:
+                return redirect(next_url)
             return redirect('listar_adolescentes')
     else:
         form = AdolescenteForm()
-    return render(request, 'adolescentes/criar_adolescente.html', {'form': form})
+    
+    context = {'form': form}
+    if dia_id:
+        try:
+            dia = DiaEvento.objects.get(id=dia_id)
+            context['dia_checkin'] = dia
+        except DiaEvento.DoesNotExist:
+            pass
+    
+    return render(request, 'adolescentes/criar_adolescente.html', context)
 
 @permission_required('adolescentes.change_adolescente', raise_exception=True)
 @login_required

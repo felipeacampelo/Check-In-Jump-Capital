@@ -15,15 +15,15 @@
     box-shadow: 0 4px 24px rgba(0,0,0,0.12);
   }
   .checkin-filtros .btn {
-    min-width: 120px;
+    min-width: 100px;
     font-weight: 600;
-    border-radius: 2rem;
+    border-radius: 1.5rem;
     text-align: center;
     justify-content: center;
     display: flex;
     align-items: center;
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
+    padding: 0.375rem 0.75rem;
+    font-size: 0.9rem;
   }
   .checkin-filtros .btn.active {
     box-shadow: 0 2px 8px rgba(13,110,253,0.08);
@@ -44,31 +44,51 @@
   }
   @media (max-width: 576px) {
     .checkin-filtros .btn {
-      min-width: 100px;
-      font-size: 0.95em;
-      margin-bottom: 0.2em;
-      padding-top: 0.7em;
-      padding-bottom: 0.7em;
+      min-width: 80px;
+      font-size: 0.85em;
+      margin-bottom: 0.1em;
+      padding: 0.4rem 0.6rem;
     }
     /* Removido width: 100% e flex-direction: column do grupo de botões */
     .list-group-item { font-size: 0.98em; }
 
     /* Ações do topo (Auditório e Visitantes) */
     .checkin-actions {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0.5rem !important;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.4rem !important;
     }
     .checkin-actions .btn {
-      font-size: 0.95rem; /* similar ao btn-sm */
-      padding: 0.45rem 0.75rem;
-      border-radius: 0.75rem;
+      font-size: 0.8rem; 
+      padding: 0.4rem 0.6rem;
+      border-radius: 0.6rem;
+      flex: 1;
+      min-width: 90px;
+      max-width: 140px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    .checkin-actions .btn .fas {
+      font-size: 0.75rem;
+      margin-right: 0.3rem;
+    }
+    
+    /* Ajuste do header no mobile */
+    .checkin-header-mobile {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: 0.75rem;
+    }
+    .checkin-header-mobile .checkin-actions {
       width: 100%;
+      justify-content: space-between;
     }
   }
 </style>
 <div class="checkin-main">
-<div class="d-flex align-items-center justify-content-between mb-2">
+<div class="d-flex align-items-center justify-content-between mb-2 d-md-flex checkin-header-mobile">
   <div>
     <h2 class="mb-0 fw-bold">Check-in do dia {{ dia.data|date:"d/m/Y" }}</h2>
     {% if dia.titulo %}
@@ -76,6 +96,11 @@
     {% endif %}
   </div>
   <div class="d-flex gap-2 checkin-actions">
+    {% if perms.adolescentes.add_adolescente %}
+    <a href="{% url 'criar_adolescente' %}?next={{ request.path }}" class="btn btn-success">
+        <i class="fas fa-user-plus me-1"></i>Novo Adolescente
+    </a>
+    {% endif %}
     {% if perms.adolescentes.add_contagemauditorio %}
     <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#modalContagemAuditorio">
       <i class="fas fa-users me-1"></i>Contagem no Auditório
@@ -119,8 +144,8 @@
       <div class="col-md-8 mb-3 mb-md-0 checkin-filtros">
         <div class="btn-group w-100" role="group">
           <a href="?filtro=todos{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-primary {% if filtro == 'todos' %}active{% endif %}">Todos</a>
-          <a href="?filtro=presentes{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-success {% if filtro == 'presentes' %}active{% endif %}">Somente Presentes</a>
-          <a href="?filtro=ausentes{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-secondary {% if filtro == 'ausentes' %}active{% endif %}">Somente Ausentes</a>
+          <a href="?filtro=presentes{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-success {% if filtro == 'presentes' %}active{% endif %}">Presentes</a>
+          <a href="?filtro=ausentes{% if busca %}&busca={{ busca }}{% endif %}" class="btn btn-outline-secondary {% if filtro == 'ausentes' %}active{% endif %}">Ausentes</a>
         </div>
       </div>
       <div class="col-md-4">
