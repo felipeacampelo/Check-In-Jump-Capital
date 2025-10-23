@@ -239,6 +239,19 @@
   </div>
 </div>
 
+<!-- Link para PG VIP -->
+{% if pg_vip_candidatos %}
+<div class="alert alert-warning d-flex align-items-center justify-content-between flex-wrap gap-2">
+  <div>
+    <i class="fas fa-star me-2"></i>
+    <strong>{{ pg_vip_candidatos|length }}</strong> pessoa{{ pg_vip_candidatos|length|pluralize }} sem PG (1-3 presenças)
+  </div>
+  <a href="{% url 'pg_vip' dia.id %}" class="btn btn-warning btn-sm">
+    <i class="fas fa-eye me-1"></i>Ver Lista Completa
+  </a>
+</div>
+{% endif %}
+
 <!-- Modal de contagem de visitantes -->
 {% if perms.adolescentes.add_contagemvisitantes %}
 <div class="modal fade" id="modalContagemVisitantes" tabindex="-1" aria-labelledby="modalContagemVisitantesLabel" aria-hidden="true">
