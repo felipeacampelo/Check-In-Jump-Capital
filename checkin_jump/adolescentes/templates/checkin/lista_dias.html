@@ -21,7 +21,10 @@
 
 {% if media_presentes %}
   <div class="mb-3">
-    <h4>Frequência média: {{ media_presentes|floatformat:0 }} adolescentes</h4>
+    <h5>
+      <i class="fas fa-users me-2"></i>
+      Frequência média: {{ media_presentes|floatformat:0 }} pessoas
+    </h5>
   </div>
 {% endif %}
 
@@ -37,10 +40,72 @@
             {% endif %}
           </a>
         </div>
-        <span class="badge bg-success rounded-pill">
-          {{ dia.total_presentes }} presentes
-        </span>
+        <div class="text-end">
+          {% if dia.fonte == 'auditorio' %}
+            <span class="badge bg-success rounded-pill">
+              <i class="fas fa-users me-1"></i>{{ dia.total_presentes }}
+            </span>
+            <br><small class="text-muted">auditório</small>
+          {% else %}
+            <span class="badge bg-secondary rounded-pill">
+              <i class="fas fa-check me-1"></i>{{ dia.total_presentes }}
+            </span>
+            <br><small class="text-muted">check-in</small>
+          {% endif %}
+        </div>
       </li>
     {% endfor %}
 </ul>
+
+<!-- Paginação -->
+{% if dias.has_other_pages %}
+<nav aria-label="Navegação de páginas" class="mt-3">
+  <ul class="pagination justify-content-center">
+    {% if dias.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page=1">
+          <i class="fas fa-angle-double-left"></i>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ dias.previous_page_number }}">
+          <i class="fas fa-angle-left"></i>
+        </a>
+      </li>
+    {% endif %}
+
+    {% for num in dias.paginator.page_range %}
+      {% if dias.number == num %}
+        <li class="page-item active">
+          <span class="page-link">{{ num }}</span>
+        </li>
+      {% elif num > dias.number|add:'-3' and num < dias.number|add:'3' %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+
+    {% if dias.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ dias.next_page_number }}">
+          <i class="fas fa-angle-right"></i>
+        </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ dias.paginator.num_pages }}">
+          <i class="fas fa-angle-double-right"></i>
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+  <div class="text-center text-muted">
+    <small>
+      Página {{ dias.number }} de {{ dias.paginator.num_pages }} 
+      ({{ dias.paginator.count }} eventos no total)
+    </small>
+  </div>
+</nav>
+{% endif %}
+
 {% endblock %}

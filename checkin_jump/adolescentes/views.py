@@ -571,15 +571,42 @@ def excluir_adolescente(request, id):
 
 @login_required
 def lista_dias_evento(request):
-    dias = DiaEvento.objects.annotate(
-        total_presentes=Count('presenca', filter=Q(presenca__presente=True))
-    ).order_by('-data')
-
-    if dias.exists():
-        soma_presentes = sum(dia.total_presentes for dia in dias)
-        media_presentes = soma_presentes / len(dias)
+    dias_list = DiaEvento.objects.prefetch_related('contagens_auditorio').order_by('-data')
+    
+    # Calcular média usando contagem de auditório (prioritário) ou check-in (fallback)
+    total_contagens = 0
+    soma_pessoas = 0
+    
+    for dia in dias_list:
+        # Anotar total de presentes via check-in para cada dia
+        dia.total_presentes_checkin = Presenca.objects.filter(dia=dia, presente=True).count()
+        
+        # Buscar contagem de auditório
+        contagem_auditorio = dia.contagens_auditorio.first()
+        if contagem_auditorio:
+            dia.total_presentes = contagem_auditorio.quantidade_pessoas
+            dia.fonte = 'auditorio'
+            soma_pessoas += contagem_auditorio.quantidade_pessoas
+            total_contagens += 1
+        else:
+            dia.total_presentes = dia.total_presentes_checkin
+            dia.fonte = 'checkin'
+    
+    # Média baseada apenas em contagens de auditório
+    if total_contagens > 0:
+        media_presentes = soma_pessoas / total_contagens
     else:
         media_presentes = 0
+    
+    # Paginação - 20 dias por página
+    paginator = Paginator(dias_list, 20)
+    page = request.GET.get('page')
+    try:
+        dias = paginator.page(page)
+    except PageNotAnInteger:
+        dias = paginator.page(1)
+    except EmptyPage:
+        dias = paginator.page(paginator.num_pages)
 
     return render(request, 'checkin/lista_dias.html', {
         'dias': dias,
