@@ -1,0 +1,277 @@
+{% extends 'adolescentes/base.html' %}
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  .pg-vip-main, .pg-vip-main h1, .pg-vip-main h2, .pg-vip-main h3, .pg-vip-main h4, .pg-vip-main h5, .pg-vip-main h6, .pg-vip-main p, .pg-vip-main label, .pg-vip-main input, .pg-vip-main button, .pg-vip-main .card, .pg-vip-main .form-control, .pg-vip-main .list-group-item {
+    font-family: 'Inter', Arial, sans-serif;
+  }
+  .pg-vip-card {
+    border-radius: 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    border: none;
+    transition: box-shadow 0.2s;
+  }
+  .pg-vip-card:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+  }
+  .list-group-item {
+    border-radius: 0.75rem !important;
+    margin-bottom: 0.5rem;
+    border: 1px solid #f1f3f4;
+    transition: box-shadow 0.15s;
+  }
+  .list-group-item:hover {
+    box-shadow: 0 2px 8px rgba(255,193,7,0.15);
+    background: #fffbf0;
+  }
+  .pg-vip-header {
+    background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+    color: #000;
+    border-radius: 1.25rem 1.25rem 0 0;
+    padding: 2rem;
+    margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+  }
+  @media (max-width: 576px) {
+    .pg-vip-header {
+      padding: 1.5rem 1rem;
+    }
+  }
+</style>
+
+<div class="pg-vip-main">
+  <!-- Breadcrumb -->
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'pagina_checkin' %}">Check-in</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'checkin_dia' dia.id %}">{{ dia.data|date:"d/m/Y" }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">PG VIP</li>
+    </ol>
+  </nav>
+
+  <div class="card pg-vip-card">
+    <div class="card-body" style="padding: 1.5rem;">
+      <!-- Header -->
+      <div class="pg-vip-header">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+          <div>
+            <h2 class="mb-1 fw-bold">
+              <i class="fas fa-star me-2"></i>PG VIP
+            </h2>
+            <p class="mb-0 opacity-75">{{ dia.data|date:"d/m/Y" }}{% if dia.titulo %} - {{ dia.titulo }}{% endif %}</p>
+          </div>
+          <div class="text-end">
+            <div class="display-4 fw-bold">{{ pg_vip_candidatos|length }}</div>
+            <small class="opacity-75">pessoa{{ pg_vip_candidatos|length|pluralize }}</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Descrição -->
+      <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>PG VIP:</strong> 1 a 3 presenças, sem PG definido
+        <br>
+        <strong>Precisa Alocar:</strong> 4+ presenças
+      </div>
+
+      {% if precisa_alocar %}
+        <!-- Seção: Precisa Alocar -->
+        <div class="alert alert-danger mb-4" style="border-left: 4px solid #dc3545;">
+          <h5 class="mb-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>Precisa Alocar em PG
+            <span class="badge bg-danger ms-2">{{ precisa_alocar|length }}</span>
+          </h5>
+          <p class="small mb-3">Pessoas com 4 ou mais presenças que ainda não foram alocadas em um PG</p>
+          <ul class="list-group">
+            {% for item in precisa_alocar %}
+              <li class="list-group-item d-flex justify-content-between align-items-center" style="border-left: 3px solid #dc3545;">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="fs-5 text-danger fw-bold" style="min-width: 30px;">{{ forloop.counter }}.</div>
+                  <div>
+                    <div class="fw-semibold">{{ item.adolescente.nome }} {{ item.adolescente.sobrenome }}</div>
+                    <small class="text-muted">
+                      {% if item.adolescente.data_nascimento %}
+                        {{ item.adolescente.data_nascimento|date:"d/m/Y" }}
+                      {% endif %}
+                      {% if item.adolescente.genero %}
+                        · {{ item.adolescente.get_genero_display }}
+                      {% endif %}
+                    </small>
+                  </div>
+                </div>
+                <span class="badge bg-danger">{{ item.total_presencas }}ª vez - ALOCAR!</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      {% if pg_vip_candidatos %}
+        <!-- Lista -->
+        <ul class="list-group mb-4">
+          {% for item in pg_vip_candidatos %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center gap-3">
+                <div class="fs-5 text-muted fw-semibold" style="min-width: 30px;">{{ forloop.counter }}.</div>
+                <div>
+                  <div class="fw-semibold">{{ item.adolescente.nome }} {{ item.adolescente.sobrenome }}</div>
+                  <small class="text-muted">
+                    {% if item.adolescente.data_nascimento %}
+                      {{ item.adolescente.data_nascimento|date:"d/m/Y" }}
+                    {% endif %}
+                    {% if item.adolescente.genero %}
+                      · {{ item.adolescente.get_genero_display }}
+                    {% endif %}
+                  </small>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                {% if item.primeira_vez %}
+                  <span class="badge bg-success">🎉 1ª vez</span>
+                {% else %}
+                  <span class="badge bg-info">{{ item.total_presencas }}ª vez</span>
+                {% endif %}
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <!-- Botões de ação -->
+        <div class="d-flex gap-2 flex-wrap justify-content-center">
+          <button type="button" class="btn btn-outline-secondary" onclick="exportarPGVIP()">
+            <i class="fas fa-download me-2"></i>Exportar CSV
+          </button>
+          <button type="button" class="btn btn-warning" onclick="copiarParaWhatsApp()">
+            <i class="fab fa-whatsapp me-2"></i>Copiar para WhatsApp
+          </button>
+          <a href="{% url 'checkin_dia' dia.id %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar ao Check-in
+          </a>
+        </div>
+      {% endif %}
+      
+      {% if not pg_vip_candidatos and not precisa_alocar %}
+        <!-- Mensagem vazia -->
+        <div class="text-center py-5">
+          <i class="fas fa-star text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+          <h4 class="mt-3 text-muted">Nenhuma pessoa sem PG hoje</h4>
+          <p class="text-muted">Quando houver pessoas presentes sem PG definido, elas aparecerão aqui.</p>
+          <a href="{% url 'checkin_dia' dia.id %}" class="btn btn-primary mt-3">
+            <i class="fas fa-arrow-left me-2"></i>Voltar ao Check-in
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  // Função para exportar lista PG VIP
+  function exportarPGVIP() {
+    const precisaAlocar = [
+      {% for item in precisa_alocar %}
+        {
+          nome: "{{ item.adolescente.nome|escapejs }} {{ item.adolescente.sobrenome|escapejs }}",
+          vezes: {{ item.total_presencas }},
+          dataNascimento: "{{ item.adolescente.data_nascimento|date:'d/m/Y'|default:'' }}",
+          genero: "{{ item.adolescente.get_genero_display|default:'' }}",
+          categoria: "PRECISA ALOCAR"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ];
+    
+    const pgVipData = [
+      {% for item in pg_vip_candidatos %}
+        {
+          nome: "{{ item.adolescente.nome|escapejs }} {{ item.adolescente.sobrenome|escapejs }}",
+          vezes: {{ item.total_presencas }},
+          dataNascimento: "{{ item.adolescente.data_nascimento|date:'d/m/Y'|default:'' }}",
+          genero: "{{ item.adolescente.get_genero_display|default:'' }}",
+          categoria: "PG VIP"
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ];
+    
+    const todosData = [...precisaAlocar, ...pgVipData];
+    
+    let csv = "Categoria,Nome,Número de Presenças,Data de Nascimento,Sexo\n";
+    todosData.forEach(item => {
+      csv += `"${item.categoria}","${item.nome}",${item.vezes},"${item.dataNascimento}","${item.genero}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'pg_vip_{{ dia.data|date:"Y-m-d" }}.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+  
+  // Função para copiar lista formatada para WhatsApp
+  function copiarParaWhatsApp() {
+    const precisaAlocar = [
+      {% for item in precisa_alocar %}
+        {
+          nome: "{{ item.adolescente.nome|escapejs }} {{ item.adolescente.sobrenome|escapejs }}",
+          vezes: {{ item.total_presencas }}
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ];
+    
+    const pgVipData = [
+      {% for item in pg_vip_candidatos %}
+        {
+          nome: "{{ item.adolescente.nome|escapejs }} {{ item.adolescente.sobrenome|escapejs }}",
+          vezes: {{ item.total_presencas }},
+          primeira: {{ item.primeira_vez|yesno:"true,false" }}
+        }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ];
+    
+    let texto = `🌟 *PG VIP - {{ dia.data|date:"d/m/Y" }}*\n\n`;
+    
+    // Seção: Precisa Alocar
+    if (precisaAlocar.length > 0) {
+      texto += `⚠️ *PRECISA ALOCAR EM PG (${precisaAlocar.length})*\n`;
+      precisaAlocar.forEach((item, index) => {
+        texto += `${index + 1}. ${item.nome} - ${item.vezes}ª vez\n`;
+      });
+      texto += `\n`;
+    }
+    
+    // Seção: PG VIP
+    if (pgVipData.length > 0) {
+      texto += `🌟 *PG VIP (${pgVipData.length})*\n`;
+      pgVipData.forEach((item, index) => {
+        const badge = item.primeira ? '🎉 1ª vez' : `${item.vezes}ª vez`;
+        texto += `${index + 1}. ${item.nome} - ${badge}\n`;
+      });
+    }
+    
+    texto += `\n_PG VIP: 1-3 presenças | Precisa Alocar: 4+ presenças_`;
+    
+    navigator.clipboard.writeText(texto).then(() => {
+      alert('✅ Lista copiada! Cole no WhatsApp.');
+    }).catch(err => {
+      // Fallback para navegadores antigos
+      const textArea = document.createElement('textarea');
+      textArea.value = texto;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        alert('✅ Lista copiada! Cole no WhatsApp.');
+      } catch (err) {
+        alert('❌ Erro ao copiar. Tente novamente.');
+      }
+      document.body.removeChild(textArea);
+    });
+  }
+</script>
+
+{% endblock %}

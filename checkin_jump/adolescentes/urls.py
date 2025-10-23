@@ -23,6 +23,7 @@ urlpatterns = [
     path("checkin/novo-dia/", views.adicionar_dia_evento, name="novo_dia_evento"),
     path("checkin/<int:dia_id>/", views.checkin_dia, name="checkin_dia"),
     path('atualizar-presenca/', views.atualizar_presenca, name='atualizar_presenca'),
+    path("checkin/<int:dia_id>/pg-vip/", views.pg_vip, name="pg_vip"),
 
     # PGs
     path('pgs/', views.lista_pgs, name='lista_pgs'),

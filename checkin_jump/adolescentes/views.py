@@ -571,15 +571,42 @@ def excluir_adolescente(request, id):
 
 @login_required
 def lista_dias_evento(request):
-    dias = DiaEvento.objects.annotate(
-        total_presentes=Count('presenca', filter=Q(presenca__presente=True))
-    ).order_by('-data')
-
-    if dias.exists():
-        soma_presentes = sum(dia.total_presentes for dia in dias)
-        media_presentes = soma_presentes / len(dias)
+    dias_list = DiaEvento.objects.prefetch_related('contagens_auditorio').order_by('-data')
+    
+    # Calcular média usando contagem de auditório (prioritário) ou check-in (fallback)
+    total_contagens = 0
+    soma_pessoas = 0
+    
+    for dia in dias_list:
+        # Anotar total de presentes via check-in para cada dia
+        dia.total_presentes_checkin = Presenca.objects.filter(dia=dia, presente=True).count()
+        
+        # Buscar contagem de auditório
+        contagem_auditorio = dia.contagens_auditorio.first()
+        if contagem_auditorio:
+            dia.total_presentes = contagem_auditorio.quantidade_pessoas
+            dia.fonte = 'auditorio'
+            soma_pessoas += contagem_auditorio.quantidade_pessoas
+            total_contagens += 1
+        else:
+            dia.total_presentes = dia.total_presentes_checkin
+            dia.fonte = 'checkin'
+    
+    # Média baseada apenas em contagens de auditório
+    if total_contagens > 0:
+        media_presentes = soma_pessoas / total_contagens
     else:
         media_presentes = 0
+    
+    # Paginação - 20 dias por página
+    paginator = Paginator(dias_list, 20)
+    page = request.GET.get('page')
+    try:
+        dias = paginator.page(page)
+    except PageNotAnInteger:
+        dias = paginator.page(1)
+    except EmptyPage:
+        dias = paginator.page(paginator.num_pages)
 
     return render(request, 'checkin/lista_dias.html', {
         'dias': dias,
@@ -714,12 +741,70 @@ def checkin_dia(request, dia_id):
         messages.success(request, "Check-in realizado com sucesso!")
         return redirect('checkin_dia', dia_id=dia.id)
 
+    # Calcular PG VIP: presentes do dia, sem PG definido, com 3 ou menos presenças totais
+    pg_vip_candidatos = []
+    presentes_hoje = Adolescente.objects.filter(
+        id__in=presentes_ids,
+        pg__isnull=True  # Sem PG definido
+    ).annotate(
+        total_presencas=Count('presenca', filter=Q(presenca__presente=True))
+    ).filter(
+        total_presencas__lte=3  # 3 ou menos presenças
+    ).order_by('total_presencas', 'nome', 'sobrenome')
+    
+    for adolescente in presentes_hoje:
+        pg_vip_candidatos.append({
+            'adolescente': adolescente,
+            'total_presencas': adolescente.total_presencas,
+            'primeira_vez': adolescente.total_presencas == 1
+        })
+
     return render(request, 'checkin/checkin_dia.html', {
         'dia': dia,
         'adolescentes': adolescentes_paginados,
         'presentes_ids': presentes_ids,
         'filtro': filtro,
         'busca': busca,
+        'pg_vip_candidatos': pg_vip_candidatos,
+    })
+
+@login_required
+def pg_vip(request, dia_id):
+    """Página dedicada ao PG VIP de um dia específico"""
+    dia = get_object_or_404(DiaEvento, pk=dia_id)
+    
+    # Buscar presentes do dia
+    presencas = Presenca.objects.filter(dia=dia, presente=True)
+    presentes_ids = presencas.values_list('adolescente_id', flat=True)
+    
+    # Buscar todos presentes sem PG definido
+    presentes_sem_pg = Adolescente.objects.filter(
+        id__in=presentes_ids,
+        pg__isnull=True  # Sem PG definido
+    ).annotate(
+        total_presencas=Count('presenca', filter=Q(presenca__presente=True))
+    ).order_by('total_presencas', 'nome', 'sobrenome')
+    
+    # Separar em duas listas: PG VIP (1-3 vezes) e Precisa Alocar (4+ vezes)
+    pg_vip_candidatos = []
+    precisa_alocar = []
+    
+    for adolescente in presentes_sem_pg:
+        item = {
+            'adolescente': adolescente,
+            'total_presencas': adolescente.total_presencas,
+            'primeira_vez': adolescente.total_presencas == 1
+        }
+        
+        if adolescente.total_presencas <= 3:
+            pg_vip_candidatos.append(item)
+        else:
+            precisa_alocar.append(item)
+    
+    return render(request, 'checkin/pg_vip.html', {
+        'dia': dia,
+        'pg_vip_candidatos': pg_vip_candidatos,
+        'precisa_alocar': precisa_alocar,
     })
 
 @login_required

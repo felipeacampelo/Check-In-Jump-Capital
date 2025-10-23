@@ -135,7 +135,7 @@
           });
         }
 
-        // Handle search form
+        // Handle search form - apenas Enter key (auto-submit é tratado em script separado)
         const searchForm = document.getElementById('buscaForm');
         if (searchForm) {
           searchForm.addEventListener('keydown', function (e) {
@@ -146,20 +146,6 @@
               } else {
                 searchForm.submit();
               }
-            }
-          });
-        }
-
-        // Handle clear search button
-        const clearBtn = document.getElementById('clearBusca');
-        const searchInput = document.getElementById('buscaInput');
-        if (clearBtn && searchInput) {
-          clearBtn.addEventListener('click', function() {
-            searchInput.value = '';
-            if (typeof searchForm.requestSubmit === 'function') {
-              searchForm.requestSubmit();
-            } else {
-              searchForm.submit();
             }
           });
         }
@@ -783,22 +769,21 @@
 </nav>
 {% endif %}
 
-<!-- Script para submissão automática ao digitar -->
+<!-- Script para botão limpar busca -->
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const buscaInput = document.getElementById("buscaInput");
+    const buscaForm = document.getElementById("buscaForm");
     const clearBtn = document.getElementById("clearBusca");
-    buscaInput.addEventListener("input", function () {
-      clearTimeout(buscaInput.dataset.timer);
-      buscaInput.dataset.timer = setTimeout(() => {
-        document.getElementById("filtroForm").submit();
-      }, 500);
-    });
 
-    if (clearBtn) {
+    if (clearBtn && buscaForm && buscaInput) {
       clearBtn.addEventListener("click", function () {
         buscaInput.value = "";
-        document.getElementById("filtroForm").submit();
+        if (typeof buscaForm.requestSubmit === 'function') {
+          buscaForm.requestSubmit();
+        } else {
+          buscaForm.submit();
+        }
       });
     }
   });

@@ -153,19 +153,54 @@
 
 <!-- Estatísticas de presença -->
 <div class="row mb-4">
-    <div class="col-md-4 mb-3">
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 border-success" style="border-width: 2px;">
+            <div class="card-body text-center">
+                <h5 class="card-title text-success"><i class="fas fa-users me-1"></i>Média Auditório</h5>
+                <p class="card-text display-4 text-success">{{ contagem_auditorio_media }}</p>
+                <small class="text-muted">pessoas por evento</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 border-success">
+            <div class="card-body text-center">
+                <h5 class="card-title text-success"><i class="fas fa-users me-1"></i>Última Contagem Auditório</h5>
+                {% if contagem_auditorio_ultimo %}
+                    <p class="card-text display-6 text-success">{{ contagem_auditorio_ultimo }}</p>
+                    <small class="text-muted">{{ contagem_auditorio_ultimo_data|date:"d/m/Y" }}</small>
+                {% else %}
+                    <p class="card-text text-muted">Nenhuma contagem</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card h-100 border-info">
+            <div class="card-body text-center">
+                <h5 class="card-title text-info"><i class="fas fa-user-plus me-1"></i>Média de Visitantes</h5>
+                <p class="card-text display-4 text-info">{{ contagem_visitantes_media }}</p>
+                <small class="text-muted">visitantes por evento</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
         <div class="card h-100">
             <div class="card-body text-center">
-                <h5 class="card-title">Presença Média por Evento</h5>
+                <h5 class="card-title"><i class="fas fa-check me-1"></i>Média Check-in</h5>
                 <p class="card-text display-4 text-primary">{{ media_presenca }}</p>
                 <small class="text-muted">adolescentes</small>
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
+</div>
+
+<!-- Estatísticas secundárias -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
         <div class="card h-100">
             <div class="card-body text-center">
-                <h5 class="card-title">Último Evento</h5>
+                <h5 class="card-title">Último Evento - Check-In</h5>
                 {% if ultimo_evento %}
                     <p class="card-text display-6 text-success">{{ ultimo_presentes }}</p>
                     <small class="text-muted">{{ ultimo_evento.data|date:"d/m/Y" }}</small>
@@ -175,7 +210,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-4 mb-3">
+    <div class="col-md-6 mb-3">
         <div class="card h-100">
             <div class="card-body text-center">
                 <h5 class="card-title">Taxa de Presença</h5>
@@ -250,44 +285,6 @@
             </div>
         </div>
     </div>
-</div>
-
-<!-- Métricas inferiores: Visitantes + Auditório -->
-<div class="row mb-4">
-  <!-- Média de Visitantes -->
-  <div class="col-md-4 mb-3">
-    <div class="card dashboard-card border-info h-100" data-bs-toggle="tooltip" title="Média de visitantes registrados por evento (via contagem de visitantes)">
-      <div class="card-body text-center">
-        <div class="dashboard-title text-info"><i class="fas fa-user-plus me-1"></i>Média de Visitantes</div>
-        <div class="dashboard-value text-info">{{ contagem_visitantes_media }}</div>
-        <div class="dashboard-label">visitantes por evento</div>
-      </div>
-    </div>
-  </div>
-  <!-- Última Contagem Auditório -->
-  <div class="col-md-4 mb-3">
-    <div class="card dashboard-card border-warning h-100" data-bs-toggle="tooltip" title="Última contagem de pessoas feita manualmente no auditório">
-      <div class="card-body text-center">
-        <div class="dashboard-title text-warning"><i class="fas fa-users me-1"></i>Última Contagem Auditório</div>
-        {% if contagem_auditorio_ultimo %}
-          <div class="dashboard-value text-warning">{{ contagem_auditorio_ultimo }}</div>
-          <div class="dashboard-label">por {{ contagem_auditorio_ultimo_usuario }} em {{ contagem_auditorio_ultimo_data|date:"d/m/Y" }}</div>
-        {% else %}
-          <div class="dashboard-label">Nenhuma contagem registrada</div>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-  <!-- Média Auditório -->
-  <div class="col-md-4 mb-3">
-    <div class="card dashboard-card border-warning h-100" data-bs-toggle="tooltip" title="Média de pessoas contadas manualmente no auditório por evento">
-      <div class="card-body text-center">
-        <div class="dashboard-title text-warning"><i class="fas fa-users me-1"></i>Média Auditório</div>
-        <div class="dashboard-value text-warning">{{ contagem_auditorio_media }}</div>
-        <div class="dashboard-label">pessoas por evento</div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- Tabela de eventos recentes -->
