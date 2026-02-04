@@ -21,22 +21,89 @@
 
   <form method="POST" enctype="multipart/form-data" class="mt-3">
     {% csrf_token %}
-    <div id="form-campos">
-      {{ form.as_p }}
+    
+    <!-- Dados Pessoais -->
+    <div class="card mb-3">
+      <div class="card-header"><i class="fas fa-user me-2"></i>Dados Pessoais</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="id_nome" class="form-label">Nome *</label>
+            {{ form.nome }}
+            {% if form.nome.errors %}<div class="text-danger small">{{ form.nome.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-6">
+            <label for="id_sobrenome" class="form-label">Sobrenome *</label>
+            {{ form.sobrenome }}
+            {% if form.sobrenome.errors %}<div class="text-danger small">{{ form.sobrenome.errors.0 }}</div>{% endif %}
+          </div>
+          <div class="col-md-4">
+            <label for="id_data_nascimento" class="form-label">Data de Nascimento *</label>
+            {{ form.data_nascimento }}
+            {% if form.data_nascimento.errors %}<div class="text-danger small">{{ form.data_nascimento.errors.0 }}</div>{% endif %}
+            <div id="aviso-idade" class="mt-1"></div>
+          </div>
+          <div class="col-md-4">
+            <label for="id_genero" class="form-label">Sexo *</label>
+            {{ form.genero }}
+          </div>
+          <div class="col-md-4">
+            <label for="id_telefone" class="form-label">Telefone</label>
+            {{ form.telefone }}
+          </div>
+          <div class="col-md-6">
+            <label for="id_foto" class="form-label">Foto</label>
+            {{ form.foto }}
+          </div>
+        </div>
+      </div>
     </div>
-    <button type="submit" class="btn btn-success">Salvar</button>
-    <a href="{% url 'listar_adolescentes' %}" class="btn btn-secondary">Cancelar</a>
+
+    <!-- Responsável -->
+    <div class="card mb-3">
+      <div class="card-header"><i class="fas fa-user-shield me-2"></i>Responsável</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="id_nome_responsavel" class="form-label">Nome do Responsável</label>
+            {{ form.nome_responsavel }}
+          </div>
+          <div class="col-md-6">
+            <label for="id_telefone_responsavel" class="form-label">Telefone do Responsável</label>
+            {{ form.telefone_responsavel }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PG e Império -->
+    <div class="card mb-3">
+      <div class="card-header"><i class="fas fa-users me-2"></i>PG e Império</div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label for="id_pg" class="form-label">PG</label>
+            {{ form.pg }}
+          </div>
+          <div class="col-md-6">
+            <label for="id_imperio" class="form-label">Império</label>
+            {{ form.imperio }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-success"><i class="fas fa-save me-1"></i>Salvar</button>
+      <a href="{% url 'listar_adolescentes' %}" class="btn btn-secondary">Cancelar</a>
+    </div>
   </form>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Procura o input de data de nascimento
       var dataInput = document.querySelector('input[name="data_nascimento"]');
-      if (dataInput) {
-        // Cria o aviso se não existir
-        var aviso = document.createElement('div');
-        aviso.id = 'aviso-idade';
-        aviso.className = 'mt-2';
-        dataInput.parentNode.appendChild(aviso);
+      var aviso = document.getElementById('aviso-idade');
+      if (dataInput && aviso) {
         // Função para calcular idade
         function calcularIdade(dataStr) {
           if (!dataStr) return null;

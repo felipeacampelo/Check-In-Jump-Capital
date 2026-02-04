@@ -9,12 +9,15 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
   <div>
-    {% if perms.adolescentes.add_diaevento %}
+    {% if pode_adicionar_dia %}
       <a href="{% url 'novo_dia_evento' %}" class="btn btn-primary me-2">Adicionar Dia</a>
     {% endif %}
     <a href="{% url 'selecionar_dia_exportar' %}" class="btn btn-outline-secondary">
       <i class="fas fa-download me-1"></i>Exportar Presenças CSV
     </a>
+    {% if readonly %}
+    <span class="badge bg-secondary ms-2"><i class="fas fa-lock me-1"></i>Histórico {{ ano_selecionado }}</span>
+    {% endif %}
   </div>
 </div>
 

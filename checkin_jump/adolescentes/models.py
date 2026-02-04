@@ -4,21 +4,31 @@ from django.contrib.auth.models import User
 class PequenoGrupo(models.Model):
     nome = models.CharField(max_length=100)
     genero_pg = models.CharField(max_length=100, blank=True, null=True)
+    ano = models.PositiveIntegerField(default=2026, db_index=True)
 
     def __str__(self):
-        return self.nome
+        return f"{self.nome} ({self.ano})"
+    
+    class Meta:
+        ordering = ['nome']
 
 class Imperio(models.Model):
-    nome = models.CharField(max_length=100, unique=True)
+    nome = models.CharField(max_length=100)
+    ano = models.PositiveIntegerField(default=2026, db_index=True)
 
     def __str__(self):
-        return self.nome
+        return f"{self.nome} ({self.ano})"
+    
+    class Meta:
+        unique_together = [('nome', 'ano')]
+        ordering = ['nome']
 
 class Adolescente(models.Model):
     nome = models.CharField(max_length=100)
     sobrenome = models.CharField(max_length=100)
     foto = models.ImageField(upload_to='fotos/', blank=True, null=True)
     data_nascimento = models.DateField()
+    telefone = models.CharField(max_length=20, blank=True, null=True, help_text="Telefone do adolescente")
     GENERO_CHOICES = [
         ("M", "Masculino"),
         ("F", "Feminino"),
@@ -26,7 +36,9 @@ class Adolescente(models.Model):
     genero = models.CharField(max_length=1, choices=GENERO_CHOICES, blank=True, null=False)
     pg = models.ForeignKey(PequenoGrupo, on_delete=models.SET_NULL, blank=True, null=True, related_name='adolescentes')
     imperio = models.ForeignKey(Imperio, on_delete=models.SET_NULL, null=True, blank=True)
-    data_inicio = models.DateField(blank=True, null=True)
+    nome_responsavel = models.CharField(max_length=200, blank=True, null=True, help_text="Nome do pai/mãe ou responsável")
+    telefone_responsavel = models.CharField(max_length=20, blank=True, null=True, help_text="Telefone do responsável")
+    ano = models.PositiveIntegerField(default=2026, db_index=True)
 
     class Meta:
         permissions = [
@@ -42,8 +54,13 @@ class Adolescente(models.Model):
         return self.presenca_set.order_by('-dia__data')[:5]
 
 class DiaEvento(models.Model):
-    data = models.DateField(unique=True)
+    data = models.DateField()
     titulo = models.CharField(max_length=200, blank=True, null=True, help_text="Título da celebração (ex: 40 Dias de Generosidade)")
+    ano = models.PositiveIntegerField(default=2026, db_index=True)
+
+    class Meta:
+        unique_together = [('data', 'ano')]
+        ordering = ['-data']
 
     def __str__(self):
         if self.titulo:

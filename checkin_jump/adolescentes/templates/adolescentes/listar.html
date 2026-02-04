@@ -394,12 +394,17 @@
 
 <!-- Botões de ações -->
   <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+    {% if not readonly %}
     <a href="{% url 'criar_adolescente' %}" class="btn btn-primary">Adicionar Adolescente</a>
+    {% endif %}
     <a href="{% url 'exportar_adolescentes_csv' %}?{{ request.GET.urlencode }}" class="btn btn-outline-secondary">Exportar CSV</a>
-    {% if perms.adolescentes.review_duplicates %}
+    {% if perms.adolescentes.review_duplicates and not readonly %}
       <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalDuplicados">
         <i class="fas fa-user-astronaut me-1"></i> Revisar Duplicados
       </button>
+    {% endif %}
+    {% if readonly %}
+    <span class="badge bg-secondary"><i class="fas fa-lock me-1"></i>Modo somente leitura ({{ ano_selecionado }})</span>
     {% endif %}
   </div>
 
