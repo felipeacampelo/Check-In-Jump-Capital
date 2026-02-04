@@ -7,6 +7,9 @@ urlpatterns = [
     # Autenticação
     path("login/", login_view, name="login"),
     path("logout/", logout_view, name="logout"),
+    
+    # Seletor de Ano
+    path("ano/<int:ano>/", views.trocar_ano, name="trocar_ano"),
 
     # Página inicial (escolha uma)
     path("", views.lista_dias_evento, name="pagina_checkin"),

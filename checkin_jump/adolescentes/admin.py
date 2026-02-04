@@ -41,9 +41,9 @@ class AdolescenteAdmin(admin.ModelAdmin):
     action_form = BulkUpdateAdolescenteActionForm
 
     # Barra de pesquisa e usabilidade
-    list_display = ("nome", "sobrenome", "pg", "imperio", "data_nascimento")
+    list_display = ("nome", "sobrenome", "pg", "imperio", "data_nascimento", "ano")
     search_fields = ("nome", "sobrenome", "pg__nome", "imperio__nome")
-    list_filter = ("pg", "imperio", "genero")
+    list_filter = ("ano", "pg", "imperio", "genero")
 
     # Prioridades: ordenação, paginação e performance
     ordering = ("nome", "sobrenome")
@@ -132,13 +132,15 @@ admin.site.register(Presenca)
 @admin.register(PequenoGrupo)
 class PequenoGrupoAdmin(admin.ModelAdmin):
     search_fields = ("nome",)
-    list_display = ("nome",)
+    list_display = ("nome", "ano")
+    list_filter = ("ano",)
 
 
 @admin.register(Imperio)
 class ImperioAdmin(admin.ModelAdmin):
     search_fields = ("nome",)
-    list_display = ("nome",)
+    list_display = ("nome", "ano")
+    list_filter = ("ano",)
 
 # Branding do painel
 admin.site.site_header = "Check-in Jump — Admin"

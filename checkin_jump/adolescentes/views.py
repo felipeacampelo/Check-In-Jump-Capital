@@ -19,6 +19,20 @@ from django.urls import reverse
 from urllib.parse import urlencode
 from django.db import transaction, connection
 from django.template.loader import render_to_string
+
+# Constantes para anos disponíveis
+ANO_ATUAL = 2026
+ANOS_DISPONIVEIS = [2025, 2026]
+
+def get_ano_selecionado(request):
+    """Retorna o ano selecionado na sessão do usuário (padrão: 2026)"""
+    return request.session.get('ano_selecionado', ANO_ATUAL)
+
+def is_ano_readonly(request):
+    """Verifica se o ano selecionado é readonly (anos anteriores ao atual)"""
+    ano = get_ano_selecionado(request)
+    return ano < ANO_ATUAL
+
 try:
     # Disponível quando usando PostgreSQL e habilitando django.contrib.postgres
     from django.contrib.postgres.search import TrigramSimilarity
@@ -96,6 +110,19 @@ def logout_view(request):
     return redirect("login")  # Redireciona para a tela de login após logout
 
 @login_required
+def trocar_ano(request, ano):
+    """Troca o ano selecionado na sessão do usuário"""
+    if ano in ANOS_DISPONIVEIS:
+        request.session['ano_selecionado'] = ano
+        messages.success(request, f"Visualizando dados de {ano}")
+    else:
+        messages.error(request, f"Ano {ano} não disponível")
+    
+    # Redireciona para a página anterior ou para a lista de adolescentes
+    next_url = request.GET.get('next', request.META.get('HTTP_REFERER', reverse('listar_adolescentes')))
+    return redirect(next_url)
+
+@login_required
 def listar_adolescentes(request):
     busca = request.GET.get('busca', '')
     pg_id = request.GET.get('pg')
@@ -107,12 +134,16 @@ def listar_adolescentes(request):
     ordenar_por = request.GET.get('ordenar_por', 'nome')  # Padrão: ordenar por nome
     direcao = request.GET.get('direcao', 'asc')  # Padrão: ascendente
 
+    # Filtrar por ano selecionado
+    ano = get_ano_selecionado(request)
+    readonly = is_ano_readonly(request)
+    
     # Otimização: usar select_related e prefetch_related para evitar queries N+1
-    adolescentes = Adolescente.objects.select_related('pg', 'imperio').prefetch_related(
+    adolescentes = Adolescente.objects.filter(ano=ano).select_related('pg', 'imperio').prefetch_related(
         Prefetch('presenca_set', 
                 queryset=Presenca.objects.select_related('dia').order_by('-dia__data')[:5],
                 to_attr='cached_ultimas_presencas')
-    ).all()
+    )
     if busca:
         adolescentes = buscar_adolescentes_por_nome(adolescentes, busca)
     if pg_id:
@@ -183,9 +214,9 @@ def listar_adolescentes(request):
 
     total_adolescentes = adolescentes.count()
     
-    # Otimização: cache para filtros (evita queries repetidas)
-    pgs = PequenoGrupo.objects.all()
-    imperios = Imperio.objects.all()
+    # Otimização: cache para filtros (evita queries repetidas) - filtrar por ano
+    pgs = PequenoGrupo.objects.filter(ano=ano)
+    imperios = Imperio.objects.filter(ano=ano)
 
     # Paginação
     paginator = Paginator(adolescentes, 25)  # 25 registros por página
@@ -216,7 +247,10 @@ def listar_adolescentes(request):
         'imperio_selecionado': imperio_id,
         'presenca_selecionada': presenca_filtro,
         'ordenar_por': ordenar_por,
-        'direcao': direcao
+        'direcao': direcao,
+        'ano_selecionado': ano,
+        'anos_disponiveis': ANOS_DISPONIVEIS,
+        'readonly': readonly,
     })
 
 
@@ -436,6 +470,11 @@ def pagina_pgs(request):
 
 @login_required
 def criar_adolescente(request):
+    ano = get_ano_selecionado(request)
+    if is_ano_readonly(request):
+        messages.error(request, "Não é possível criar adolescentes em anos anteriores.")
+        return redirect('listar_adolescentes')
+    
     # Detecta se está vindo da página de check-in
     next_url = request.GET.get('next', '')
     dia_id = None
@@ -460,7 +499,9 @@ def criar_adolescente(request):
                 messages.error(request, "A data de nascimento não pode ser no futuro.")
                 return redirect('criar_adolescente')
 
-            adolescente = form.save()
+            adolescente = form.save(commit=False)
+            adolescente.ano = ano
+            adolescente.save()
             
             # Se veio da página de check-in, cria automaticamente o check-in para aquele dia
             if dia_id:
@@ -571,7 +612,10 @@ def excluir_adolescente(request, id):
 
 @login_required
 def lista_dias_evento(request):
-    dias_list = DiaEvento.objects.prefetch_related('contagens_auditorio').order_by('-data')
+    ano = get_ano_selecionado(request)
+    readonly = is_ano_readonly(request)
+    
+    dias_list = DiaEvento.objects.filter(ano=ano).prefetch_related('contagens_auditorio').order_by('-data')
     
     # Calcular média usando contagem de auditório (prioritário) ou check-in (fallback)
     total_contagens = 0
@@ -611,20 +655,30 @@ def lista_dias_evento(request):
     return render(request, 'checkin/lista_dias.html', {
         'dias': dias,
         'media_presentes': media_presentes,
-        'pode_adicionar_dia': request.user.has_perm('adolescentes.add_diaevento'),
+        'pode_adicionar_dia': request.user.has_perm('adolescentes.add_diaevento') and not readonly,
+        'ano_selecionado': ano,
+        'anos_disponiveis': ANOS_DISPONIVEIS,
+        'readonly': readonly,
     })
 
 
 @login_required
 @permission_required('adolescentes.add_diaevento', raise_exception=True)
 def adicionar_dia_evento(request):
+    ano = get_ano_selecionado(request)
+    if is_ano_readonly(request):
+        messages.error(request, "Não é possível adicionar eventos em anos anteriores.")
+        return redirect('pagina_checkin')
+    
     if request.method == 'POST':
         form = DiaEventoForm(request.POST)
         if form.is_valid():
-            if DiaEvento.objects.filter(data=form.cleaned_data['data']).exists():
+            if DiaEvento.objects.filter(data=form.cleaned_data['data'], ano=ano).exists():
                 messages.warning(request, "Esse dia já foi adicionado.")
             else:
-                form.save()
+                dia_evento = form.save(commit=False)
+                dia_evento.ano = ano
+                dia_evento.save()
                 messages.success(request, "Evento criado com sucesso!")
             return redirect('pagina_checkin')
         else:
@@ -637,7 +691,10 @@ def adicionar_dia_evento(request):
 @login_required
 def checkin_dia(request, dia_id):
     dia = get_object_or_404(DiaEvento, pk=dia_id)
-    adolescentes = Adolescente.objects.all()
+    ano = dia.ano  # Usar o ano do evento
+    readonly = ano < ANO_ATUAL
+    
+    adolescentes = Adolescente.objects.filter(ano=ano)
     filtro = request.GET.get('filtro', 'todos')  # padrão: todos
     busca = request.GET.get('busca', '')  # busca por nome
 
@@ -766,6 +823,8 @@ def checkin_dia(request, dia_id):
         'filtro': filtro,
         'busca': busca,
         'pg_vip_candidatos': pg_vip_candidatos,
+        'readonly': readonly,
+        'ano_selecionado': ano,
     })
 
 @login_required
@@ -851,12 +910,17 @@ def atualizar_presenca(request):
 
 @login_required
 def adicionar_pg(request):
+    ano = get_ano_selecionado(request)
+    if is_ano_readonly(request):
+        messages.error(request, "Não é possível adicionar PGs em anos anteriores.")
+        return redirect('lista_pgs')
+    
     if request.method == 'POST':
         nome = request.POST.get('nome')
         genero_pg = request.POST.get('lider')
 
         if nome:
-            PequenoGrupo.objects.create(nome=nome, genero_pg=genero_pg)
+            PequenoGrupo.objects.create(nome=nome, genero_pg=genero_pg, ano=ano)
             messages.success(request, "PG criado com sucesso.")
             return redirect('lista_pgs')
         else:
@@ -867,8 +931,15 @@ def adicionar_pg(request):
 @permission_required('adolescentes.view_pgs_page', raise_exception=True)
 @login_required
 def lista_pgs(request):
-    pgs = PequenoGrupo.objects.all()
-    return render(request, 'pgs/lista_pgs.html', {'pgs': pgs})
+    ano = get_ano_selecionado(request)
+    readonly = is_ano_readonly(request)
+    pgs = PequenoGrupo.objects.filter(ano=ano)
+    return render(request, 'pgs/lista_pgs.html', {
+        'pgs': pgs,
+        'ano_selecionado': ano,
+        'anos_disponiveis': ANOS_DISPONIVEIS,
+        'readonly': readonly,
+    })
 
 @permission_required('adolescentes.view_pgs_page', raise_exception=True)
 @login_required
@@ -942,19 +1013,23 @@ def dashboard(request):
     """Dashboard com estatísticas e gráficos"""
     from datetime import timedelta
     
+    # Filtrar por ano selecionado
+    ano = get_ano_selecionado(request)
+    readonly = is_ano_readonly(request)
+    
     # Filtros de data
     data_inicio = request.GET.get('data_inicio')
     data_fim = request.GET.get('data_fim')
     dia_especifico = request.GET.get('dia_especifico')
     
-    # Estatísticas básicas
-    total_adolescentes = Adolescente.objects.count()
-    total_pgs = PequenoGrupo.objects.count()
-    total_imperios = Imperio.objects.count()
-    total_eventos = DiaEvento.objects.count()
+    # Estatísticas básicas - filtradas por ano
+    total_adolescentes = Adolescente.objects.filter(ano=ano).count()
+    total_pgs = PequenoGrupo.objects.filter(ano=ano).count()
+    total_imperios = Imperio.objects.filter(ano=ano).count()
+    total_eventos = DiaEvento.objects.filter(ano=ano).count()
     
-    # Filtrar eventos por período se especificado
-    eventos_query = DiaEvento.objects.all()
+    # Filtrar eventos por período se especificado - base filtrada por ano
+    eventos_query = DiaEvento.objects.filter(ano=ano)
     if dia_especifico:
         try:
             dia = DiaEvento.objects.get(data=dia_especifico)
@@ -975,8 +1050,8 @@ def dashboard(request):
     else:
         media_presenca = 0
     
-    # Distribuição por gênero
-    generos = Adolescente.objects.values('genero').annotate(
+    # Distribuição por gênero - filtrada por ano
+    generos = Adolescente.objects.filter(ano=ano).values('genero').annotate(
         total=Count('id')
     ).order_by('genero')
     
@@ -986,9 +1061,9 @@ def dashboard(request):
         genero_labels.append(genero['genero'])
         genero_data.append(genero['total'])
     
-    # Presença média por PG (top 5)
+    # Presença média por PG (top 5) - filtrada por ano
     if eventos_query.exists():
-        presenca_por_pg = PequenoGrupo.objects.annotate(
+        presenca_por_pg = PequenoGrupo.objects.filter(ano=ano).annotate(
             total_presentes=Count('adolescentes__presenca', 
                 filter=Q(adolescentes__presenca__presente=True, 
                         adolescentes__presenca__dia__in=eventos_query)),
@@ -1028,9 +1103,9 @@ def dashboard(request):
             'percentual': percentual
         })
     
-    # Presença média por Império
+    # Presença média por Império - filtrada por ano
     if eventos_query.exists():
-        presenca_por_imperio = Imperio.objects.annotate(
+        presenca_por_imperio = Imperio.objects.filter(ano=ano).annotate(
             total_presentes=Count('adolescente__presenca', 
                 filter=Q(adolescente__presenca__presente=True, 
                         adolescente__presenca__dia__in=eventos_query)),
@@ -1105,6 +1180,11 @@ def dashboard(request):
         'ultimo_total': ultimo_total,
         'ultimo_percentual': ultimo_percentual,
         'ultimo_evento': ultimo_evento,
+        
+        # Ano selecionado
+        'ano_selecionado': ano,
+        'anos_disponiveis': ANOS_DISPONIVEIS,
+        'readonly': readonly,
         
         # Filtros
         'data_inicio': data_inicio,
