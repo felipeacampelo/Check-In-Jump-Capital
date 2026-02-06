@@ -11,6 +11,11 @@
         - {{ dia_checkin.titulo }}
       {% endif %}
     </div>
+  {% elif evento_hoje %}
+    <div class="alert alert-info">
+      <i class="fas fa-calendar-check me-2"></i>
+      <strong>Check-in Automático:</strong> Existe um evento hoje (<strong>{{ evento_hoje }}</strong>). O adolescente será marcado como presente automaticamente.
+    </div>
   {% endif %}
 
   {% if messages %}

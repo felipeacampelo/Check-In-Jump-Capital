@@ -16,7 +16,7 @@
 </p>
 
 
-<!-- Busca -->
+<!-- Busca + Botão Filtros -->
 <div class="card shadow-sm rounded-3 mb-3">
   <div class="card-body py-3">
     <form method="get" id="buscaForm">
@@ -25,132 +25,165 @@
       {% if request.GET.pg %}<input type="hidden" name="pg" value="{{ request.GET.pg }}">{% endif %}
       {% if request.GET.imperio %}<input type="hidden" name="imperio" value="{{ request.GET.imperio }}">{% endif %}
       {% if request.GET.presenca %}<input type="hidden" name="presenca" value="{{ request.GET.presenca }}">{% endif %}
+      {% if request.GET.ano_nascimento %}<input type="hidden" name="ano_nascimento" value="{{ request.GET.ano_nascimento }}">{% endif %}
       {% if request.GET.ordenar_por %}<input type="hidden" name="ordenar_por" value="{{ request.GET.ordenar_por }}">{% endif %}
       {% if request.GET.direcao %}<input type="hidden" name="direcao" value="{{ request.GET.direcao }}">{% endif %}
       
-      <div class="row g-2 align-items-center">
-        <div class="col">
-          <div class="input-group">
-            <span class="input-group-text"><i class="fas fa-search"></i></span>
-            <input type="text" name="busca" id="buscaInput" class="form-control" value="{{ request.GET.busca }}" placeholder="Buscar adolescente por nome...">
+      <div class="d-flex gap-2 align-items-center">
+        <div class="flex-grow-1 min-w-0">
+          <div class="input-group input-group-sm input-group-md-default">
+            <input type="text" name="busca" id="buscaInput" class="form-control" value="{{ request.GET.busca }}" placeholder="Buscar por nome...">
+            {% if request.GET.busca %}
             <button class="btn btn-outline-secondary" type="button" id="clearBusca" title="Limpar busca">
               <i class="fas fa-times"></i>
             </button>
+            {% endif %}
           </div>
         </div>
-        <div class="col-auto">
-          <button type="submit" class="btn btn-primary">
-            <i class="fas fa-search"></i>
-          </button>
-        </div>
+        <button type="submit" class="btn btn-primary btn-sm btn-md-default flex-shrink-0">
+          <i class="fas fa-search"></i>
+        </button>
+        <button type="button" class="btn btn-outline-secondary btn-sm btn-md-default position-relative flex-shrink-0" data-bs-toggle="offcanvas" data-bs-target="#filtrosOffcanvas" aria-controls="filtrosOffcanvas">
+          <i class="fas fa-sliders-h"></i><span class="d-none d-sm-inline ms-1">Filtros</span>
+        </button>
+      </div>
+      <style>
+        @media (min-width: 768px) {
+          .input-group-md-default { font-size: 1rem; }
+          .btn-md-default { font-size: 1rem; padding: .375rem .75rem; }
+        }
+      </style>
+    </form>
+  </div>
+</div>
+
+<!-- Offcanvas de Filtros -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="filtrosOffcanvas" aria-labelledby="filtrosOffcanvasLabel">
+  <div class="offcanvas-header border-bottom">
+    <h5 class="offcanvas-title" id="filtrosOffcanvasLabel"><i class="fas fa-sliders-h me-2"></i>Filtros</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+  </div>
+  <div class="offcanvas-body">
+    <form method="get" id="filtroForm">
+      <!-- Preservar busca existente -->
+      {% if request.GET.busca %}<input type="hidden" name="busca" value="{{ request.GET.busca }}">{% endif %}
+      {% if request.GET.ordenar_por %}<input type="hidden" name="ordenar_por" value="{{ request.GET.ordenar_por }}">{% endif %}
+      {% if request.GET.direcao %}<input type="hidden" name="direcao" value="{{ request.GET.direcao }}">{% endif %}
+      
+      <div class="mb-3">
+        <label for="genero" class="form-label fw-semibold">Sexo</label>
+        <select name="genero" id="genero" class="form-select">
+          <option value="">Todos</option>
+          <option value="M" {% if request.GET.genero == "M" %}selected{% endif %}>Masculino</option>
+          <option value="F" {% if request.GET.genero == "F" %}selected{% endif %}>Feminino</option>
+        </select>
+      </div>
+      
+      <div class="mb-3">
+        <label for="pg" class="form-label fw-semibold">PG</label>
+        <select name="pg" id="pg" class="form-select">
+          <option value="">Todos</option>
+          <option value="sem_pg" {% if request.GET.pg == "sem_pg" %}selected{% endif %}>Sem PG</option>
+          {% for pg in pgs %}
+            <option value="{{ pg.id }}" {% if request.GET.pg == pg.id|stringformat:"s" %}selected{% endif %}>{{ pg.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="mb-3">
+        <label for="imperio" class="form-label fw-semibold">Império</label>
+        <select name="imperio" id="imperio" class="form-select">
+          <option value="">Todos</option>
+          {% for imperio in imperios %}
+            <option value="{{ imperio.id }}" {% if request.GET.imperio == imperio.id|stringformat:"s" %}selected{% endif %}>{{ imperio.nome }}</option>
+          {% endfor %}
+          <option value="sem_imperio" {% if request.GET.imperio == "sem_imperio" %}selected{% endif %}>Sem Império</option>
+        </select>
+      </div>
+      
+      <div class="mb-3">
+        <label for="presenca" class="form-label fw-semibold">Presença</label>
+        <select name="presenca" id="presenca" class="form-select">
+          <option value="">Todas</option>
+          <option value="presente_30" {% if request.GET.presenca == "presente_30" %}selected{% endif %}>Últimos 30 dias</option>
+          <option value="ausente_30" {% if request.GET.presenca == "ausente_30" %}selected{% endif %}>Ausentes 30 dias</option>
+          <option value="nunca" {% if request.GET.presenca == "nunca" %}selected{% endif %}>Nunca compareceu</option>
+        </select>
+      </div>
+      
+      <div class="mb-4">
+        <label for="ano_nascimento" class="form-label fw-semibold">Ano de Nascimento</label>
+        <select name="ano_nascimento" id="ano_nascimento" class="form-select">
+          <option value="">Todos</option>
+          {% for ano_n in anos_nascimento %}
+            <option value="{{ ano_n }}" {% if ano_nascimento_selecionado == ano_n|stringformat:"s" %}selected{% endif %}>{{ ano_n }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      
+      <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-check me-1"></i>Aplicar Filtros
+        </button>
+        <a href="{% url 'listar_adolescentes' %}{% if request.GET.busca %}?busca={{ request.GET.busca }}{% endif %}" class="btn btn-outline-secondary">
+          <i class="fas fa-times me-1"></i>Limpar Filtros
+        </a>
       </div>
     </form>
   </div>
 </div>
 
-<!-- Filtros -->
-<div class="card shadow-sm rounded-3 mb-4">
-  <div class="card-body py-2">
-    <!-- Header de filtros no mobile: título fixo + seta para mostrar/ocultar -->
-    <style>
-      /* Rotaciona a seta conforme o estado de expansão */
-      #filtersToggleBtnMobile i { transition: transform .2s ease; }
-      #filtersToggleBtnMobile[aria-expanded="true"] i { transform: rotate(180deg); }
-      /* Reduzir altura do dropdown quando fechado */
-      .filters-collapsed { max-height: 0; overflow: hidden; }
-    </style>
-    <div class="d-lg-none mb-1 d-flex align-items-center justify-content-between">
-      <span class="text-muted fw-semibold"><i class="fas fa-filter me-1"></i> Filtros</span>
-      <button id="filtersToggleBtnMobile" class="btn btn-outline-secondary btn-sm py-1" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse">
-        <i class="fas fa-chevron-down"></i>
-        <span class="visually-hidden">Mostrar/ocultar filtros</span>
-      </button>
-    </div>
-
-    <div class="collapse d-lg-block" id="filtersCollapse">
-    <form method="get" id="filtroForm">
-      <!-- Preservar busca existente -->
-      {% if request.GET.busca %}<input type="hidden" name="busca" value="{{ request.GET.busca }}">{% endif %}
-      
-      <div class="row g-2 align-items-end">
-        <div class="col-md-3">
-          <label for="genero" class="form-label">Sexo:</label>
-          <select name="genero" id="genero" class="form-select">
-            <option value="">Todos</option>
-            <option value="M" {% if request.GET.genero == "M" %}selected{% endif %}>Masculino</option>
-            <option value="F" {% if request.GET.genero == "F" %}selected{% endif %}>Feminino</option>
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label for="pg" class="form-label">PG:</label>
-          <select name="pg" id="pg" class="form-select">
-            <option value="">Todos</option>
-            <option value="sem_pg" {% if request.GET.pg == "sem_pg" %}selected{% endif %}>Sem PG</option>
-            {% for pg in pgs %}
-              <option value="{{ pg.id }}" {% if request.GET.pg == pg.id|stringformat:"s" %}selected{% endif %}>{{ pg.nome }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-3">
-          <label for="imperio" class="form-label">Império:</label>
-          <select name="imperio" id="imperio" class="form-select">
-            <option value="">Todos</option>
-            {% for imperio in imperios %}
-              <option value="{{ imperio.id }}" {% if request.GET.imperio == imperio.id|stringformat:"s" %}selected{% endif %}>{{ imperio.nome }}</option>
-            {% endfor %}
-            <option value="sem_imperio" {% if request.GET.imperio == "sem_imperio" %}selected{% endif %}>Sem Império</option>
-          </select>
-        </div>
-        <div class="col-md-2">
-          <label for="presenca" class="form-label">Presença:</label>
-          <select name="presenca" id="presenca" class="form-select">
-            <option value="">Todas</option>
-            <option value="presente_30" {% if request.GET.presenca == "presente_30" %}selected{% endif %}>Últimos 30d</option>
-            <option value="ausente_30" {% if request.GET.presenca == "ausente_30" %}selected{% endif %}>Ausentes 30d</option>
-            <option value="nunca" {% if request.GET.presenca == "nunca" %}selected{% endif %}>Nunca</option>
-          </select>
-        </div>
-        <div class="col-md-1">
-          <button type="submit" class="btn btn-primary w-100">
-            Filtrar
-          </button>
-        </div>
-      </div>
-      
-    </form>
-    <script>
-      (function() {
-        // Handle filter form
-        const filterForm = document.getElementById('filtroForm');
-        if (filterForm) {
-          filterForm.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              if (typeof filterForm.requestSubmit === 'function') {
-                filterForm.requestSubmit();
-              } else {
-                filterForm.submit();
-              }
-            }
-          });
+<script>
+  (function() {
+    // Contar filtros ativos e atualizar badge
+    var params = new URLSearchParams(window.location.search);
+    var filtroKeys = ['genero', 'pg', 'imperio', 'presenca', 'ano_nascimento'];
+    var count = 0;
+    filtroKeys.forEach(function(k) { if (params.get(k)) count++; });
+    
+    // Atualizar ou criar badge
+    var btnFiltros = document.querySelector('[data-bs-target="#filtrosOffcanvas"]');
+    if (btnFiltros) {
+      var badge = btnFiltros.querySelector('.badge');
+      if (count > 0) {
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.className = 'position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary';
+          btnFiltros.appendChild(badge);
         }
+        badge.textContent = count;
+      } else if (badge) {
+        badge.remove();
+      }
+    }
 
-        // Handle search form - apenas Enter key (auto-submit é tratado em script separado)
-        const searchForm = document.getElementById('buscaForm');
-        if (searchForm) {
-          searchForm.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              if (typeof searchForm.requestSubmit === 'function') {
-                searchForm.requestSubmit();
-              } else {
-                searchForm.submit();
-              }
-            }
-          });
+    // Handle filter form Enter key
+    var filterForm = document.getElementById('filtroForm');
+    if (filterForm) {
+      filterForm.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          filterForm.submit();
         }
-      })();
-    </script>
+      });
+    }
+
+    // Handle search form Enter key
+    var searchForm = document.getElementById('buscaForm');
+    if (searchForm) {
+      searchForm.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (typeof searchForm.requestSubmit === 'function') {
+            searchForm.requestSubmit();
+          } else {
+            searchForm.submit();
+          }
+        }
+      });
+    }
+  })();
+</script>
 
 {% if perms.adolescentes.review_duplicates %}
 <!-- Modal: Revisar Duplicados -->
@@ -339,78 +372,52 @@
 })();
 </script>
 {% endif %}
-    </div>
 
-    <!-- Chips de filtros ativos -->
-    <div class="mt-2">
-      {% if request.GET.busca or request.GET.pg or request.GET.genero or request.GET.imperio or request.GET.presenca or request.GET.ordenar_por %}
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-          <span class="text-muted small me-1">Filtros ativos:</span>
-
-          {% if request.GET.busca %}
-            <a class="badge rounded-pill bg-primary text-decoration-none" href="?{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
-              Busca: {{ request.GET.busca }} <i class="fas fa-times ms-1"></i>
-            </a>
-          {% endif %}
-
-          {% if request.GET.pg %}
-            <a class="badge rounded-pill bg-secondary text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
-              PG: {% if request.GET.pg == 'sem_pg' %}Sem PG{% else %}{% for pg in pgs %}{% if request.GET.pg == pg.id|stringformat:"s" %}{{ pg.nome }}{% endif %}{% endfor %}{% endif %} <i class="fas fa-times ms-1"></i>
-            </a>
-          {% endif %}
-
-          {% if request.GET.genero %}
-            <a class="badge rounded-pill bg-info text-dark text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
-              Sexo: {{ request.GET.genero }} <i class="fas fa-times ms-1"></i>
-            </a>
-          {% endif %}
-
-          {% if request.GET.imperio %}
-            <a class="badge rounded-pill bg-warning text-dark text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
-              Império: {% if request.GET.imperio == 'sem_imperio' %}Sem Império{% else %}{% for imp in imperios %}{% if request.GET.imperio == imp.id|stringformat:"s" %}{{ imp.nome }}{% endif %}{% endfor %}{% endif %} <i class="fas fa-times ms-1"></i>
-            </a>
-          {% endif %}
-
-          {% if request.GET.presenca %}
-            <a class="badge rounded-pill bg-success text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.ordenar_por %}ordenar_por={{ request.GET.ordenar_por }}&{% endif %}{% if request.GET.direcao %}direcao={{ request.GET.direcao }}&{% endif %}">
-              Presença:
-              {% if request.GET.presenca == 'presente_30' %}Presentes (30d){% elif request.GET.presenca == 'ausente_30' %}Ausentes (30d){% elif request.GET.presenca == 'nunca' %}Nunca compareceu{% else %}{{ request.GET.presenca }}{% endif %}
-              <i class="fas fa-times ms-1"></i>
-            </a>
-          {% endif %}
-
-          {% if request.GET.ordenar_por %}
-            <a class="badge rounded-pill bg-light text-dark border text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}">
-              Ordenação: {{ request.GET.ordenar_por }} {% if request.GET.direcao %}({{ request.GET.direcao }}){% endif %} <i class="fas fa-times ms-1"></i>
-            </a>
-            <a class="btn btn-link btn-sm text-decoration-none" href="?{% if request.GET.busca %}busca={{ request.GET.busca }}&{% endif %}{% if request.GET.pg %}pg={{ request.GET.pg }}&{% endif %}{% if request.GET.genero %}genero={{ request.GET.genero }}&{% endif %}{% if request.GET.imperio %}imperio={{ request.GET.imperio }}&{% endif %}{% if request.GET.presenca %}presenca={{ request.GET.presenca }}&{% endif %}">Limpar ordenação</a>
-          {% endif %}
-          <a class="btn btn-link btn-sm text-decoration-none" href="{% url 'listar_adolescentes' %}">Limpar todos</a>
-        </div>
-      {% endif %}
-    </div>
-  </div>
+<!-- Chips de filtros ativos -->
+{% if request.GET.busca or request.GET.pg or request.GET.genero or request.GET.imperio or request.GET.presenca or request.GET.ano_nascimento %}
+<div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+  <span class="text-muted small me-1"><i class="fas fa-filter me-1"></i>Ativos:</span>
+  {% if request.GET.busca %}
+    <span class="badge rounded-pill bg-primary">Busca: {{ request.GET.busca }}</span>
+  {% endif %}
+  {% if request.GET.genero %}
+    <span class="badge rounded-pill bg-info text-dark">Sexo: {{ request.GET.genero }}</span>
+  {% endif %}
+  {% if request.GET.pg %}
+    <span class="badge rounded-pill bg-secondary">PG: {% if request.GET.pg == 'sem_pg' %}Sem PG{% else %}{% for pg in pgs %}{% if request.GET.pg == pg.id|stringformat:"s" %}{{ pg.nome }}{% endif %}{% endfor %}{% endif %}</span>
+  {% endif %}
+  {% if request.GET.imperio %}
+    <span class="badge rounded-pill bg-warning text-dark">Império: {% if request.GET.imperio == 'sem_imperio' %}Sem Império{% else %}{% for imp in imperios %}{% if request.GET.imperio == imp.id|stringformat:"s" %}{{ imp.nome }}{% endif %}{% endfor %}{% endif %}</span>
+  {% endif %}
+  {% if request.GET.presenca %}
+    <span class="badge rounded-pill bg-success">{% if request.GET.presenca == 'presente_30' %}Presentes 30d{% elif request.GET.presenca == 'ausente_30' %}Ausentes 30d{% elif request.GET.presenca == 'nunca' %}Nunca{% endif %}</span>
+  {% endif %}
+  {% if request.GET.ano_nascimento %}
+    <span class="badge rounded-pill bg-dark">Nasc: {{ request.GET.ano_nascimento }}</span>
+  {% endif %}
+  <a class="btn btn-link btn-sm text-decoration-none p-0 ms-1" href="{% url 'listar_adolescentes' %}"><i class="fas fa-times me-1"></i>Limpar</a>
 </div>
+{% endif %}
 
 <!-- Botões de ações -->
-  <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
-    {% if not readonly %}
-    <a href="{% url 'criar_adolescente' %}" class="btn btn-primary">Adicionar Adolescente</a>
-    {% endif %}
-    <a href="{% url 'exportar_adolescentes_csv' %}?{{ request.GET.urlencode }}" class="btn btn-outline-secondary">Exportar CSV</a>
-    {% if perms.adolescentes.review_duplicates and not readonly %}
-      <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalDuplicados">
-        <i class="fas fa-user-astronaut me-1"></i> Revisar Duplicados
-      </button>
-    {% endif %}
-    {% if readonly %}
-    <span class="badge bg-secondary"><i class="fas fa-lock me-1"></i>Modo somente leitura ({{ ano_selecionado }})</span>
-    {% endif %}
-  </div>
+<div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+  {% if not readonly %}
+  <a href="{% url 'criar_adolescente' %}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Adicionar Adolescente</a>
+  {% endif %}
+  <a href="{% url 'exportar_adolescentes_csv' %}?{{ request.GET.urlencode }}" class="btn btn-outline-secondary"><i class="fas fa-download me-1"></i>Exportar CSV</a>
+  {% if perms.adolescentes.review_duplicates and not readonly %}
+    <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalDuplicados">
+      <i class="fas fa-user-astronaut me-1"></i>Revisar Duplicados
+    </button>
+  {% endif %}
+  {% if readonly %}
+  <span class="badge bg-secondary"><i class="fas fa-lock me-1"></i>Modo somente leitura ({{ ano_selecionado }})</span>
+  {% endif %}
+</div>
 
 <!-- Tabela Desktop (oculta em mobile) -->
-<div class="d-none d-lg-block">
-  <table class="table mt-3">
+<div class="d-none d-lg-block table-responsive">
+  <table class="table">
     <thead>
       <tr>
         <th>
@@ -556,7 +563,7 @@
 
 <!-- Cards Mobile (visível apenas em mobile) -->
 <div class="d-lg-none">
-  <div class="row g-3 mt-3">
+  <div class="row g-2">
     {% for adolescente in adolescentes %}
     <div class="col-12">
       <div class="card h-100" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modal{{ adolescente.id }}">

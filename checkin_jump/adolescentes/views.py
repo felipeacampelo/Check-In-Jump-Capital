@@ -129,6 +129,7 @@ def listar_adolescentes(request):
     genero = request.GET.get('genero')
     imperio_id = request.GET.get('imperio')
     presenca_filtro = request.GET.get('presenca')
+    ano_nascimento = request.GET.get('ano_nascimento')
     
     # Parâmetros de ordenação
     ordenar_por = request.GET.get('ordenar_por', 'nome')  # Padrão: ordenar por nome
@@ -158,6 +159,14 @@ def listar_adolescentes(request):
             adolescentes = adolescentes.filter(imperio__isnull=True)
         else:
             adolescentes = adolescentes.filter(imperio__id=imperio_id)
+
+    # Filtro por ano de nascimento
+    if ano_nascimento:
+        try:
+            ano_nasc_int = int(ano_nascimento)
+            adolescentes = adolescentes.filter(data_nascimento__year=ano_nasc_int)
+        except ValueError:
+            pass
 
     # Filtro por presença
     if presenca_filtro:
@@ -217,6 +226,14 @@ def listar_adolescentes(request):
     # Otimização: cache para filtros (evita queries repetidas) - filtrar por ano
     pgs = PequenoGrupo.objects.filter(ano=ano)
     imperios = Imperio.objects.filter(ano=ano)
+    
+    # Anos de nascimento disponíveis para o filtro
+    anos_nascimento = sorted(
+        Adolescente.objects.filter(ano=ano)
+        .exclude(data_nascimento__isnull=True)
+        .values_list('data_nascimento__year', flat=True)
+        .distinct()
+    )
 
     # Paginação
     paginator = Paginator(adolescentes, 25)  # 25 registros por página
@@ -246,6 +263,8 @@ def listar_adolescentes(request):
         'genero_selecionado': genero,
         'imperio_selecionado': imperio_id,
         'presenca_selecionada': presenca_filtro,
+        'ano_nascimento_selecionado': ano_nascimento,
+        'anos_nascimento': anos_nascimento,
         'ordenar_por': ordenar_por,
         'direcao': direcao,
         'ano_selecionado': ano,
@@ -491,7 +510,7 @@ def criar_adolescente(request):
             dia_id = None
     
     if request.method == "POST":
-        form = AdolescenteForm(request.POST, request.FILES)
+        form = AdolescenteForm(request.POST, request.FILES, ano=ano)
         if form.is_valid():
             # Verifica se a data de nascimento não é futura
             data_nascimento = form.cleaned_data['data_nascimento']
@@ -517,16 +536,31 @@ def criar_adolescente(request):
                 except DiaEvento.DoesNotExist:
                     messages.warning(request, "Adolescente criado, mas não foi possível fazer o check-in automático.")
             else:
-                messages.success(request, "Adolescente criado com sucesso!")
+                # Check-in automático: se existe evento hoje, marcar presença
+                hoje = date.today()
+                evento_hoje = DiaEvento.objects.filter(data=hoje, ano=ano).first()
+                if evento_hoje:
+                    Presenca.objects.update_or_create(
+                        adolescente=adolescente,
+                        dia=evento_hoje,
+                        defaults={'presente': True}
+                    )
+                    messages.success(request, f"Adolescente criado e check-in automático para {evento_hoje}!")
+                else:
+                    messages.success(request, "Adolescente criado com sucesso!")
             
             # Redireciona para a página de origem ou lista padrão
             if next_url:
                 return redirect(next_url)
             return redirect('listar_adolescentes')
     else:
-        form = AdolescenteForm()
+        form = AdolescenteForm(ano=ano)
     
-    context = {'form': form}
+    # Verificar se existe evento hoje para mostrar aviso no template
+    hoje = date.today()
+    evento_hoje = DiaEvento.objects.filter(data=hoje, ano=ano).first()
+    
+    context = {'form': form, 'evento_hoje': evento_hoje}
     if dia_id:
         try:
             dia = DiaEvento.objects.get(id=dia_id)
