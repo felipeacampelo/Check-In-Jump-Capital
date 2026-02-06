@@ -32,6 +32,15 @@ urlpatterns = [
     path('pgs/', views.lista_pgs, name='lista_pgs'),
     path('pgs/adicionar/', views.adicionar_pg, name='adicionar_pg'),
     path('pgs/<int:pg_id>/', views.detalhes_pg, name='detalhes_pg'),
+    path('pgs/<int:pg_id>/bulk-add/', views.bulk_add_pg, name='bulk_add_pg'),
+    path('pgs/<int:pg_id>/bulk-remove/', views.bulk_remove_pg, name='bulk_remove_pg'),
+
+    # Impérios
+    path('imperios/', views.lista_imperios, name='lista_imperios'),
+    path('imperios/adicionar/', views.adicionar_imperio, name='adicionar_imperio'),
+    path('imperios/<int:imperio_id>/', views.detalhes_imperio, name='detalhes_imperio'),
+    path('imperios/<int:imperio_id>/bulk-add/', views.bulk_add_imperio, name='bulk_add_imperio'),
+    path('imperios/<int:imperio_id>/bulk-remove/', views.bulk_remove_imperio, name='bulk_remove_imperio'),
 
     #Exportar CSV
     path('exportar/adolescentes/', exportar_adolescentes_csv, name='exportar_adolescentes_csv'),

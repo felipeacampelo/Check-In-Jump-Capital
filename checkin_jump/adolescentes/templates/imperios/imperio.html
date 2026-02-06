@@ -2,10 +2,10 @@
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-3">
   <div>
-    <h2 class="mb-0">PG {{ pg.nome }}</h2>
+    <h2 class="mb-0"><i class="fas fa-crown text-warning me-2"></i>{{ imperio.nome }}</h2>
     <span class="text-muted small">{{ adolescentes|length }} integrante{{ adolescentes|length|pluralize:"s" }}</span>
   </div>
-  <a href="{% url 'lista_pgs' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i>Voltar</a>
+  <a href="{% url 'lista_imperios' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i>Voltar</a>
 </div>
 
 {% if not readonly %}
@@ -17,7 +17,7 @@
 <!-- Offcanvas: Adicionar Integrantes -->
 <div class="offcanvas offcanvas-end" tabindex="-1" id="addMembrosOffcanvas" aria-labelledby="addMembrosLabel" style="width: 380px;">
   <div class="offcanvas-header border-bottom">
-    <h5 class="offcanvas-title" id="addMembrosLabel"><i class="fas fa-user-plus me-2"></i>Adicionar ao PG</h5>
+    <h5 class="offcanvas-title" id="addMembrosLabel"><i class="fas fa-user-plus me-2"></i>Adicionar ao Império</h5>
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
   </div>
   <div class="offcanvas-body p-0 d-flex flex-column">
@@ -42,7 +42,7 @@
         <input type="checkbox" class="form-check-input mt-0 chk-disponivel" value="{{ a.id }}">
         <div class="min-w-0">
           <div class="text-truncate fw-medium">{{ a.nome }} {{ a.sobrenome }}</div>
-          <small class="text-muted">{{ a.data_nascimento.year }} · {% if a.pg %}PG: {{ a.pg.nome }}{% else %}Sem PG{% endif %}</small>
+          <small class="text-muted">{{ a.data_nascimento.year }} · {% if a.imperio %}Império: {{ a.imperio.nome }}{% else %}Sem Império{% endif %}</small>
         </div>
       </label>
       {% empty %}
@@ -74,19 +74,19 @@
         {% endif %}
         <div class="min-w-0">
           <div class="text-truncate">{{ adolescente.nome }} {{ adolescente.sobrenome }}</div>
-          <small class="text-muted">{{ adolescente.get_genero_display }}</small>
+          <small class="text-muted">{{ adolescente.get_genero_display }}{% if adolescente.pg %} · PG: {{ adolescente.pg.nome }}{% endif %}</small>
         </div>
       </div>
       {% if not readonly %}
-      <button type="button" class="btn btn-outline-danger btn-sm flex-shrink-0 btn-remover" data-id="{{ adolescente.id }}" data-nome="{{ adolescente.nome }} {{ adolescente.sobrenome }}" title="Remover do PG">
+      <button type="button" class="btn btn-outline-danger btn-sm flex-shrink-0 btn-remover" data-id="{{ adolescente.id }}" data-nome="{{ adolescente.nome }} {{ adolescente.sobrenome }}" title="Remover do Império">
         <i class="fas fa-times"></i>
       </button>
       {% endif %}
     </div>
     {% empty %}
     <div class="list-group-item text-center text-muted py-4" id="emptyMsg">
-      <i class="fas fa-users fa-2x mb-2 d-block"></i>
-      Este PG ainda não possui integrantes.
+      <i class="fas fa-crown fa-2x mb-2 d-block"></i>
+      Este Império ainda não possui integrantes.
     </div>
     {% endfor %}
   </div>
@@ -142,7 +142,7 @@
       if (!ids.length) return;
       btnAdd.disabled = true;
       btnAdd.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Adicionando...';
-      fetch('{% url "bulk_add_pg" pg.id %}', {
+      fetch('{% url "bulk_add_imperio" imperio.id %}', {
         method: 'POST',
         headers: {'Content-Type':'application/json','X-CSRFToken': csrfToken},
         body: JSON.stringify({ids: ids})
@@ -158,9 +158,9 @@
     btn.addEventListener('click', function(){
       var id = this.dataset.id;
       var nome = this.dataset.nome;
-      if (!confirm('Remover "' + nome + '" deste PG?')) return;
+      if (!confirm('Remover "' + nome + '" deste Império?')) return;
       var el = this.closest('.list-group-item');
-      fetch('{% url "bulk_remove_pg" pg.id %}', {
+      fetch('{% url "bulk_remove_imperio" imperio.id %}', {
         method: 'POST',
         headers: {'Content-Type':'application/json','X-CSRFToken': csrfToken},
         body: JSON.stringify({ids: [parseInt(id)]})

@@ -967,7 +967,7 @@ def adicionar_pg(request):
 def lista_pgs(request):
     ano = get_ano_selecionado(request)
     readonly = is_ano_readonly(request)
-    pgs = PequenoGrupo.objects.filter(ano=ano)
+    pgs = PequenoGrupo.objects.filter(ano=ano).annotate(total=Count('adolescentes'))
     return render(request, 'pgs/lista_pgs.html', {
         'pgs': pgs,
         'ano_selecionado': ano,
@@ -978,9 +978,128 @@ def lista_pgs(request):
 @permission_required('adolescentes.view_pgs_page', raise_exception=True)
 @login_required
 def detalhes_pg(request, pg_id):
+    ano = get_ano_selecionado(request)
+    readonly = is_ano_readonly(request)
     pg = get_object_or_404(PequenoGrupo, id=pg_id)
-    adolescentes = Adolescente.objects.filter(pg=pg).order_by('nome', 'sobrenome')
-    return render(request, 'pgs/pg.html', {'pg': pg, 'adolescentes': adolescentes})
+    membros = Adolescente.objects.filter(pg=pg, ano=ano).order_by('nome', 'sobrenome')
+    disponiveis = Adolescente.objects.filter(ano=ano).exclude(pg=pg).select_related('pg').order_by('nome', 'sobrenome')
+    anos_nascimento_disponiveis = sorted(
+        disponiveis.exclude(data_nascimento__isnull=True)
+        .values_list('data_nascimento__year', flat=True).distinct()
+    )
+    return render(request, 'pgs/pg.html', {
+        'pg': pg,
+        'adolescentes': membros,
+        'disponiveis': disponiveis,
+        'anos_nascimento_disponiveis': anos_nascimento_disponiveis,
+        'readonly': readonly,
+        'ano_selecionado': ano,
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def bulk_add_pg(request, pg_id):
+    """Adicionar múltiplos adolescentes a um PG via AJAX"""
+    if is_ano_readonly(request):
+        return JsonResponse({'ok': False, 'error': 'Ano somente leitura'}, status=403)
+    pg = get_object_or_404(PequenoGrupo, id=pg_id)
+    data = json.loads(request.body)
+    ids = data.get('ids', [])
+    count = Adolescente.objects.filter(id__in=ids, ano=pg.ano).update(pg=pg)
+    return JsonResponse({'ok': True, 'count': count})
+
+
+@login_required
+@require_http_methods(["POST"])
+def bulk_remove_pg(request, pg_id):
+    """Remover múltiplos adolescentes de um PG via AJAX"""
+    if is_ano_readonly(request):
+        return JsonResponse({'ok': False, 'error': 'Ano somente leitura'}, status=403)
+    pg = get_object_or_404(PequenoGrupo, id=pg_id)
+    data = json.loads(request.body)
+    ids = data.get('ids', [])
+    count = Adolescente.objects.filter(id__in=ids, pg=pg).update(pg=None)
+    return JsonResponse({'ok': True, 'count': count})
+
+
+@permission_required('adolescentes.view_pgs_page', raise_exception=True)
+@login_required
+def lista_imperios(request):
+    ano = get_ano_selecionado(request)
+    readonly = is_ano_readonly(request)
+    imperios = Imperio.objects.filter(ano=ano).annotate(total=Count('adolescente'))
+    return render(request, 'imperios/lista_imperios.html', {
+        'imperios': imperios,
+        'ano_selecionado': ano,
+        'anos_disponiveis': ANOS_DISPONIVEIS,
+        'readonly': readonly,
+    })
+
+
+@login_required
+def adicionar_imperio(request):
+    ano = get_ano_selecionado(request)
+    if is_ano_readonly(request):
+        messages.error(request, "Não é possível adicionar Impérios em anos anteriores.")
+        return redirect('lista_imperios')
+    if request.method == 'POST':
+        nome = request.POST.get('nome')
+        if nome:
+            Imperio.objects.create(nome=nome, ano=ano)
+            messages.success(request, "Império criado com sucesso.")
+            return redirect('lista_imperios')
+        else:
+            messages.error(request, "O nome do Império é obrigatório.")
+    return render(request, 'imperios/adicionar_imperio.html')
+
+
+@permission_required('adolescentes.view_pgs_page', raise_exception=True)
+@login_required
+def detalhes_imperio(request, imperio_id):
+    ano = get_ano_selecionado(request)
+    readonly = is_ano_readonly(request)
+    imperio = get_object_or_404(Imperio, id=imperio_id)
+    membros = Adolescente.objects.filter(imperio=imperio, ano=ano).order_by('nome', 'sobrenome')
+    disponiveis = Adolescente.objects.filter(ano=ano).exclude(imperio=imperio).select_related('imperio', 'pg').order_by('nome', 'sobrenome')
+    anos_nascimento_disponiveis = sorted(
+        disponiveis.exclude(data_nascimento__isnull=True)
+        .values_list('data_nascimento__year', flat=True).distinct()
+    )
+    return render(request, 'imperios/imperio.html', {
+        'imperio': imperio,
+        'adolescentes': membros,
+        'disponiveis': disponiveis,
+        'anos_nascimento_disponiveis': anos_nascimento_disponiveis,
+        'readonly': readonly,
+        'ano_selecionado': ano,
+    })
+
+
+@login_required
+@require_http_methods(["POST"])
+def bulk_add_imperio(request, imperio_id):
+    """Adicionar múltiplos adolescentes a um Império via AJAX"""
+    if is_ano_readonly(request):
+        return JsonResponse({'ok': False, 'error': 'Ano somente leitura'}, status=403)
+    imperio = get_object_or_404(Imperio, id=imperio_id)
+    data = json.loads(request.body)
+    ids = data.get('ids', [])
+    count = Adolescente.objects.filter(id__in=ids, ano=imperio.ano).update(imperio=imperio)
+    return JsonResponse({'ok': True, 'count': count})
+
+
+@login_required
+@require_http_methods(["POST"])
+def bulk_remove_imperio(request, imperio_id):
+    """Remover múltiplos adolescentes de um Império via AJAX"""
+    if is_ano_readonly(request):
+        return JsonResponse({'ok': False, 'error': 'Ano somente leitura'}, status=403)
+    imperio = get_object_or_404(Imperio, id=imperio_id)
+    data = json.loads(request.body)
+    ids = data.get('ids', [])
+    count = Adolescente.objects.filter(id__in=ids, imperio=imperio).update(imperio=None)
+    return JsonResponse({'ok': True, 'count': count})
 
 
 def exportar_adolescentes_csv(request):

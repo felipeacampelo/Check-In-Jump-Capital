@@ -461,8 +461,13 @@
                     </li>
                     {% if perms.adolescentes.view_pgs_page %}
                     <li class="nav-item">
-                        <a class="nav-link{% if request.resolver_match.url_name == 'lista_pgs' %} active{% endif %}" href="{% url 'lista_pgs' %}">
+                        <a class="nav-link{% if request.resolver_match.url_name == 'lista_pgs' or request.resolver_match.url_name == 'detalhes_pg' %} active{% endif %}" href="{% url 'lista_pgs' %}">
                             <i class="fas fa-layer-group me-1"></i>PGs
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link{% if request.resolver_match.url_name == 'lista_imperios' or request.resolver_match.url_name == 'detalhes_imperio' %} active{% endif %}" href="{% url 'lista_imperios' %}">
+                            <i class="fas fa-crown me-1"></i>Impérios
                         </a>
                     </li>
                     {% endif %}
