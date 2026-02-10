@@ -3,8 +3,13 @@ from django.urls import path, include
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.views.generic.base import RedirectView
 
 urlpatterns = [
+    # Favicon/apple-touch-icon redirects (browsers request these from root)
+    path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'adolescentes/img/favicon.ico', permanent=True)),
+    path('apple-touch-icon.png', RedirectView.as_view(url=settings.STATIC_URL + 'adolescentes/img/apple-touch-icon.png', permanent=True)),
+    path('apple-touch-icon-precomposed.png', RedirectView.as_view(url=settings.STATIC_URL + 'adolescentes/img/apple-touch-icon.png', permanent=True)),
     path('admin/', admin.site.urls),
     path('', include('adolescentes.urls')),
     # Links para definir senha via token (usados pelos links gerados no admin)

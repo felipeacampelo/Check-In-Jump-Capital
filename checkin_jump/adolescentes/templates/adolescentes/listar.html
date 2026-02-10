@@ -498,7 +498,7 @@
       <tr class="row-modal" style="cursor: pointer;" data-row-target="modal{{ adolescente.id }}">
         <td>
           <div class="d-flex align-items-center gap-3">
-            {% if adolescente.foto and adolescente.foto|file_exists %}
+            {% if adolescente.foto %}
               <div class="avatar-wrap">
                 <img src="{{ adolescente.foto.url }}"
                      alt="Foto de {{ adolescente.nome }}"
@@ -648,7 +648,7 @@
       </div>
       <div class="modal-body">
         <div class="text-center mb-3">
-          {% if adolescente.foto and adolescente.foto|file_exists %}
+          {% if adolescente.foto %}
             <img src="{{ adolescente.foto.url }}" class="rounded-circle img-thumbnail" style="width: 96px; height: 96px; object-fit: cover;" alt="Foto de {{ adolescente.nome }}">
           {% else %}
             <span class="rounded-circle bg-secondary d-inline-block" style="width: 96px; height: 96px; line-height: 96px; text-align: center; color: #fff; font-size: 2em;">
