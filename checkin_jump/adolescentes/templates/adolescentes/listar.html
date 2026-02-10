@@ -502,7 +502,8 @@
               <div class="avatar-wrap">
                 <img src="{{ adolescente.foto.url }}"
                      alt="Foto de {{ adolescente.nome }}"
-                     class="avatar avatar-sm">
+                     class="avatar avatar-sm"
+                     onerror="this.outerHTML='<span class=\'avatar avatar-sm avatar-initials\'>{{ adolescente.nome|slice:':1' }}{{ adolescente.sobrenome|slice:':1' }}</span>'; this.parentElement.querySelector('.avatar-overlay')?.remove();">
                 <button type="button" class="avatar-overlay btn btn-primary btn-sm"
                         title="Ver foto" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}"
                         onclick="event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();">
@@ -571,7 +572,8 @@
           <div class="row align-items-center">
             <div class="col-3 col-md-2">
               {% if adolescente.foto %}
-                <img src="{{ adolescente.foto.url }}" class="photo-card" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}">
+                <img src="{{ adolescente.foto.url }}" class="photo-card" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}"
+                     onerror="this.outerHTML='<div class=\'photo-placeholder-card\'><i class=\'fas fa-user fa-2x\'></i></div>';">
               {% else %}
                 <div class="photo-placeholder-card">
                   <i class="fas fa-user fa-2x"></i>
@@ -631,7 +633,8 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body d-flex justify-content-center">
-        <img src="{{ adolescente.foto.url }}" alt="Foto de {{ adolescente.nome }}" class="photo-modal-large">
+        <img src="{{ adolescente.foto.url }}" alt="Foto de {{ adolescente.nome }}" class="photo-modal-large"
+             onerror="this.outerHTML='<div class=\'text-center text-muted py-4\'><i class=\'fas fa-image fa-3x mb-2\'></i><p>Foto não disponível</p></div>';">
       </div>
     </div>
   </div>
@@ -649,7 +652,8 @@
       <div class="modal-body">
         <div class="text-center mb-3">
           {% if adolescente.foto %}
-            <img src="{{ adolescente.foto.url }}" class="rounded-circle img-thumbnail" style="width: 96px; height: 96px; object-fit: cover;" alt="Foto de {{ adolescente.nome }}">
+            <img src="{{ adolescente.foto.url }}" class="rounded-circle img-thumbnail" style="width: 96px; height: 96px; object-fit: cover;" alt="Foto de {{ adolescente.nome }}"
+                 onerror="this.outerHTML='<span class=\'rounded-circle bg-secondary d-inline-block\' style=\'width:96px;height:96px;line-height:96px;text-align:center;color:#fff;font-size:2em\'>{{ adolescente.nome|slice:':1' }}{{ adolescente.sobrenome|slice:':1' }}</span>';">
           {% else %}
             <span class="rounded-circle bg-secondary d-inline-block" style="width: 96px; height: 96px; line-height: 96px; text-align: center; color: #fff; font-size: 2em;">
               {{ adolescente.nome|slice:":1" }}{{ adolescente.sobrenome|slice:":1" }}
