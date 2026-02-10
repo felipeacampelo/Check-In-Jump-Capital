@@ -187,6 +187,7 @@ LOGIN_URL = "/login/"
 CSRF_TRUSTED_ORIGINS = [
     'https://*.railway.app'
 ]
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # Configurações de CORS globais
 CORS_ALLOWED_ORIGINS = [

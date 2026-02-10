@@ -45,6 +45,16 @@ class AdolescenteAdmin(admin.ModelAdmin):
     search_fields = ("nome", "sobrenome", "pg__nome", "imperio__nome")
     list_filter = ("ano", "pg", "imperio", "genero")
 
+    def changelist_view(self, request, extra_context=None):
+        # Default filter: se nenhum filtro de ano foi aplicado, filtrar pelo ano atual
+        if 'ano__exact' not in request.GET and 'ano' not in request.GET:
+            from django.http import QueryDict
+            q = request.GET.copy()
+            q['ano__exact'] = '2026'
+            request.GET = q
+            request.META['QUERY_STRING'] = q.urlencode()
+        return super().changelist_view(request, extra_context=extra_context)
+
     # Prioridades: ordenação, paginação e performance
     ordering = ("nome", "sobrenome")
     list_per_page = 50

@@ -1,3 +1,7 @@
+/* ---------- Fix modal scrollbar shift (trembling) ---------- */
+.modal-open { padding-right: 0 !important; overflow: auto !important; }
+.modal { padding-right: 0 !important; }
+
 /* ---------- Estilos Gerais ---------- */
 
 :root {

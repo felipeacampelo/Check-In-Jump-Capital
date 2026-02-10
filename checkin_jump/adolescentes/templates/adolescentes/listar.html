@@ -302,7 +302,7 @@
     const threshold = document.getElementById('dupThreshold').value || 0.75;
     container.innerHTML = '<div class="text-center py-3"><div class="spinner-border spinner-border-sm" role="status"></div> Carregando...</div>';
     try{
-      const resp = await fetch('{% url "sugestoes_duplicados" %}?threshold=' + encodeURIComponent(threshold));
+      const resp = await fetch('{% url "sugestoes_duplicados" %}?threshold=' + encodeURIComponent(threshold) + '&ano={{ ano_selecionado }}');
       const data = await resp.json();
       if(!data.ok){ throw new Error(data.error || 'Erro ao buscar sugestões'); }
       if(!data.results.length){

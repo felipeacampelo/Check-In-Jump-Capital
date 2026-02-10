@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.messages import get_messages
 from django.contrib.auth.decorators import login_required, permission_required
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.db.models import Count, Q, Avg, F, Case, When, Value
@@ -91,6 +92,7 @@ def pagina_inicial(request):
     else:
         return redirect('login')
 
+@ensure_csrf_cookie
 def login_view(request):
     if request.method == "POST":
         username = request.POST["username"]
@@ -283,6 +285,7 @@ def sugestoes_duplicados(request):
     """
     threshold = float(request.GET.get('threshold', '0.75'))
     limit = int(request.GET.get('limit', '50'))
+    ano = int(request.GET.get('ano', get_ano_selecionado(request)))
 
     # Estratégias combinadas:
     # 1) Mesma data de nascimento + similaridade >= threshold (pg_trgm)
@@ -312,9 +315,11 @@ def sugestoes_duplicados(request):
           JOIN adolescentes_adolescente b
             ON a.id < b.id
            AND a.data_nascimento = b.data_nascimento
+           AND a.ano = b.ano
           LEFT JOIN adolescentes_duplicadorejeitado r
             ON r.adolescente_a_id = a.id AND r.adolescente_b_id = b.id
           WHERE similarity(a.nome || ' ' || a.sobrenome, b.nome || ' ' || b.sobrenome) >= %s
+            AND a.ano = %s
             AND r.id IS NULL
         )
         UNION ALL
@@ -343,16 +348,18 @@ def sugestoes_duplicados(request):
            AND a.nome = b.nome
            AND a.sobrenome = b.sobrenome
            AND a.data_nascimento IS DISTINCT FROM b.data_nascimento
+           AND a.ano = b.ano
           LEFT JOIN adolescentes_duplicadorejeitado r
             ON r.adolescente_a_id = a.id AND r.adolescente_b_id = b.id
-          WHERE r.id IS NULL
+          WHERE a.ano = %s
+            AND r.id IS NULL
         )
         ORDER BY score DESC
         LIMIT %s
     """
     try:
         with connection.cursor() as cur:
-            cur.execute(sql, [threshold, limit])
+            cur.execute(sql, [threshold, ano, ano, limit])
             rows = cur.fetchall()
     except Exception as e:
         return JsonResponse({
@@ -422,10 +429,14 @@ def merge_duplicados(request):
 
     with transaction.atomic():
         # Reatribuir presenças do perdedor para o vencedor, evitando duplicar por mesmo dia
+        # Pré-carregar dias do winner (1 query em vez de N exists)
+        winner_dias = set(
+            Presenca.objects.filter(adolescente=winner)
+            .values_list('dia_id', flat=True)
+        )
         loser_presencas = Presenca.objects.filter(adolescente=loser)
         for p in loser_presencas.select_related('dia'):
-            exists = Presenca.objects.filter(adolescente=winner, dia=p.dia, presente=p.presente).exists()
-            if not exists:
+            if p.dia_id not in winner_dias:
                 p.adolescente = winner
                 p.save(update_fields=['adolescente'])
                 changes['presencas_movidas'] += 1
@@ -526,11 +537,12 @@ def criar_adolescente(request):
             if dia_id:
                 try:
                     dia = DiaEvento.objects.get(id=dia_id)
-                    Presenca.objects.update_or_create(
-                        adolescente=adolescente,
-                        dia=dia,
-                        defaults={'presente': True}
-                    )
+                    with transaction.atomic():
+                        Presenca.objects.update_or_create(
+                            adolescente=adolescente,
+                            dia=dia,
+                            defaults={'presente': True}
+                        )
                     messages.success(request, f"Adolescente {adolescente.nome} criado e check-in confirmado para {dia.data.strftime('%d/%m/%Y')}!")
                     return redirect('checkin_dia', dia_id=dia_id)
                 except DiaEvento.DoesNotExist:
@@ -540,11 +552,12 @@ def criar_adolescente(request):
                 hoje = date.today()
                 evento_hoje = DiaEvento.objects.filter(data=hoje, ano=ano).first()
                 if evento_hoje:
-                    Presenca.objects.update_or_create(
-                        adolescente=adolescente,
-                        dia=evento_hoje,
-                        defaults={'presente': True}
-                    )
+                    with transaction.atomic():
+                        Presenca.objects.update_or_create(
+                            adolescente=adolescente,
+                            dia=evento_hoje,
+                            defaults={'presente': True}
+                        )
                     messages.success(request, f"Adolescente criado e check-in automático para {evento_hoje}!")
                 else:
                     messages.success(request, "Adolescente criado com sucesso!")
@@ -649,17 +662,19 @@ def lista_dias_evento(request):
     ano = get_ano_selecionado(request)
     readonly = is_ano_readonly(request)
     
-    dias_list = DiaEvento.objects.filter(ano=ano).prefetch_related('contagens_auditorio').order_by('-data')
+    dias_list = (
+        DiaEvento.objects.filter(ano=ano)
+        .prefetch_related('contagens_auditorio')
+        .annotate(total_presentes_checkin=Count('presenca', filter=Q(presenca__presente=True)))
+        .order_by('-data')
+    )
     
     # Calcular média usando contagem de auditório (prioritário) ou check-in (fallback)
     total_contagens = 0
     soma_pessoas = 0
     
     for dia in dias_list:
-        # Anotar total de presentes via check-in para cada dia
-        dia.total_presentes_checkin = Presenca.objects.filter(dia=dia, presente=True).count()
-        
-        # Buscar contagem de auditório
+        # Buscar contagem de auditório (já prefetched, sem query extra)
         contagem_auditorio = dia.contagens_auditorio.first()
         if contagem_auditorio:
             dia.total_presentes = contagem_auditorio.quantidade_pessoas
@@ -728,12 +743,14 @@ def checkin_dia(request, dia_id):
     ano = dia.ano  # Usar o ano do evento
     readonly = ano < ANO_ATUAL
     
-    adolescentes = Adolescente.objects.filter(ano=ano)
+    adolescentes = Adolescente.objects.filter(ano=ano).select_related('pg')
     filtro = request.GET.get('filtro', 'todos')  # padrão: todos
     busca = request.GET.get('busca', '')  # busca por nome
 
-    presencas = Presenca.objects.filter(dia=dia)
-    presentes_ids = presencas.filter(presente=True).values_list('adolescente_id', flat=True)
+    presentes_ids = set(
+        Presenca.objects.filter(dia=dia, presente=True)
+        .values_list('adolescente_id', flat=True)
+    )
 
     # Aplica filtro
     if filtro == 'presentes':
@@ -745,9 +762,7 @@ def checkin_dia(request, dia_id):
     if busca:
         adolescentes = buscar_adolescentes_por_nome(adolescentes, busca)
 
-    # Ordenação:
-    # 1) pela quantidade total de presenças (desc)
-    # 2) desempate por ordem alfabética (nome, sobrenome)
+    # Ordenação otimizada: total de presenças (desc), depois alfabético
     adolescentes = (
         adolescentes
         .annotate(total_presencas=Count('presenca', filter=Q(presenca__presente=True)))
@@ -820,15 +835,34 @@ def checkin_dia(request, dia_id):
                 messages.success(request, f'Visitantes atualizados: {quantidade_v}.')
             return redirect('checkin_dia', dia_id=dia.id)
         
-        # Check-in normal
-        presencas_ids = request.POST.getlist('presentes')
-        Presenca.objects.filter(dia=dia).delete()
-        for adol in adolescentes:
-            Presenca.objects.create(
-                adolescente=adol,
-                dia=dia,
-                presente=str(adol.id) in presencas_ids
-            )
+        # Check-in normal (atômico e incremental para evitar race conditions)
+        presencas_ids = set(request.POST.getlist('presentes'))
+
+        with transaction.atomic():
+            existentes = {
+                p.adolescente_id: p
+                for p in Presenca.objects.filter(dia=dia).select_for_update()
+            }
+
+            to_update = []
+            to_create = []
+            for adol in adolescentes:
+                deve_estar_presente = str(adol.id) in presencas_ids
+                if adol.id in existentes:
+                    p = existentes[adol.id]
+                    if p.presente != deve_estar_presente:
+                        p.presente = deve_estar_presente
+                        to_update.append(p)
+                else:
+                    to_create.append(Presenca(
+                        adolescente=adol, dia=dia, presente=deve_estar_presente
+                    ))
+
+            if to_update:
+                Presenca.objects.bulk_update(to_update, ['presente'])
+            if to_create:
+                Presenca.objects.bulk_create(to_create, ignore_conflicts=True)
+
         messages.success(request, "Check-in realizado com sucesso!")
         return redirect('checkin_dia', dia_id=dia.id)
 
@@ -920,12 +954,20 @@ def atualizar_presenca(request):
         adolescente = get_object_or_404(Adolescente, id=adolescente_id)
         dia = get_object_or_404(DiaEvento, id=dia_id)
         
-        # Atualiza ou cria a presença
-        presenca, created = Presenca.objects.update_or_create(
-            adolescente=adolescente,
-            dia=dia,
-            defaults={'presente': presente}
-        )
+        # Atualiza ou cria a presença (protegido contra race conditions)
+        try:
+            with transaction.atomic():
+                presenca, created = Presenca.objects.update_or_create(
+                    adolescente=adolescente,
+                    dia=dia,
+                    defaults={'presente': presente}
+                )
+        except Exception:
+            # Fallback: se houve IntegrityError, tenta apenas update
+            Presenca.objects.filter(
+                adolescente=adolescente, dia=dia
+            ).update(presente=presente)
+            created = False
         
         return JsonResponse({
             'success': True,
@@ -1238,13 +1280,30 @@ def dashboard(request):
         pg_labels.append(pg.nome)
         pg_data.append(round(pg.media_presenca, 1))
     
-    # Evolução da presença (últimos 10 eventos)
-    ultimos_eventos = eventos_query.order_by('-data')[:10] if eventos_query.exists() else []
+    # Evolução da presença (últimos 10 eventos) — annotated para evitar N+1
+    if eventos_query.exists():
+        ultimos_eventos = (
+            eventos_query
+            .annotate(
+                presentes=Count('presenca', filter=Q(presenca__presente=True)),
+                total=Count('presenca'),
+            )
+            .order_by('-data')[:10]
+        )
+        # Pré-carregar visitantes em um dict (1 query)
+        evento_ids = [e.id for e in ultimos_eventos]
+        visitantes_map = dict(
+            ContagemVisitantes.objects.filter(dia_id__in=evento_ids)
+            .values_list('dia_id', 'quantidade_visitantes')
+        )
+    else:
+        ultimos_eventos = []
+        visitantes_map = {}
     presenca_por_evento = []
     for evento in reversed(ultimos_eventos):  # Inverter para ordem cronológica
-        presentes = Presenca.objects.filter(dia=evento, presente=True).count()
-        total = Presenca.objects.filter(dia=evento).count()
-        visitantes = ContagemVisitantes.objects.filter(dia=evento).values_list('quantidade_visitantes', flat=True).first() or 0
+        presentes = evento.presentes
+        total = evento.total
+        visitantes = visitantes_map.get(evento.id, 0)
         # Calcular percentual em relação ao total de adolescentes cadastrados
         percentual = round((presentes / max(total_adolescentes, 1)) * 100, 1)
         presenca_por_evento.append({
