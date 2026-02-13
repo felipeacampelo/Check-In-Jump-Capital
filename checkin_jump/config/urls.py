@@ -1,37 +1,64 @@
 from django.contrib import admin
+
 from django.urls import path, include
+
 from django.contrib.auth import views as auth_views
+
 from django.conf import settings
+
 from django.conf.urls.static import static
-from django.views.generic.base import RedirectView
+
+
 
 urlpatterns = [
-    # Favicon/apple-touch-icon redirects (browsers request these from root)
-    path('favicon.ico', RedirectView.as_view(url=settings.STATIC_URL + 'adolescentes/img/favicon.ico', permanent=True)),
-    path('apple-touch-icon.png', RedirectView.as_view(url=settings.STATIC_URL + 'adolescentes/img/apple-touch-icon.png', permanent=True)),
-    path('apple-touch-icon-precomposed.png', RedirectView.as_view(url=settings.STATIC_URL + 'adolescentes/img/apple-touch-icon.png', permanent=True)),
+
     path('admin/', admin.site.urls),
+
     path('', include('adolescentes.urls')),
+
     # Links para definir senha via token (usados pelos links gerados no admin)
+
     path(
+
         'accounts/reset/<uidb64>/<token>/',
+
         auth_views.PasswordResetConfirmView.as_view(
+
             template_name='adolescentes/auth/password_reset_confirm.html'
+
         ),
+
         name='password_reset_confirm'
+
     ),
+
     path(
+
         'accounts/reset/done/',
+
         auth_views.PasswordResetCompleteView.as_view(
+
             template_name='adolescentes/auth/password_reset_complete.html'
+
         ),
+
         name='password_reset_complete'
+
     ),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
+
+
 # Debug Toolbar URLs (apenas em desenvolvimento)
+
 if settings.DEBUG:
+
     import debug_toolbar
+
     urlpatterns = [
+
         path('__debug__/', include(debug_toolbar.urls)),
+
     ] + urlpatterns
+

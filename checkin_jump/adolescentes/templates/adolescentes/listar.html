@@ -503,7 +503,8 @@
                 <img src="{{ adolescente.foto.url }}"
                      alt="Foto de {{ adolescente.nome }}"
                      class="avatar avatar-sm"
-                     onerror="this.outerHTML='<span class=\'avatar avatar-sm avatar-initials\'>{{ adolescente.nome|slice:':1' }}{{ adolescente.sobrenome|slice:':1' }}</span>'; this.parentElement.querySelector('.avatar-overlay')?.remove();">
+                     data-initials="{{ adolescente.nome|slice:':1' }}{{ adolescente.sobrenome|slice:':1' }}"
+                     data-fallback="avatar">
                 <button type="button" class="avatar-overlay btn btn-primary btn-sm"
                         title="Ver foto" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}"
                         onclick="event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();">
@@ -573,7 +574,7 @@
             <div class="col-3 col-md-2">
               {% if adolescente.foto %}
                 <img src="{{ adolescente.foto.url }}" class="photo-card" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}"
-                     onerror="this.outerHTML='<div class=\'photo-placeholder-card\'><i class=\'fas fa-user fa-2x\'></i></div>';">
+                     data-fallback="card">
               {% else %}
                 <div class="photo-placeholder-card">
                   <i class="fas fa-user fa-2x"></i>
@@ -634,7 +635,7 @@
       </div>
       <div class="modal-body d-flex justify-content-center">
         <img src="{{ adolescente.foto.url }}" alt="Foto de {{ adolescente.nome }}" class="photo-modal-large"
-             onerror="this.outerHTML='<div class=\'text-center text-muted py-4\'><i class=\'fas fa-image fa-3x mb-2\'></i><p>Foto não disponível</p></div>';">
+             data-fallback="modal-large">
       </div>
     </div>
   </div>
@@ -653,7 +654,8 @@
         <div class="text-center mb-3">
           {% if adolescente.foto %}
             <img src="{{ adolescente.foto.url }}" class="rounded-circle img-thumbnail" style="width: 96px; height: 96px; object-fit: cover;" alt="Foto de {{ adolescente.nome }}"
-                 onerror="this.outerHTML='<span class=\'rounded-circle bg-secondary d-inline-block\' style=\'width:96px;height:96px;line-height:96px;text-align:center;color:#fff;font-size:2em\'>{{ adolescente.nome|slice:':1' }}{{ adolescente.sobrenome|slice:':1' }}</span>';">
+                 data-initials="{{ adolescente.nome|slice:':1' }}{{ adolescente.sobrenome|slice:':1' }}"
+                 data-fallback="modal-detail">
           {% else %}
             <span class="rounded-circle bg-secondary d-inline-block" style="width: 96px; height: 96px; line-height: 96px; text-align: center; color: #fff; font-size: 2em;">
               {{ adolescente.nome|slice:":1" }}{{ adolescente.sobrenome|slice:":1" }}
@@ -888,6 +890,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+</script>
+
+<!-- Fallback para imagens quebradas (foto existe no DB mas arquivo ausente) -->
+<script>
+(function() {
+  function handleBrokenImage(img) {
+    var type = img.getAttribute('data-fallback');
+    if (!type) return;
+    var initials = img.getAttribute('data-initials') || '?';
+    var el;
+    if (type === 'avatar') {
+      el = document.createElement('span');
+      el.className = 'avatar avatar-sm avatar-initials';
+      el.textContent = initials;
+      var overlay = img.parentElement.querySelector('.avatar-overlay');
+      if (overlay) overlay.remove();
+      img.replaceWith(el);
+    } else if (type === 'card') {
+      el = document.createElement('div');
+      el.className = 'photo-placeholder-card';
+      el.innerHTML = '<i class="fas fa-user fa-2x"></i>';
+      img.replaceWith(el);
+    } else if (type === 'modal-detail') {
+      el = document.createElement('span');
+      el.className = 'rounded-circle bg-secondary d-inline-block';
+      el.style.cssText = 'width:96px;height:96px;line-height:96px;text-align:center;color:#fff;font-size:2em';
+      el.textContent = initials;
+      img.replaceWith(el);
+    } else if (type === 'modal-large') {
+      el = document.createElement('div');
+      el.className = 'text-center text-muted py-4';
+      el.innerHTML = '<i class="fas fa-image fa-3x mb-2"></i><p>Foto não disponível</p>';
+      img.replaceWith(el);
+    }
+  }
+
+  document.querySelectorAll('img[data-fallback]').forEach(function(img) {
+    img.addEventListener('error', function() { handleBrokenImage(this); });
+    // Para imagens visíveis que já falharam antes deste script rodar:
+    // Só checa naturalWidth em imgs que NÃO estão dentro de modais ocultos
+    // (imgs em display:none têm naturalWidth=0 mesmo quando válidas)
+    if (img.complete && img.naturalWidth === 0 && !img.closest('.modal')) {
+      handleBrokenImage(img);
+    }
+  });
+})();
 </script>
 
 {% endblock %}

@@ -161,6 +161,131 @@
         mostrarAviso();
       }
 
+      // --- Câmera ---
+      var btnCamera = document.getElementById('btnCamera');
+      var btnCapturar = document.getElementById('btnCapturar');
+      var video = document.getElementById('cameraVideo');
+      var canvas = document.getElementById('cameraCanvas');
+      var cameraSelect = document.getElementById('cameraSelect');
+      var inputFotoFile = document.getElementById('inputFotoFile');
+      var inputFotoHidden = document.getElementById('inputFotoHidden');
+      var fotoPreview = document.getElementById('fotoPreview');
+      var fotoPreviewWrapper = document.getElementById('fotoPreviewWrapper');
+      var btnRemoverFoto = document.getElementById('btnRemoverFoto');
+      var cameraModal = document.getElementById('cameraModal');
+      var currentStream = null;
+
+      function showPreview(src) {
+        fotoPreview.src = src;
+        fotoPreviewWrapper.classList.remove('d-none');
+      }
+
+      function clearPreview() {
+        fotoPreviewWrapper.classList.add('d-none');
+        fotoPreview.src = '';
+        inputFotoFile.value = '';
+        inputFotoFile.name = 'foto';
+        inputFotoHidden.name = '';
+        var dt = new DataTransfer();
+        inputFotoHidden.files = dt.files;
+      }
+
+      if (btnRemoverFoto) btnRemoverFoto.addEventListener('click', clearPreview);
+
+      // Upload de arquivo: mostrar preview
+      if (inputFotoFile) {
+        inputFotoFile.addEventListener('change', function() {
+          if (this.files && this.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) { showPreview(e.target.result); };
+            reader.readAsDataURL(this.files[0]);
+            // Usar file input, desativar hidden
+            inputFotoFile.name = 'foto';
+            inputFotoHidden.name = '';
+            var dt = new DataTransfer();
+            inputFotoHidden.files = dt.files;
+          }
+        });
+      }
+
+      function stopCamera() {
+        if (currentStream) {
+          currentStream.getTracks().forEach(function(t) { t.stop(); });
+          currentStream = null;
+        }
+      }
+
+      function startCamera(deviceId) {
+        stopCamera();
+        var constraints = { video: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'user' } };
+        navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
+          currentStream = stream;
+          video.srcObject = stream;
+        }).catch(function(err) {
+          alert('Não foi possível acessar a câmera: ' + err.message);
+        });
+      }
+
+      function loadCameras() {
+        navigator.mediaDevices.enumerateDevices().then(function(devices) {
+          var cameras = devices.filter(function(d) { return d.kind === 'videoinput'; });
+          cameraSelect.innerHTML = '';
+          if (cameras.length === 0) {
+            cameraSelect.innerHTML = '<option value="">Nenhuma câmera encontrada</option>';
+            return;
+          }
+          cameras.forEach(function(cam, i) {
+            var opt = document.createElement('option');
+            opt.value = cam.deviceId;
+            opt.textContent = cam.label || ('Câmera ' + (i + 1));
+            cameraSelect.appendChild(opt);
+          });
+        });
+      }
+
+      if (cameraSelect) {
+        cameraSelect.addEventListener('change', function() {
+          if (this.value) startCamera(this.value);
+        });
+      }
+
+      if (btnCamera) {
+        btnCamera.addEventListener('click', function() {
+          var modal = new bootstrap.Modal(cameraModal);
+          modal.show();
+          startCamera();
+          loadCameras();
+        });
+      }
+
+      if (cameraModal) {
+        cameraModal.addEventListener('hidden.bs.modal', function() {
+          stopCamera();
+        });
+      }
+
+      if (btnCapturar) {
+        btnCapturar.addEventListener('click', function() {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          canvas.getContext('2d').drawImage(video, 0, 0);
+          canvas.toBlob(function(blob) {
+            // Colocar blob no hidden file input
+            var file = new File([blob], 'camera-foto.jpg', { type: 'image/jpeg' });
+            var dt = new DataTransfer();
+            dt.items.add(file);
+            inputFotoHidden.files = dt.files;
+            // Usar hidden, desativar file input
+            inputFotoHidden.name = 'foto';
+            inputFotoFile.name = '';
+            inputFotoFile.value = '';
+            // Mostrar preview
+            showPreview(canvas.toDataURL('image/jpeg', 0.85));
+            // Fechar modal
+            bootstrap.Modal.getInstance(cameraModal).hide();
+          }, 'image/jpeg', 0.85);
+        });
+      }
     });
   </script>
 {% endblock %}
