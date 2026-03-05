@@ -1025,10 +1025,10 @@ def detalhes_pg(request, pg_id):
     pg = get_object_or_404(PequenoGrupo, id=pg_id)
     membros = Adolescente.objects.filter(pg=pg, ano=ano).order_by('nome', 'sobrenome')
     disponiveis = Adolescente.objects.filter(ano=ano).exclude(pg=pg).select_related('pg').order_by('nome', 'sobrenome')
-    anos_nascimento_disponiveis = sorted(
+    anos_nascimento_disponiveis = sorted(set(
         disponiveis.exclude(data_nascimento__isnull=True)
-        .values_list('data_nascimento__year', flat=True).distinct()
-    )
+        .values_list('data_nascimento__year', flat=True)
+    ))
     return render(request, 'pgs/pg.html', {
         'pg': pg,
         'adolescentes': membros,
@@ -1104,10 +1104,10 @@ def detalhes_imperio(request, imperio_id):
     imperio = get_object_or_404(Imperio, id=imperio_id)
     membros = Adolescente.objects.filter(imperio=imperio, ano=ano).order_by('nome', 'sobrenome')
     disponiveis = Adolescente.objects.filter(ano=ano).exclude(imperio=imperio).select_related('imperio', 'pg').order_by('nome', 'sobrenome')
-    anos_nascimento_disponiveis = sorted(
+    anos_nascimento_disponiveis = sorted(set(
         disponiveis.exclude(data_nascimento__isnull=True)
-        .values_list('data_nascimento__year', flat=True).distinct()
-    )
+        .values_list('data_nascimento__year', flat=True)
+    ))
     return render(request, 'imperios/imperio.html', {
         'imperio': imperio,
         'adolescentes': membros,
