@@ -1,4 +1,5 @@
 {% extends 'adolescentes/base.html' %}
+{% load image_utils %}
 {% block content %}
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -294,11 +295,13 @@
         </div>
         <div class="modal-body">
           <div class="text-center mb-3">
-            {% if adolescente.foto %}
-              <img src="{{ adolescente.foto.url }}" class="rounded-circle img-thumbnail" style="width: 96px; height: 96px; object-fit: cover;" alt="Foto de {{ adolescente.nome }}">
+            {% with foto_url=adolescente.foto|safe_image_url %}
+            {% if foto_url %}
+              <img src="{{ foto_url }}" class="rounded-circle img-thumbnail" style="width: 96px; height: 96px; object-fit: cover;" alt="Foto de {{ adolescente.nome }}">
             {% else %}
               <span class="rounded-circle bg-secondary d-inline-block" style="width: 96px; height: 96px; line-height: 96px; text-align: center; color: #fff; font-size: 2em;">{{ adolescente.nome|slice:":1" }}{{ adolescente.sobrenome|slice:":1" }}</span>
             {% endif %}
+            {% endwith %}
           </div>
           <p><strong>Nome Completo:</strong> {{ adolescente.nome }} {{ adolescente.sobrenome }}</p>
           <p><strong>Sexo:</strong> {{ adolescente.get_genero_display }}</p>

@@ -498,9 +498,10 @@
       <tr class="row-modal" style="cursor: pointer;" data-row-target="modal{{ adolescente.id }}">
         <td>
           <div class="d-flex align-items-center gap-3">
-            {% if adolescente.foto %}
+            {% with foto_url=adolescente.foto|safe_image_url %}
+            {% if foto_url %}
               <div class="avatar-wrap">
-                <img src="{{ adolescente.foto.url }}"
+                <img src="{{ foto_url }}"
                      alt="Foto de {{ adolescente.nome }}"
                      class="avatar avatar-sm"
                      data-initials="{{ adolescente.nome|slice:':1' }}{{ adolescente.sobrenome|slice:':1' }}"
@@ -514,6 +515,7 @@
             {% else %}
               <span class="avatar avatar-sm avatar-initials" onclick="event.preventDefault(); event.stopPropagation(); event.stopImmediatePropagation();">{{ adolescente.nome|slice:":1" }}{{ adolescente.sobrenome|slice:":1" }}</span>
             {% endif %}
+            {% endwith %}
             <div class="min-w-0">
               <div class="text-truncate">{{ adolescente.nome }} {{ adolescente.sobrenome }}</div>
             </div>
@@ -572,14 +574,16 @@
         <div class="card-body">
           <div class="row align-items-center">
             <div class="col-3 col-md-2">
-              {% if adolescente.foto %}
-                <img src="{{ adolescente.foto.url }}" class="photo-card" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}"
+              {% with foto_url=adolescente.foto|safe_image_url %}
+              {% if foto_url %}
+                <img src="{{ foto_url }}" class="photo-card" data-bs-toggle="modal" data-bs-target="#modalFoto{{ adolescente.id }}"
                      data-fallback="card">
               {% else %}
                 <div class="photo-placeholder-card">
                   <i class="fas fa-user fa-2x"></i>
                 </div>
               {% endif %}
+              {% endwith %}
             </div>
             <div class="col-6 col-md-7">
               <h6 class="card-title mb-1 fw-normal">{{ adolescente.nome }} {{ adolescente.sobrenome }}</h6>
@@ -625,7 +629,8 @@
 <!-- Modais dos Adolescentes -->
 {% for adolescente in adolescentes %}
 <!-- Modal da foto maior -->
-{% if adolescente.foto %}
+{% with foto_url=adolescente.foto|safe_image_url %}
+{% if foto_url %}
 <div class="modal fade" id="modalFoto{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalFotoLabel{{ adolescente.id }}" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -634,13 +639,14 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
       <div class="modal-body d-flex justify-content-center">
-        <img src="{{ adolescente.foto.url }}" alt="Foto de {{ adolescente.nome }}" class="photo-modal-large"
+        <img src="{{ foto_url }}" alt="Foto de {{ adolescente.nome }}" class="photo-modal-large"
              data-fallback="modal-large">
       </div>
     </div>
   </div>
 </div>
 {% endif %}
+{% endwith %}
 
 <!-- Modal do Adolescente -->
 <div class="modal fade" id="modal{{ adolescente.id }}" tabindex="-1" aria-labelledby="modalLabel{{ adolescente.id }}" aria-hidden="true">
@@ -652,8 +658,9 @@
       </div>
       <div class="modal-body">
         <div class="text-center mb-3">
-          {% if adolescente.foto %}
-            <img src="{{ adolescente.foto.url }}" class="rounded-circle img-thumbnail" style="width: 96px; height: 96px; object-fit: cover;" alt="Foto de {{ adolescente.nome }}"
+          {% with foto_url=adolescente.foto|safe_image_url %}
+          {% if foto_url %}
+            <img src="{{ foto_url }}" class="rounded-circle img-thumbnail" style="width: 96px; height: 96px; object-fit: cover;" alt="Foto de {{ adolescente.nome }}"
                  data-initials="{{ adolescente.nome|slice:':1' }}{{ adolescente.sobrenome|slice:':1' }}"
                  data-fallback="modal-detail">
           {% else %}
@@ -661,6 +668,7 @@
               {{ adolescente.nome|slice:":1" }}{{ adolescente.sobrenome|slice:":1" }}
             </span>
           {% endif %}
+          {% endwith %}
         </div>
 
         <p><strong>Nome Completo:</strong> {{ adolescente.nome }} {{ adolescente.sobrenome }}</p>

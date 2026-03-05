@@ -6,7 +6,14 @@ register = template.Library()
 
 def _is_cloud_storage():
     """Verifica se está usando storage na nuvem (Cloudinary)."""
-    return getattr(settings, 'DEFAULT_FILE_STORAGE', '').startswith('cloudinary')
+    default_storage = getattr(settings, 'DEFAULT_FILE_STORAGE', '')
+    if default_storage.startswith('cloudinary'):
+        return True
+
+    # Django 4.2+/5 pode usar STORAGES ao invés de DEFAULT_FILE_STORAGE
+    storages_cfg = getattr(settings, 'STORAGES', {}) or {}
+    backend = (storages_cfg.get('default') or {}).get('BACKEND', '')
+    return str(backend).startswith('cloudinary')
 
 def _file_available(file_field):
     """Verifica se o arquivo está disponível (local ou cloud)."""
