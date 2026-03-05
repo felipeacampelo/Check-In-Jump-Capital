@@ -23,10 +23,10 @@
   <div class="offcanvas-body p-0 d-flex flex-column">
     <!-- Busca + Filtros -->
     <div class="p-3 border-bottom">
-      <input type="text" id="buscaDisponivel" class="form-control form-control-sm mb-2" placeholder="Buscar adolescente...">
+      <input type="text" id="buscaDisponivel" class="form-control form-control-sm mb-2" placeholder="Buscar adolescente..." oninput="filtrarListaPG()">
       <div class="row g-2 mb-2">
         <div class="col-6">
-          <select id="filtroAnoNasc" class="form-select form-select-sm">
+          <select id="filtroAnoNasc" class="form-select form-select-sm" onchange="filtrarListaPG()">
             <option value="">Todos os anos</option>
             {% for ano_n in anos_nascimento_disponiveis %}
             <option value="{{ ano_n }}">Nascidos em {{ ano_n }}</option>
@@ -34,22 +34,14 @@
           </select>
         </div>
         <div class="col-6">
-          <select id="filtroGenero" class="form-select form-select-sm">
+          <select id="filtroGenero" class="form-select form-select-sm" onchange="filtrarListaPG()">
             <option value="">Todos os sexos</option>
             <option value="M">Masculino</option>
             <option value="F">Feminino</option>
           </select>
         </div>
       </div>
-      <div class="d-flex gap-2">
-        <button type="button" id="btnAplicarFiltro" class="btn btn-sm btn-outline-primary flex-fill" onclick="window.filtrarListaPG()">
-          <i class="fas fa-filter me-1"></i>Aplicar Filtros
-        </button>
-        <button type="button" id="btnLimparFiltro" class="btn btn-sm btn-outline-secondary" onclick="window.limparFiltrosPG()">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <div class="d-flex justify-content-between align-items-center mt-2">
+      <div class="d-flex justify-content-between align-items-center">
         <small class="text-muted"><span id="countSelecionados">0</span> selecionado(s)</small>
         <button type="button" class="btn btn-sm btn-link p-0" id="toggleSelectAll">Selecionar todos</button>
       </div>
@@ -112,40 +104,49 @@
 </div>
 
 <script>
+function filtrarListaPG(){
+  var buscaInput = document.getElementById('buscaDisponivel');
+  var filtroAno = document.getElementById('filtroAnoNasc');
+  var filtroGenero = document.getElementById('filtroGenero');
+  var items = document.querySelectorAll('.disponivel-item');
+  
+  var q = buscaInput ? buscaInput.value.toLowerCase() : '';
+  var ano = filtroAno ? filtroAno.value : '';
+  var genero = filtroGenero ? filtroGenero.value : '';
+  
+  var countVisible = 0;
+  var countHidden = 0;
+  
+  items.forEach(function(el){
+    var elAno = el.getAttribute('data-ano') || '';
+    var elGenero = el.getAttribute('data-genero') || '';
+    var elNome = el.getAttribute('data-nome') || '';
+    
+    var matchNome = !q || elNome.toLowerCase().includes(q);
+    var matchAno = !ano || elAno === ano;
+    var matchGenero = !genero || elGenero === genero;
+    
+    if (matchNome && matchAno && matchGenero) {
+      el.style.removeProperty('display');
+      countVisible++;
+    } else {
+      el.style.setProperty('display', 'none', 'important');
+      countHidden++;
+    }
+  });
+  
+  console.log('Filtro aplicado:', {ano: ano, genero: genero, busca: q, visíveis: countVisible, ocultos: countHidden, totalItems: items.length});
+}
+
 document.addEventListener('DOMContentLoaded', function(){
   var csrfToken = document.cookie.match(/csrftoken=([^;]+)/);
   csrfToken = csrfToken ? csrfToken[1] : '';
 
-  // --- Adicionar integrantes ---
-  var buscaInput = document.getElementById('buscaDisponivel');
-  var filtroAno = document.getElementById('filtroAnoNasc');
-  var filtroGenero = document.getElementById('filtroGenero');
-  var btnAplicarFiltro = document.getElementById('btnAplicarFiltro');
-  var btnLimparFiltro = document.getElementById('btnLimparFiltro');
-  var items = document.querySelectorAll('.disponivel-item');
   var checkboxes = document.querySelectorAll('.chk-disponivel');
   var countEl = document.getElementById('countSelecionados');
   var btnAdd = document.getElementById('btnConfirmarAdd');
   var toggleAll = document.getElementById('toggleSelectAll');
-
-  window.filtrarListaPG = function(){
-    var q = (buscaInput ? buscaInput.value : '').toLowerCase();
-    var ano = filtroAno ? filtroAno.value : '';
-    var genero = filtroGenero ? filtroGenero.value : '';
-    items.forEach(function(el){
-      var matchNome = !q || el.dataset.nome.toLowerCase().includes(q);
-      var matchAno = !ano || el.dataset.ano === ano;
-      var matchGenero = !genero || el.dataset.genero === genero;
-      el.style.display = (matchNome && matchAno && matchGenero) ? '' : 'none';
-    });
-  };
-
-  window.limparFiltrosPG = function(){
-    if (buscaInput) buscaInput.value = '';
-    if (filtroAno) filtroAno.value = '';
-    if (filtroGenero) filtroGenero.value = '';
-    window.filtrarListaPG();
-  };
+  var items = document.querySelectorAll('.disponivel-item');
 
   function updateCount(){
     var c = document.querySelectorAll('.chk-disponivel:checked').length;
@@ -157,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
   if (toggleAll) {
     toggleAll.addEventListener('click', function(){
-      var visible = Array.from(items).filter(function(el){ return el.style.display !== 'none'; });
+      var visible = Array.from(items).filter(function(el){ return window.getComputedStyle(el).display !== 'none'; });
       var allChecked = visible.every(function(el){ return el.querySelector('.chk-disponivel').checked; });
       visible.forEach(function(el){ el.querySelector('.chk-disponivel').checked = !allChecked; });
       updateCount();
@@ -181,7 +182,6 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  // --- Remover integrante ---
   document.querySelectorAll('.btn-remover').forEach(function(btn){
     btn.addEventListener('click', function(){
       var id = this.dataset.id;
