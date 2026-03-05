@@ -21,15 +21,34 @@
     <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
   </div>
   <div class="offcanvas-body p-0 d-flex flex-column">
-    <!-- Busca + Filtro -->
+    <!-- Busca + Filtros -->
     <div class="p-3 border-bottom">
       <input type="text" id="buscaDisponivel" class="form-control form-control-sm mb-2" placeholder="Buscar adolescente...">
-      <select id="filtroAnoNasc" class="form-select form-select-sm">
-        <option value="">Todos os anos de nascimento</option>
-        {% for ano_n in anos_nascimento_disponiveis %}
-        <option value="{{ ano_n }}">Nascidos em {{ ano_n }}</option>
-        {% endfor %}
-      </select>
+      <div class="row g-2 mb-2">
+        <div class="col-6">
+          <select id="filtroAnoNasc" class="form-select form-select-sm">
+            <option value="">Todos os anos</option>
+            {% for ano_n in anos_nascimento_disponiveis %}
+            <option value="{{ ano_n }}">Nascidos em {{ ano_n }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-6">
+          <select id="filtroGenero" class="form-select form-select-sm">
+            <option value="">Todos os sexos</option>
+            <option value="M">Masculino</option>
+            <option value="F">Feminino</option>
+          </select>
+        </div>
+      </div>
+      <div class="d-flex gap-2">
+        <button type="button" id="btnAplicarFiltro" class="btn btn-sm btn-outline-primary flex-fill">
+          <i class="fas fa-filter me-1"></i>Aplicar Filtros
+        </button>
+        <button type="button" id="btnLimparFiltro" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
       <div class="d-flex justify-content-between align-items-center mt-2">
         <small class="text-muted"><span id="countSelecionados">0</span> selecionado(s)</small>
         <button type="button" class="btn btn-sm btn-link p-0" id="toggleSelectAll">Selecionar todos</button>
@@ -38,7 +57,7 @@
     <!-- Lista -->
     <div class="flex-grow-1 overflow-auto" id="listaDisponiveis" style="max-height: calc(100vh - 280px);">
       {% for a in disponiveis %}
-      <label class="list-group-item list-group-item-action d-flex align-items-center gap-2 px-3 py-2 border-0 border-bottom disponivel-item" data-nome="{{ a.nome }} {{ a.sobrenome }}" data-ano="{{ a.data_nascimento.year }}" style="cursor:pointer;">
+      <label class="list-group-item list-group-item-action d-flex align-items-center gap-2 px-3 py-2 border-0 border-bottom disponivel-item" data-nome="{{ a.nome }} {{ a.sobrenome }}" data-ano="{{ a.data_nascimento.year }}" data-genero="{{ a.genero }}" style="cursor:pointer;">
         <input type="checkbox" class="form-check-input mt-0 chk-disponivel" value="{{ a.id }}">
         <div class="min-w-0">
           <div class="text-truncate fw-medium">{{ a.nome }} {{ a.sobrenome }}</div>
@@ -100,6 +119,9 @@
   // --- Adicionar integrantes ---
   var buscaInput = document.getElementById('buscaDisponivel');
   var filtroAno = document.getElementById('filtroAnoNasc');
+  var filtroGenero = document.getElementById('filtroGenero');
+  var btnAplicarFiltro = document.getElementById('btnAplicarFiltro');
+  var btnLimparFiltro = document.getElementById('btnLimparFiltro');
   var items = document.querySelectorAll('.disponivel-item');
   var checkboxes = document.querySelectorAll('.chk-disponivel');
   var countEl = document.getElementById('countSelecionados');
@@ -109,15 +131,24 @@
   function filtrarLista(){
     var q = (buscaInput ? buscaInput.value : '').toLowerCase();
     var ano = filtroAno ? filtroAno.value : '';
+    var genero = filtroGenero ? filtroGenero.value : '';
     items.forEach(function(el){
       var matchNome = !q || el.dataset.nome.toLowerCase().includes(q);
       var matchAno = !ano || el.dataset.ano === ano;
-      el.style.display = (matchNome && matchAno) ? '' : 'none';
+      var matchGenero = !genero || el.dataset.genero === genero;
+      el.style.display = (matchNome && matchAno && matchGenero) ? '' : 'none';
     });
   }
 
-  if (buscaInput) buscaInput.addEventListener('input', filtrarLista);
-  if (filtroAno) filtroAno.addEventListener('change', filtrarLista);
+  if (btnAplicarFiltro) btnAplicarFiltro.addEventListener('click', filtrarLista);
+  if (btnLimparFiltro) {
+    btnLimparFiltro.addEventListener('click', function(){
+      if (buscaInput) buscaInput.value = '';
+      if (filtroAno) filtroAno.value = '';
+      if (filtroGenero) filtroGenero.value = '';
+      filtrarLista();
+    });
+  }
 
   function updateCount(){
     var c = document.querySelectorAll('.chk-disponivel:checked').length;
