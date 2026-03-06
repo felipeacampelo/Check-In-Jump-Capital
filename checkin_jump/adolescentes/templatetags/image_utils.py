@@ -19,6 +19,14 @@ def _file_available(file_field):
     if not file_field or not file_field.name:
         return False
 
+    # Em storage cloud (Cloudinary), exists() pode não refletir disponibilidade real.
+    # Se a URL puder ser resolvida, consideramos disponível.
+    if _is_cloud_storage():
+        try:
+            return bool(file_field.url)
+        except (ValueError, AttributeError):
+            return False
+
     storage = getattr(file_field, 'storage', None)
     if storage and hasattr(storage, 'exists'):
         try:
