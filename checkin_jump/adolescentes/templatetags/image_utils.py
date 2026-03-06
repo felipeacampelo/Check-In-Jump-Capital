@@ -1,4 +1,3 @@
-import os
 from django import template
 from django.conf import settings
 
@@ -19,11 +18,18 @@ def _file_available(file_field):
     """Verifica se o arquivo está disponível (local ou cloud)."""
     if not file_field or not file_field.name:
         return False
-    if _is_cloud_storage():
-        return True
+
+    storage = getattr(file_field, 'storage', None)
+    if storage and hasattr(storage, 'exists'):
+        try:
+            return storage.exists(file_field.name)
+        except Exception:
+            # Alguns backends remotos podem não implementar exists de forma confiável
+            pass
+
     try:
-        file_path = os.path.join(settings.MEDIA_ROOT, file_field.name)
-        return os.path.exists(file_path)
+        # Fallback: se conseguir gerar URL, ao menos a referência do arquivo é válida
+        return bool(file_field.url)
     except (ValueError, AttributeError):
         return False
 
