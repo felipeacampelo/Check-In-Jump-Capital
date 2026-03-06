@@ -186,6 +186,15 @@ if os.environ.get('CLOUDINARY_CLOUD_NAME'):
         'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
     }
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    # Django 4.2+/5 prioriza STORAGES para definir backend de arquivos.
+    STORAGES = {
+        'default': {
+            'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+        },
+        'staticfiles': {
+            'BACKEND': STATICFILES_STORAGE,
+        },
+    }
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field

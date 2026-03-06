@@ -55,7 +55,7 @@ def safe_image_url(file_field):
     Retorna a URL da imagem se o arquivo existe, caso contrário retorna None.
     Funciona com storage local e Cloudinary.
     """
-    if not _file_available(file_field):
+    if not file_field:
         return None
     try:
         return file_field.url
