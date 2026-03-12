@@ -416,7 +416,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark jump">
         <div class="container-fluid">
             <!-- Logo/Título -->
-            <a class="navbar-brand d-flex align-items-center" href="{% url 'listar_adolescentes' %}">
+            <a class="navbar-brand d-flex align-items-center" href="{% url 'listar_adolescentes' %}{% if request.GET.ano %}?ano={{ request.GET.ano }}{% endif %}">
                 <img src="{% static 'adolescentes/img/logo-white.png' %}" alt="JUMP" class="nav-logo" />
             </a>
 
@@ -451,30 +451,30 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item">
-                        <a class="nav-link{% if request.resolver_match.url_name == 'listar_adolescentes' %} active{% endif %}" href="{% url 'listar_adolescentes' %}">
+                        <a class="nav-link{% if request.resolver_match.url_name == 'listar_adolescentes' %} active{% endif %}" href="{% url 'listar_adolescentes' %}{% if request.GET.ano %}?ano={{ request.GET.ano }}{% endif %}">
                             <i class="fas fa-users me-1"></i>Adolescentes
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link{% if request.resolver_match.url_name == 'pagina_checkin' %} active{% endif %}" href="{% url 'pagina_checkin' %}">
+                        <a class="nav-link{% if request.resolver_match.url_name == 'pagina_checkin' %} active{% endif %}" href="{% url 'pagina_checkin' %}{% if request.GET.ano %}?ano={{ request.GET.ano }}{% endif %}">
                             <i class="fas fa-check-circle me-1"></i>Check-in
                         </a>
                     </li>
                     {% if perms.adolescentes.view_pgs_page %}
                     <li class="nav-item">
-                        <a class="nav-link{% if request.resolver_match.url_name == 'lista_pgs' or request.resolver_match.url_name == 'detalhes_pg' %} active{% endif %}" href="{% url 'lista_pgs' %}">
+                        <a class="nav-link{% if request.resolver_match.url_name == 'lista_pgs' or request.resolver_match.url_name == 'detalhes_pg' %} active{% endif %}" href="{% url 'lista_pgs' %}{% if request.GET.ano %}?ano={{ request.GET.ano }}{% endif %}">
                             <i class="fas fa-layer-group me-1"></i>PGs
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link{% if request.resolver_match.url_name == 'lista_imperios' or request.resolver_match.url_name == 'detalhes_imperio' %} active{% endif %}" href="{% url 'lista_imperios' %}">
+                        <a class="nav-link{% if request.resolver_match.url_name == 'lista_imperios' or request.resolver_match.url_name == 'detalhes_imperio' %} active{% endif %}" href="{% url 'lista_imperios' %}{% if request.GET.ano %}?ano={{ request.GET.ano }}{% endif %}">
                             <i class="fas fa-crown me-1"></i>Impérios
                         </a>
                     </li>
                     {% endif %}
                     {% if perms.adolescentes.view_dashboard %}
                     <li class="nav-item">
-                        <a class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}" href="{% url 'dashboard' %}">
+                        <a class="nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}" href="{% url 'dashboard' %}{% if request.GET.ano %}?ano={{ request.GET.ano }}{% endif %}">
                             <i class="fas fa-chart-bar me-1"></i>Dashboard
                         </a>
                     </li>

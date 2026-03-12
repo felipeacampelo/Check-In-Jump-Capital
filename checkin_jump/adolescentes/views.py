@@ -27,14 +27,12 @@ ANOS_DISPONIVEIS = [2025, 2026]
 
 def get_ano_selecionado(request):
     """Retorna o ano selecionado via URL ou sessão (padrão: 2026)"""
-    # Priorizar parâmetro URL sobre sessão
+    # Priorizar parâmetro URL sobre sessão (NÃO atualiza sessão para permitir abas independentes)
     ano_url = request.GET.get('ano')
     if ano_url:
         try:
             ano = int(ano_url)
             if ano in ANOS_DISPONIVEIS:
-                # Atualizar sessão para manter consistência
-                request.session['ano_selecionado'] = ano
                 return ano
         except (ValueError, TypeError):
             pass
@@ -1078,7 +1076,14 @@ def detalhes_pg(request, pg_id):
     ano = get_ano_selecionado(request)
     readonly = is_ano_readonly(request)
     pg = get_object_or_404(PequenoGrupo, id=pg_id)
-    membros = Adolescente.objects.filter(pg=pg, ano=ano).order_by('nome', 'sobrenome')
+    
+    # Otimizar queries com select_related e prefetch_related
+    membros = Adolescente.objects.filter(pg=pg, ano=ano).select_related('pg', 'imperio').prefetch_related(
+        Prefetch('presenca_set', 
+                queryset=Presenca.objects.select_related('dia').order_by('-dia__data')[:5],
+                to_attr='cached_ultimas_presencas')
+    ).order_by('nome', 'sobrenome')
+    
     disponiveis = Adolescente.objects.filter(ano=ano).exclude(pg=pg).select_related('pg').order_by('nome', 'sobrenome')
     anos_nascimento_disponiveis = sorted(set(
         disponiveis.exclude(data_nascimento__isnull=True)
