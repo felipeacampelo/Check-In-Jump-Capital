@@ -31,6 +31,7 @@ urlpatterns = [
     # PGs
     path('pgs/', views.lista_pgs, name='lista_pgs'),
     path('pgs/adicionar/', views.adicionar_pg, name='adicionar_pg'),
+    path('pgs/salvar-ordem/', views.salvar_ordem_pgs, name='salvar_ordem_pgs'),
     path('pgs/<int:pg_id>/', views.detalhes_pg, name='detalhes_pg'),
     path('pgs/<int:pg_id>/bulk-add/', views.bulk_add_pg, name='bulk_add_pg'),
     path('pgs/<int:pg_id>/bulk-remove/', views.bulk_remove_pg, name='bulk_remove_pg'),

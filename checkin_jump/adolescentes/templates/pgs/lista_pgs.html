@@ -2,22 +2,69 @@
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-3">
   <h2 class="mb-0">Pequenos Grupos</h2>
-  {% if not readonly %}
-  <a href="{% url 'adicionar_pg' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Adicionar PG</a>
-  {% endif %}
+  <div class="d-flex gap-2">
+    {% if not readonly %}
+    <a href="{% url 'adicionar_pg' %}" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i>Adicionar PG</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Controles de Ordenação -->
+<div class="card shadow-sm mb-3">
+  <div class="card-body py-2">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <span class="text-muted small"><i class="fas fa-sort me-1"></i>Ordenar por:</span>
+      <div class="btn-group btn-group-sm" role="group">
+        <a href="?ordenar_por=manual{% if request.GET.ano %}&ano={{ request.GET.ano }}{% endif %}" 
+           class="btn btn-outline-secondary {% if ordenar_por == 'manual' %}active{% endif %}">
+          <i class="fas fa-grip-vertical me-1"></i>Manual
+        </a>
+        <a href="?ordenar_por=nome&direcao=asc{% if request.GET.ano %}&ano={{ request.GET.ano }}{% endif %}" 
+           class="btn btn-outline-secondary {% if ordenar_por == 'nome' %}active{% endif %}">
+          <i class="fas fa-sort-alpha-{% if ordenar_por == 'nome' and direcao == 'desc' %}down{% else %}up{% endif %} me-1"></i>Nome
+        </a>
+        <a href="?ordenar_por=membros&direcao=desc{% if request.GET.ano %}&ano={{ request.GET.ano }}{% endif %}" 
+           class="btn btn-outline-secondary {% if ordenar_por == 'membros' %}active{% endif %}">
+          <i class="fas fa-users me-1"></i>Membros
+        </a>
+        <a href="?ordenar_por=ano_nascimento&direcao=asc{% if request.GET.ano %}&ano={{ request.GET.ano }}{% endif %}" 
+           class="btn btn-outline-secondary {% if ordenar_por == 'ano_nascimento' %}active{% endif %}">
+          <i class="fas fa-calendar me-1"></i>Ano Nasc.
+        </a>
+      </div>
+      {% if ordenar_por != 'manual' and ordenar_por != 'membros' %}
+      <a href="?ordenar_por={{ ordenar_por }}&direcao={% if direcao == 'asc' %}desc{% else %}asc{% endif %}{% if request.GET.ano %}&ano={{ request.GET.ano }}{% endif %}" 
+         class="btn btn-sm btn-outline-secondary">
+        <i class="fas fa-sort-amount-{% if direcao == 'asc' %}down{% else %}up{% endif %}"></i>
+      </a>
+      {% endif %}
+    </div>
+  </div>
 </div>
 
 <div class="card shadow-sm">
-  <div class="list-group list-group-flush">
+  <div class="list-group list-group-flush" id="lista-pgs">
     {% for pg in pgs %}
-    <a href="{% url 'detalhes_pg' pg.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
-      <div>
-        <i class="fas fa-users me-2 text-primary"></i>
-        <strong>{{ pg.nome }}</strong>
-        {% if pg.genero_pg %}<small class="text-muted ms-1">({{ pg.genero_pg }})</small>{% endif %}
+    <div class="list-group-item d-flex justify-content-between align-items-center py-3 pg-item" data-pg-id="{{ pg.id }}">
+      <div class="d-flex align-items-center flex-grow-1">
+        {% if ordenar_por == 'manual' and not readonly %}
+        <i class="fas fa-grip-vertical text-muted me-3 drag-handle" style="cursor: move;"></i>
+        {% endif %}
+        <div class="flex-grow-1">
+          <a href="{% url 'detalhes_pg' pg.id %}" class="text-decoration-none text-dark">
+            <i class="fas fa-users me-2 text-primary"></i>
+            <strong>{{ pg.nome }}</strong>
+            {% if pg.genero_pg %}<small class="text-muted ms-1">({{ pg.genero_pg }})</small>{% endif %}
+          </a>
+          {% if pg.faixa_ano_nascimento_display %}
+          <small class="text-muted ms-2">
+            <i class="fas fa-calendar-alt me-1"></i>{{ pg.faixa_ano_nascimento_display }}
+          </small>
+          {% endif %}
+        </div>
       </div>
       <span class="badge bg-primary rounded-pill">{{ pg.total }} integrante{{ pg.total|pluralize:"s" }}</span>
-    </a>
+    </div>
     {% empty %}
     <div class="list-group-item text-center text-muted py-4">
       <i class="fas fa-users fa-2x mb-2 d-block"></i>
@@ -26,4 +73,53 @@
     {% endfor %}
   </div>
 </div>
+
+<!-- SortableJS via CDN -->
+{% if ordenar_por == 'manual' and not readonly %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const lista = document.getElementById('lista-pgs');
+  if (lista && lista.children.length > 1) {
+    const sortable = Sortable.create(lista, {
+      handle: '.drag-handle',
+      animation: 150,
+      ghostClass: 'bg-light',
+      onEnd: function(evt) {
+        // Coletar nova ordem dos IDs
+        const ordem = [];
+        document.querySelectorAll('.pg-item').forEach(function(item) {
+          const pgId = item.getAttribute('data-pg-id');
+          if (pgId) ordem.push(parseInt(pgId));
+        });
+        
+        // Enviar via AJAX
+        fetch('{% url "salvar_ordem_pgs" %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({ ordem: ordem })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.ok) {
+            console.log('Ordem salva com sucesso');
+          } else {
+            alert('Erro ao salvar ordem: ' + (data.error || 'Erro desconhecido'));
+            location.reload();
+          }
+        })
+        .catch(error => {
+          console.error('Erro:', error);
+          alert('Erro ao salvar ordem');
+          location.reload();
+        });
+      }
+    });
+  }
+});
+</script>
+{% endif %}
 {% endblock %}

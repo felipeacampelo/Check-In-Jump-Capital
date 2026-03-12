@@ -424,6 +424,7 @@
             <div class="d-flex align-items-center gap-2 d-lg-none">
               <!-- Seletor de Ano (mobile) -->
               {% if anos_disponiveis %}
+              {% load url_helpers %}
               <div class="dropdown">
                 <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="anoMenuMobile" data-bs-toggle="dropdown" aria-expanded="false" title="Selecionar ano">
                   <i class="fas fa-calendar-alt me-1"></i>{{ ano_selecionado|default:"2026" }}
@@ -431,7 +432,7 @@
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="anoMenuMobile" style="min-width: 120px;">
                   {% for ano in anos_disponiveis %}
                   <li>
-                    <a class="dropdown-item{% if ano == ano_selecionado %} active{% endif %}" href="{% url 'trocar_ano' ano %}">
+                    <a class="dropdown-item{% if ano == ano_selecionado %} active{% endif %}" href="?ano={{ ano }}">
                       {{ ano }}{% if ano == ano_selecionado %}<i class="fas fa-check ms-1"></i>{% endif %}
                     </a>
                   </li>
@@ -492,7 +493,7 @@
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="anoMenu" style="min-width: 140px;">
                       {% for ano in anos_disponiveis %}
                       <li>
-                        <a class="dropdown-item{% if ano == ano_selecionado %} active{% endif %}" href="{% url 'trocar_ano' ano %}">
+                        <a class="dropdown-item{% if ano == ano_selecionado %} active{% endif %}" href="?ano={{ ano }}">
                           {{ ano }}{% if ano == ano_selecionado %}<i class="fas fa-check ms-1"></i>{% endif %}
                         </a>
                       </li>

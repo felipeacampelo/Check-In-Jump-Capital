@@ -5,12 +5,27 @@ class PequenoGrupo(models.Model):
     nome = models.CharField(max_length=100)
     genero_pg = models.CharField(max_length=100, blank=True, null=True)
     ano = models.PositiveIntegerField(default=2026, db_index=True)
+    ano_nascimento_inicio = models.PositiveIntegerField(blank=True, null=True, help_text="Ano de nascimento inicial (ex: 2010)")
+    ano_nascimento_fim = models.PositiveIntegerField(blank=True, null=True, help_text="Ano de nascimento final (ex: 2012)")
+    ordem = models.PositiveIntegerField(default=0, help_text="Ordem de exibição (para ordenação manual)")
 
     def __str__(self):
         return f"{self.nome} ({self.ano})"
     
+    def faixa_ano_nascimento_display(self):
+        """Retorna a faixa de ano de nascimento formatada para exibição"""
+        if self.ano_nascimento_inicio and self.ano_nascimento_fim:
+            if self.ano_nascimento_inicio == self.ano_nascimento_fim:
+                return f"{self.ano_nascimento_inicio}"
+            return f"{self.ano_nascimento_inicio}-{self.ano_nascimento_fim}"
+        elif self.ano_nascimento_inicio:
+            return f"{self.ano_nascimento_inicio}+"
+        elif self.ano_nascimento_fim:
+            return f"até {self.ano_nascimento_fim}"
+        return None
+    
     class Meta:
-        ordering = ['nome']
+        ordering = ['ordem', 'nome']
 
 class Imperio(models.Model):
     nome = models.CharField(max_length=100)

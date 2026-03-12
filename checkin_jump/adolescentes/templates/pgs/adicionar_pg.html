@@ -8,13 +8,24 @@
         <input type="text" name="nome" id="nome" class="form-control" required>
     </div>
     <div class="mb-3">
-        <label for="genero" class="form-label">Sexo:</label>
-        <select name="genero" id="genero" class="form-control" required>
+        <label for="lider" class="form-label">Sexo:</label>
+        <select name="lider" id="lider" class="form-control" required>
             <option value="" disabled selected>Selecione o sexo</option>
             <option value="M">Masculino</option>
             <option value="F">Feminino</option>
         </select>
-    </div>        
+    </div>
+    <div class="mb-3">
+        <label for="ano_nascimento_inicio" class="form-label">Ano de Nascimento Inicial:</label>
+        <input type="number" name="ano_nascimento_inicio" id="ano_nascimento_inicio" class="form-control" placeholder="Ex: 2010" min="1990" max="2020">
+        <small class="text-muted">Ano de nascimento inicial dos integrantes (opcional)</small>
+    </div>
+    <div class="mb-3">
+        <label for="ano_nascimento_fim" class="form-label">Ano de Nascimento Final:</label>
+        <input type="number" name="ano_nascimento_fim" id="ano_nascimento_fim" class="form-control" placeholder="Ex: 2012" min="1990" max="2020">
+        <small class="text-muted">Ano de nascimento final dos integrantes (opcional)</small>
+    </div>
     <button type="submit" class="btn btn-primary">Criar PG</button>
+    <a href="{% url 'lista_pgs' %}" class="btn btn-secondary">Cancelar</a>
 </form>
 {% endblock %}

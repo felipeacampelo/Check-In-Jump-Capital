@@ -26,7 +26,20 @@ ANO_ATUAL = 2026
 ANOS_DISPONIVEIS = [2025, 2026]
 
 def get_ano_selecionado(request):
-    """Retorna o ano selecionado na sessão do usuário (padrão: 2026)"""
+    """Retorna o ano selecionado via URL ou sessão (padrão: 2026)"""
+    # Priorizar parâmetro URL sobre sessão
+    ano_url = request.GET.get('ano')
+    if ano_url:
+        try:
+            ano = int(ano_url)
+            if ano in ANOS_DISPONIVEIS:
+                # Atualizar sessão para manter consistência
+                request.session['ano_selecionado'] = ano
+                return ano
+        except (ValueError, TypeError):
+            pass
+    
+    # Fallback para sessão
     return request.session.get('ano_selecionado', ANO_ATUAL)
 
 def is_ano_readonly(request):
@@ -618,8 +631,9 @@ def editar_adolescente(request, id):
         if form.is_valid():
             # Verificar se deve remover a foto atual
             if request.POST.get('foto-clear'):
-                adolescente.foto.delete(save=False)  # Remove o arquivo
-                adolescente.foto = None  # Remove a referência
+                # Não deletar o arquivo físico se estiver no Cloudinary
+                # apenas limpar a referência no banco
+                adolescente.foto = None
             
             form.save()
             messages.success(request, "Adolescente atualizado com sucesso.")
@@ -994,9 +1008,22 @@ def adicionar_pg(request):
     if request.method == 'POST':
         nome = request.POST.get('nome')
         genero_pg = request.POST.get('lider')
+        ano_nascimento_inicio = request.POST.get('ano_nascimento_inicio')
+        ano_nascimento_fim = request.POST.get('ano_nascimento_fim')
 
         if nome:
-            PequenoGrupo.objects.create(nome=nome, genero_pg=genero_pg, ano=ano)
+            # Calcular próxima ordem disponível
+            from django.db.models import Max
+            max_ordem = PequenoGrupo.objects.filter(ano=ano).aggregate(Max('ordem'))['ordem__max'] or 0
+            
+            PequenoGrupo.objects.create(
+                nome=nome, 
+                genero_pg=genero_pg, 
+                ano=ano,
+                ano_nascimento_inicio=int(ano_nascimento_inicio) if ano_nascimento_inicio else None,
+                ano_nascimento_fim=int(ano_nascimento_fim) if ano_nascimento_fim else None,
+                ordem=max_ordem + 1
+            )
             messages.success(request, "PG criado com sucesso.")
             return redirect('lista_pgs')
         else:
@@ -1009,12 +1036,40 @@ def adicionar_pg(request):
 def lista_pgs(request):
     ano = get_ano_selecionado(request)
     readonly = is_ano_readonly(request)
+    
+    # Parâmetros de ordenação
+    ordenar_por = request.GET.get('ordenar_por', 'manual')  # manual, nome, membros, ano_nascimento
+    direcao = request.GET.get('direcao', 'asc')
+    
     pgs = PequenoGrupo.objects.filter(ano=ano).annotate(total=Count('adolescentes'))
+    
+    # Aplicar ordenação
+    if ordenar_por == 'manual':
+        # Ordenação manual usa campo 'ordem'
+        pgs = pgs.order_by('ordem', 'nome')
+    elif ordenar_por == 'nome':
+        if direcao == 'desc':
+            pgs = pgs.order_by('-nome')
+        else:
+            pgs = pgs.order_by('nome')
+    elif ordenar_por == 'membros':
+        if direcao == 'desc':
+            pgs = pgs.order_by('-total', 'nome')
+        else:
+            pgs = pgs.order_by('total', 'nome')
+    elif ordenar_por == 'ano_nascimento':
+        if direcao == 'desc':
+            pgs = pgs.order_by('-ano_nascimento_inicio', '-ano_nascimento_fim', 'nome')
+        else:
+            pgs = pgs.order_by('ano_nascimento_inicio', 'ano_nascimento_fim', 'nome')
+    
     return render(request, 'pgs/lista_pgs.html', {
         'pgs': pgs,
         'ano_selecionado': ano,
         'anos_disponiveis': ANOS_DISPONIVEIS,
         'readonly': readonly,
+        'ordenar_por': ordenar_por,
+        'direcao': direcao,
     })
 
 @permission_required('adolescentes.view_pgs_page', raise_exception=True)
@@ -1143,6 +1198,26 @@ def bulk_remove_imperio(request, imperio_id):
     count = Adolescente.objects.filter(id__in=ids, imperio=imperio).update(imperio=None)
     return JsonResponse({'ok': True, 'count': count})
 
+
+@login_required
+@require_http_methods(["POST"])
+def salvar_ordem_pgs(request):
+    """Salvar nova ordem dos PGs após drag-and-drop"""
+    if is_ano_readonly(request):
+        return JsonResponse({'ok': False, 'error': 'Ano somente leitura'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        ordem_ids = data.get('ordem', [])  # Lista de IDs na nova ordem
+        ano = get_ano_selecionado(request)
+        
+        # Atualizar ordem de cada PG
+        for index, pg_id in enumerate(ordem_ids):
+            PequenoGrupo.objects.filter(id=pg_id, ano=ano).update(ordem=index)
+        
+        return JsonResponse({'ok': True, 'message': 'Ordem salva com sucesso'})
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
 
 def exportar_adolescentes_csv(request):
     response = HttpResponse(content_type='text/csv')
