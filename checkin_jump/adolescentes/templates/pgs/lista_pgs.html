@@ -15,25 +15,25 @@
     <div class="d-flex align-items-center gap-3 flex-wrap">
       <span class="text-muted small"><i class="fas fa-sort me-1"></i>Ordenar por:</span>
       <div class="btn-group btn-group-sm" role="group">
-        <a href="?ordenar_por=manual{% if request.GET.ano %}&ano={{ request.GET.ano }}{% endif %}" 
+        <a href="?ordenar_por=manual" 
            class="btn btn-outline-secondary {% if ordenar_por == 'manual' %}active{% endif %}">
           <i class="fas fa-grip-vertical me-1"></i>Manual
         </a>
-        <a href="?ordenar_por=nome&direcao=asc{% if request.GET.ano %}&ano={{ request.GET.ano }}{% endif %}" 
+        <a href="?ordenar_por=nome&direcao=asc" 
            class="btn btn-outline-secondary {% if ordenar_por == 'nome' %}active{% endif %}">
           <i class="fas fa-sort-alpha-{% if ordenar_por == 'nome' and direcao == 'desc' %}down{% else %}up{% endif %} me-1"></i>Nome
         </a>
-        <a href="?ordenar_por=membros&direcao=desc{% if request.GET.ano %}&ano={{ request.GET.ano }}{% endif %}" 
+        <a href="?ordenar_por=membros&direcao=desc" 
            class="btn btn-outline-secondary {% if ordenar_por == 'membros' %}active{% endif %}">
           <i class="fas fa-users me-1"></i>Membros
         </a>
-        <a href="?ordenar_por=ano_nascimento&direcao=asc{% if request.GET.ano %}&ano={{ request.GET.ano }}{% endif %}" 
+        <a href="?ordenar_por=ano_nascimento&direcao=asc" 
            class="btn btn-outline-secondary {% if ordenar_por == 'ano_nascimento' %}active{% endif %}">
           <i class="fas fa-calendar me-1"></i>Ano Nasc.
         </a>
       </div>
       {% if ordenar_por != 'manual' and ordenar_por != 'membros' %}
-      <a href="?ordenar_por={{ ordenar_por }}&direcao={% if direcao == 'asc' %}desc{% else %}asc{% endif %}{% if request.GET.ano %}&ano={{ request.GET.ano }}{% endif %}" 
+      <a href="?ordenar_por={{ ordenar_por }}&direcao={% if direcao == 'asc' %}desc{% else %}asc{% endif %}" 
          class="btn btn-sm btn-outline-secondary">
         <i class="fas fa-sort-amount-{% if direcao == 'asc' %}down{% else %}up{% endif %}"></i>
       </a>

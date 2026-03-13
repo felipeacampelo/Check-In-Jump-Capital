@@ -26,18 +26,7 @@ ANO_ATUAL = 2026
 ANOS_DISPONIVEIS = [2025, 2026]
 
 def get_ano_selecionado(request):
-    """Retorna o ano selecionado via URL ou sessão (padrão: 2026)"""
-    # Priorizar parâmetro URL sobre sessão (NÃO atualiza sessão para permitir abas independentes)
-    ano_url = request.GET.get('ano')
-    if ano_url:
-        try:
-            ano = int(ano_url)
-            if ano in ANOS_DISPONIVEIS:
-                return ano
-        except (ValueError, TypeError):
-            pass
-    
-    # Fallback para sessão
+    """Retorna o ano selecionado da sessão (padrão: 2026)"""
     return request.session.get('ano_selecionado', ANO_ATUAL)
 
 def is_ano_readonly(request):
