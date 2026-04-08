@@ -1214,22 +1214,116 @@ def salvar_ordem_pgs(request):
         return JsonResponse({'ok': False, 'error': str(e)}, status=500)
 
 def exportar_adolescentes_csv(request):
+    # Obter campos selecionados (sempre incluir nome e sobrenome)
+    campos_selecionados = request.GET.getlist('campos')
+    if not campos_selecionados:
+        # Padrão: todos os campos básicos
+        campos_selecionados = ['nome', 'sobrenome', 'data_nascimento', 'genero', 'pg', 'imperio']
+    
+    # Garantir que nome e sobrenome sempre estejam incluídos
+    if 'nome' not in campos_selecionados:
+        campos_selecionados.insert(0, 'nome')
+    if 'sobrenome' not in campos_selecionados:
+        campos_selecionados.insert(1, 'sobrenome')
+    
+    # Mapeamento de campos para cabeçalhos
+    campo_headers = {
+        'nome': 'Nome',
+        'sobrenome': 'Sobrenome',
+        'data_nascimento': 'Data de Nascimento',
+        'genero': 'Sexo',
+        'telefone': 'Telefone',
+        'pg': 'PG',
+        'imperio': 'Império',
+        'nome_responsavel': 'Nome do Responsável',
+        'telefone_responsavel': 'Telefone do Responsável'
+    }
+    
+    # Aplicar filtros (mesma lógica da listagem)
+    ano = get_ano_selecionado(request)
+    adolescentes = Adolescente.objects.filter(ano=ano).select_related('pg', 'imperio')
+    
+    # Filtros
+    busca = request.GET.get('busca', '')
+    pg_id = request.GET.get('pg')
+    genero = request.GET.get('genero')
+    imperio_id = request.GET.get('imperio')
+    presenca_filtro = request.GET.get('presenca')
+    ano_nascimento = request.GET.get('ano_nascimento')
+    
+    if busca:
+        adolescentes = buscar_adolescentes_por_nome(adolescentes, busca)
+    if pg_id:
+        if pg_id == 'sem_pg':
+            adolescentes = adolescentes.filter(pg__isnull=True)
+        else:
+            adolescentes = adolescentes.filter(pg__id=pg_id)
+    if genero:
+        adolescentes = adolescentes.filter(genero=genero)
+    if imperio_id:
+        if imperio_id == 'sem_imperio':
+            adolescentes = adolescentes.filter(imperio__isnull=True)
+        else:
+            adolescentes = adolescentes.filter(imperio__id=imperio_id)
+    if ano_nascimento:
+        try:
+            ano_nasc_int = int(ano_nascimento)
+            adolescentes = adolescentes.filter(data_nascimento__year=ano_nasc_int)
+        except ValueError:
+            pass
+    if presenca_filtro:
+        trinta_dias_atras = date.today() - timedelta(days=30)
+        if presenca_filtro == 'presente_30':
+            adolescentes = adolescentes.filter(
+                presenca__presente=True,
+                presenca__dia__data__gte=trinta_dias_atras,
+            ).distinct()
+        elif presenca_filtro == 'ausente_30':
+            adolescentes = adolescentes.exclude(
+                presenca__presente=True,
+                presenca__dia__data__gte=trinta_dias_atras,
+            ).distinct()
+        elif presenca_filtro == 'nunca':
+            adolescentes = adolescentes.filter(presenca__isnull=True).distinct()
+    
+    # Ordenar por nome
+    adolescentes = adolescentes.order_by('nome', 'sobrenome')
+    
+    # Criar resposta CSV
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="adolescentes.csv"'
-
+    response.write('\ufeff')  # BOM para UTF-8
+    
     writer = csv.writer(response)
-    writer.writerow(['Nome', 'Sobrenome', 'Data de Nascimento', 'Sexo', 'PG', 'Império'])
-
-    for adolescente in Adolescente.objects.select_related('pg', 'imperio').all():
-        writer.writerow([
-            adolescente.nome,
-            adolescente.sobrenome,
-            adolescente.data_nascimento,
-            adolescente.get_genero_display(),
-            adolescente.pg.nome if adolescente.pg else '',
-            adolescente.imperio.nome if adolescente.imperio else ''
-        ])
-
+    
+    # Escrever cabeçalho
+    headers = [campo_headers.get(campo, campo) for campo in campos_selecionados]
+    writer.writerow(headers)
+    
+    # Escrever dados
+    for adolescente in adolescentes:
+        row = []
+        for campo in campos_selecionados:
+            if campo == 'nome':
+                row.append(adolescente.nome)
+            elif campo == 'sobrenome':
+                row.append(adolescente.sobrenome)
+            elif campo == 'data_nascimento':
+                row.append(adolescente.data_nascimento.strftime('%d/%m/%Y'))
+            elif campo == 'genero':
+                row.append(adolescente.get_genero_display())
+            elif campo == 'telefone':
+                row.append(adolescente.telefone or '')
+            elif campo == 'pg':
+                row.append(adolescente.pg.nome if adolescente.pg else '')
+            elif campo == 'imperio':
+                row.append(adolescente.imperio.nome if adolescente.imperio else '')
+            elif campo == 'nome_responsavel':
+                row.append(adolescente.nome_responsavel or '')
+            elif campo == 'telefone_responsavel':
+                row.append(adolescente.telefone_responsavel or '')
+        writer.writerow(row)
+    
     return response
 
 def exportar_presencas_csv(request):

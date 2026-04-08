@@ -404,7 +404,7 @@
   {% if not readonly %}
   <a href="{% url 'criar_adolescente' %}" class="btn btn-primary"><i class="fas fa-plus me-1"></i>Adicionar Adolescente</a>
   {% endif %}
-  <a href="{% url 'exportar_adolescentes_csv' %}?{{ request.GET.urlencode }}" class="btn btn-outline-secondary"><i class="fas fa-download me-1"></i>Exportar CSV</a>
+  <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#modalExportarCSV"><i class="fas fa-download me-1"></i>Exportar CSV</button>
   {% if perms.adolescentes.review_duplicates and not readonly %}
     <button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalDuplicados">
       <i class="fas fa-user-astronaut me-1"></i>Revisar Duplicados
@@ -750,6 +750,97 @@
 {% endif %}
 {% endfor %}
 
+<!-- Modal Exportar CSV -->
+<div class="modal fade" id="modalExportarCSV" tabindex="-1" aria-labelledby="modalExportarCSVLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalExportarCSVLabel"><i class="fas fa-download me-2"></i>Exportar CSV</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form id="formExportarCSV" method="get" action="{% url 'exportar_adolescentes_csv' %}">
+        <div class="modal-body">
+          <p class="text-muted mb-3">Selecione os campos que deseja incluir na exportação:</p>
+          
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="campos" value="nome" id="campo_nome" checked disabled>
+            <label class="form-check-label" for="campo_nome">
+              <strong>Nome</strong> <span class="badge bg-secondary">Obrigatório</span>
+            </label>
+          </div>
+          
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="campos" value="sobrenome" id="campo_sobrenome" checked disabled>
+            <label class="form-check-label" for="campo_sobrenome">
+              <strong>Sobrenome</strong> <span class="badge bg-secondary">Obrigatório</span>
+            </label>
+          </div>
+          
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="campos" value="data_nascimento" id="campo_data_nascimento" checked>
+            <label class="form-check-label" for="campo_data_nascimento">
+              Data de Nascimento
+            </label>
+          </div>
+          
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="campos" value="genero" id="campo_genero" checked>
+            <label class="form-check-label" for="campo_genero">
+              Sexo
+            </label>
+          </div>
+          
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="campos" value="telefone" id="campo_telefone">
+            <label class="form-check-label" for="campo_telefone">
+              Telefone
+            </label>
+          </div>
+          
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="campos" value="pg" id="campo_pg" checked>
+            <label class="form-check-label" for="campo_pg">
+              PG
+            </label>
+          </div>
+          
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="campos" value="imperio" id="campo_imperio" checked>
+            <label class="form-check-label" for="campo_imperio">
+              Império
+            </label>
+          </div>
+          
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="campos" value="nome_responsavel" id="campo_nome_responsavel">
+            <label class="form-check-label" for="campo_nome_responsavel">
+              Nome do Responsável
+            </label>
+          </div>
+          
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="campos" value="telefone_responsavel" id="campo_telefone_responsavel">
+            <label class="form-check-label" for="campo_telefone_responsavel">
+              Telefone do Responsável
+            </label>
+          </div>
+          
+          <hr class="my-3">
+          
+          <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-sm btn-link" id="btnSelecionarTodos">Selecionar Todos</button>
+            <button type="button" class="btn btn-sm btn-link" id="btnDesmarcarTodos">Desmarcar Todos</button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-download me-1"></i>Exportar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Paginação -->
 {% if adolescentes.has_other_pages %}
 <nav aria-label="Navegação de páginas">
@@ -810,6 +901,63 @@
         } else {
           buscaForm.submit();
         }
+      });
+    }
+  });
+</script>
+
+<!-- Script para modal de exportação CSV -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const formExportar = document.getElementById("formExportarCSV");
+    const btnSelecionarTodos = document.getElementById("btnSelecionarTodos");
+    const btnDesmarcarTodos = document.getElementById("btnDesmarcarTodos");
+    
+    // Selecionar todos os campos
+    if (btnSelecionarTodos) {
+      btnSelecionarTodos.addEventListener("click", function () {
+        formExportar.querySelectorAll('input[type="checkbox"]:not([disabled])').forEach(function(checkbox) {
+          checkbox.checked = true;
+        });
+      });
+    }
+    
+    // Desmarcar todos os campos (exceto obrigatórios)
+    if (btnDesmarcarTodos) {
+      btnDesmarcarTodos.addEventListener("click", function () {
+        formExportar.querySelectorAll('input[type="checkbox"]:not([disabled])').forEach(function(checkbox) {
+          checkbox.checked = false;
+        });
+      });
+    }
+    
+    // Adicionar filtros atuais ao formulário de exportação
+    if (formExportar) {
+      formExportar.addEventListener("submit", function(e) {
+        // Adicionar campos obrigatórios (disabled não são enviados)
+        const hiddenNome = document.createElement('input');
+        hiddenNome.type = 'hidden';
+        hiddenNome.name = 'campos';
+        hiddenNome.value = 'nome';
+        formExportar.appendChild(hiddenNome);
+        
+        const hiddenSobrenome = document.createElement('input');
+        hiddenSobrenome.type = 'hidden';
+        hiddenSobrenome.name = 'campos';
+        hiddenSobrenome.value = 'sobrenome';
+        formExportar.appendChild(hiddenSobrenome);
+        
+        // Preservar filtros da URL atual
+        const urlParams = new URLSearchParams(window.location.search);
+        urlParams.forEach(function(value, key) {
+          if (key !== 'page' && key !== 'campos') {
+            const hiddenInput = document.createElement('input');
+            hiddenInput.type = 'hidden';
+            hiddenInput.name = key;
+            hiddenInput.value = value;
+            formExportar.appendChild(hiddenInput);
+          }
+        });
       });
     }
   });
