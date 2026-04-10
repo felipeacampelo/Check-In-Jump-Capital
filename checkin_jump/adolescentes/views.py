@@ -1,7 +1,7 @@
 from datetime import date, datetime, timedelta
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio, ContagemAuditorio, ContagemVisitantes, DuplicadoRejeitado
-from .forms import AdolescenteForm, DiaEventoForm, ContagemAuditorioForm, ContagemVisitantesForm
+from .models import Adolescente, DiaEvento, Presenca, PequenoGrupo, Imperio, ContagemAuditorio, ContagemVisitantes, DuplicadoRejeitado, EventoEspecial, VisitanteEvento
+from .forms import AdolescenteForm, DiaEventoForm, ContagemAuditorioForm, ContagemVisitantesForm, EventoEspecialForm, VisitanteEventoForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.messages import get_messages
@@ -702,6 +702,9 @@ def lista_dias_evento(request):
     except EmptyPage:
         dias = paginator.page(paginator.num_pages)
 
+    # Buscar eventos especiais do ano
+    eventos_especiais = EventoEspecial.objects.filter(ano=ano).order_by('-data')
+    
     return render(request, 'checkin/lista_dias.html', {
         'dias': dias,
         'media_presentes': media_presentes,
@@ -709,6 +712,7 @@ def lista_dias_evento(request):
         'ano_selecionado': ano,
         'anos_disponiveis': ANOS_DISPONIVEIS,
         'readonly': readonly,
+        'eventos_especiais': eventos_especiais,
     })
 
 
@@ -1629,3 +1633,314 @@ def contagem_auditorio(request):
         'titulo_pagina': 'Contagem de Auditório'
     }
     return render(request, 'checkin/contagem_auditorio.html', context)
+
+
+# ========== EVENTOS ESPECIAIS ==========
+
+@login_required
+def lista_eventos_especiais(request):
+    """Lista todos os eventos especiais"""
+    ano = get_ano_selecionado(request)
+    readonly = is_ano_readonly(request)
+    
+    eventos = EventoEspecial.objects.filter(ano=ano).order_by('-data')
+    
+    # Adicionar contagem de visitantes para cada evento
+    eventos_com_stats = []
+    for evento in eventos:
+        eventos_com_stats.append({
+            'evento': evento,
+            'total_visitantes': evento.total_visitantes(),
+            'total_presentes': evento.total_presentes(),
+        })
+    
+    context = {
+        'eventos': eventos_com_stats,
+        'ano_selecionado': ano,
+        'readonly': readonly,
+    }
+    return render(request, 'eventos/lista_eventos.html', context)
+
+
+@login_required
+@permission_required('adolescentes.add_diaevento', raise_exception=True)
+def criar_evento_especial(request):
+    """Criar novo evento especial"""
+    ano = get_ano_selecionado(request)
+    if is_ano_readonly(request):
+        messages.error(request, "Não é possível criar eventos em anos anteriores.")
+        return redirect('lista_eventos_especiais')
+    
+    if request.method == 'POST':
+        form = EventoEspecialForm(request.POST)
+        if form.is_valid():
+            evento = form.save(commit=False)
+            evento.ano = ano
+            evento.criado_por = request.user
+            evento.save()
+            messages.success(request, f"Evento '{evento.nome}' criado com sucesso!")
+            return redirect('checkin_evento_especial', evento_id=evento.id)
+    else:
+        form = EventoEspecialForm()
+    
+    context = {
+        'form': form,
+        'ano_selecionado': ano,
+    }
+    return render(request, 'eventos/criar_evento.html', context)
+
+
+@login_required
+def checkin_evento_especial(request, evento_id):
+    """Check-in de um evento especial"""
+    evento = get_object_or_404(EventoEspecial, pk=evento_id)
+    ano = evento.ano
+    readonly = ano < ANO_ATUAL
+    
+    # Filtros
+    busca = request.GET.get('busca', '')
+    filtro = request.GET.get('filtro', 'todos')
+    
+    visitantes = evento.visitantes.all()
+    
+    if busca:
+        visitantes = visitantes.filter(
+            Q(nome__icontains=busca) | Q(sobrenome__icontains=busca)
+        )
+    
+    if filtro == 'presentes':
+        visitantes = visitantes.filter(presente=True)
+    elif filtro == 'ausentes':
+        visitantes = visitantes.filter(presente=False)
+    elif filtro == 'nao_migrados':
+        visitantes = visitantes.filter(migrado=False)
+    
+    visitantes = visitantes.order_by('nome', 'sobrenome')
+    
+    # Paginação
+    paginator = Paginator(visitantes, 30)
+    page = request.GET.get('page')
+    try:
+        visitantes_paginados = paginator.page(page)
+    except PageNotAnInteger:
+        visitantes_paginados = paginator.page(1)
+    except EmptyPage:
+        visitantes_paginados = paginator.page(paginator.num_pages)
+    
+    context = {
+        'evento': evento,
+        'visitantes': visitantes_paginados,
+        'busca': busca,
+        'filtro': filtro,
+        'readonly': readonly,
+        'ano_selecionado': ano,
+        'total_visitantes': evento.total_visitantes(),
+        'total_presentes': evento.total_presentes(),
+    }
+    return render(request, 'eventos/checkin_evento.html', context)
+
+
+@login_required
+def cadastrar_visitante_evento(request, evento_id):
+    """Cadastrar novo visitante para um evento especial"""
+    evento = get_object_or_404(EventoEspecial, pk=evento_id)
+    
+    if is_ano_readonly(request):
+        messages.error(request, "Não é possível cadastrar visitantes em eventos de anos anteriores.")
+        return redirect('checkin_evento_especial', evento_id=evento.id)
+    
+    if request.method == 'POST':
+        form = VisitanteEventoForm(request.POST)
+        if form.is_valid():
+            visitante = form.save(commit=False)
+            visitante.evento = evento
+            visitante.save()
+            messages.success(request, f"Visitante {visitante.nome_completo()} cadastrado com sucesso!")
+            return redirect('checkin_evento_especial', evento_id=evento.id)
+    else:
+        form = VisitanteEventoForm(initial={'presente': True})
+    
+    context = {
+        'form': form,
+        'evento': evento,
+    }
+    return render(request, 'eventos/cadastrar_visitante.html', context)
+
+
+@login_required
+@permission_required('adolescentes.change_adolescente', raise_exception=True)
+def editar_visitante_evento(request, visitante_id):
+    """Editar visitante de evento"""
+    visitante = get_object_or_404(VisitanteEvento, pk=visitante_id)
+    evento = visitante.evento
+    
+    if is_ano_readonly(request):
+        messages.error(request, "Não é possível editar visitantes de eventos de anos anteriores.")
+        return redirect('checkin_evento_especial', evento_id=evento.id)
+    
+    if request.method == 'POST':
+        form = VisitanteEventoForm(request.POST, instance=visitante)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Visitante {visitante.nome_completo()} atualizado!")
+            return redirect('checkin_evento_especial', evento_id=evento.id)
+    else:
+        form = VisitanteEventoForm(instance=visitante)
+    
+    context = {
+        'form': form,
+        'visitante': visitante,
+        'evento': evento,
+    }
+    return render(request, 'eventos/editar_visitante.html', context)
+
+
+@login_required
+@permission_required('adolescentes.delete_adolescente', raise_exception=True)
+def excluir_visitante_evento(request, visitante_id):
+    """Excluir visitante de evento"""
+    visitante = get_object_or_404(VisitanteEvento, pk=visitante_id)
+    evento = visitante.evento
+    
+    if is_ano_readonly(request):
+        messages.error(request, "Não é possível excluir visitantes de eventos de anos anteriores.")
+        return redirect('checkin_evento_especial', evento_id=evento.id)
+    
+    if request.method == 'POST':
+        nome = visitante.nome_completo()
+        visitante.delete()
+        messages.success(request, f"Visitante {nome} excluído com sucesso!")
+    
+    return redirect('checkin_evento_especial', evento_id=evento.id)
+
+
+@login_required
+@require_http_methods(["POST"])
+def atualizar_presenca_visitante(request):
+    """Atualizar presença de visitante via AJAX"""
+    try:
+        visitante_id = request.POST.get('visitante_id')
+        presente = request.POST.get('presente') == 'true'
+        
+        visitante = get_object_or_404(VisitanteEvento, pk=visitante_id)
+        
+        if is_ano_readonly(request):
+            return JsonResponse({'ok': False, 'error': 'Ano somente leitura'}, status=403)
+        
+        visitante.presente = presente
+        visitante.save()
+        
+        return JsonResponse({'ok': True})
+    except Exception as e:
+        return JsonResponse({'ok': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@permission_required('adolescentes.add_adolescente', raise_exception=True)
+def migrar_visitantes(request, evento_id):
+    """Tela para migrar visitantes para a tabela principal de Adolescentes"""
+    evento = get_object_or_404(EventoEspecial, pk=evento_id)
+    ano = get_ano_selecionado(request)
+    
+    if is_ano_readonly(request):
+        messages.error(request, "Não é possível migrar visitantes em anos anteriores.")
+        return redirect('checkin_evento_especial', evento_id=evento.id)
+    
+    # Visitantes não migrados
+    visitantes_disponiveis = evento.visitantes.filter(migrado=False).order_by('nome', 'sobrenome')
+    
+    if request.method == 'POST':
+        visitantes_ids = request.POST.getlist('visitantes')
+        
+        if not visitantes_ids:
+            messages.warning(request, "Selecione pelo menos um visitante para migrar.")
+            return redirect('migrar_visitantes', evento_id=evento.id)
+        
+        migrados = 0
+        with transaction.atomic():
+            for visitante_id in visitantes_ids:
+                visitante = VisitanteEvento.objects.get(id=visitante_id, evento=evento, migrado=False)
+                
+                # Criar adolescente
+                adolescente = Adolescente.objects.create(
+                    nome=visitante.nome,
+                    sobrenome=visitante.sobrenome,
+                    data_nascimento=visitante.data_nascimento,
+                    telefone=visitante.telefone,
+                    ano=ano
+                )
+                
+                # Marcar visitante como migrado
+                visitante.migrado = True
+                visitante.adolescente_migrado = adolescente
+                visitante.save()
+                
+                migrados += 1
+        
+        messages.success(request, f"{migrados} visitante(s) migrado(s) para a tabela principal com sucesso!")
+        return redirect('checkin_evento_especial', evento_id=evento.id)
+    
+    context = {
+        'evento': evento,
+        'visitantes': visitantes_disponiveis,
+        'total_disponiveis': visitantes_disponiveis.count(),
+    }
+    return render(request, 'eventos/migrar_visitantes.html', context)
+
+
+@login_required
+def estatisticas_convites(request, evento_id):
+    """Estatísticas de quem mais convidou visitantes para o evento"""
+    evento = get_object_or_404(EventoEspecial, pk=evento_id)
+    
+    # Agrupar por quem convidou e contar
+    from django.db.models import Count
+    
+    estatisticas = (
+        VisitanteEvento.objects
+        .filter(evento=evento, convidado_por__isnull=False)
+        .exclude(convidado_por='')
+        .values('convidado_por')
+        .annotate(
+            total_convidados=Count('id'),
+            total_presentes=Count('id', filter=Q(presente=True)),
+            total_migrados=Count('id', filter=Q(migrado=True))
+        )
+        .order_by('-total_convidados')
+    )
+    
+    # Calcular totais gerais
+    total_visitantes = evento.visitantes.count()
+    total_com_convite = evento.visitantes.filter(convidado_por__isnull=False).exclude(convidado_por='').count()
+    total_sem_convite = total_visitantes - total_com_convite
+    
+    # Exportar CSV se solicitado
+    if request.GET.get('export') == 'csv':
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="estatisticas_convites_{evento.nome.replace(" ", "_")}.csv"'
+        response.write('\ufeff')  # BOM para UTF-8
+        
+        writer = csv.writer(response)
+        writer.writerow(['Posição', 'Nome', 'Total Convidados', 'Presentes', 'Migrados', 'Taxa Presença (%)'])
+        
+        for idx, stat in enumerate(estatisticas, 1):
+            taxa_presenca = (stat['total_presentes'] / stat['total_convidados'] * 100) if stat['total_convidados'] > 0 else 0
+            writer.writerow([
+                idx,
+                stat['convidado_por'],
+                stat['total_convidados'],
+                stat['total_presentes'],
+                stat['total_migrados'],
+                f"{taxa_presenca:.1f}"
+            ])
+        
+        return response
+    
+    context = {
+        'evento': evento,
+        'estatisticas': estatisticas,
+        'total_visitantes': total_visitantes,
+        'total_com_convite': total_com_convite,
+        'total_sem_convite': total_sem_convite,
+    }
+    return render(request, 'eventos/estatisticas_convites.html', context)

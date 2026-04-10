@@ -1,0 +1,201 @@
+{% extends 'adolescentes/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>
+        <i class="fas fa-star text-warning me-2"></i>{{ evento.nome }}
+        <span class="badge bg-warning text-dark">Evento Especial</span>
+      </h2>
+      <p class="text-muted mb-0">{{ evento.data|date:"d/m/Y" }}</p>
+      {% if evento.descricao %}
+        <p class="text-muted">{{ evento.descricao }}</p>
+      {% endif %}
+    </div>
+    <div class="text-end">
+      <h4><span class="badge bg-info">{{ total_presentes }} / {{ total_visitantes }}</span></h4>
+      <small class="text-muted">Presentes / Total</small>
+    </div>
+  </div>
+
+  <!-- Botões de ação -->
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <a href="{% url 'pagina_checkin' %}" class="btn btn-secondary">
+      <i class="fas fa-arrow-left me-1"></i>Voltar
+    </a>
+    {% if not readonly %}
+      <a href="{% url 'cadastrar_visitante_evento' evento.id %}" class="btn btn-primary">
+        <i class="fas fa-user-plus me-1"></i>Cadastrar Visitante
+      </a>
+      <a href="{% url 'migrar_visitantes' evento.id %}" class="btn btn-success">
+        <i class="fas fa-exchange-alt me-1"></i>Migrar para Cadastro Principal
+      </a>
+    {% endif %}
+    <a href="{% url 'estatisticas_convites' evento.id %}" class="btn btn-warning">
+      <i class="fas fa-chart-bar me-1"></i>Estatísticas de Convites
+    </a>
+  </div>
+
+  <!-- Filtros -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <form method="get" class="row g-3">
+        <div class="col-md-6">
+          <input type="text" name="busca" class="form-control" placeholder="Buscar por nome..." value="{{ busca }}">
+        </div>
+        <div class="col-md-4">
+          <select name="filtro" class="form-select">
+            <option value="todos" {% if filtro == 'todos' %}selected{% endif %}>Todos</option>
+            <option value="presentes" {% if filtro == 'presentes' %}selected{% endif %}>Presentes</option>
+            <option value="ausentes" {% if filtro == 'ausentes' %}selected{% endif %}>Ausentes</option>
+            <option value="nao_migrados" {% if filtro == 'nao_migrados' %}selected{% endif %}>Não Migrados</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Lista de visitantes -->
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Data Nascimento</th>
+          <th>Telefone</th>
+          <th>Convidado por</th>
+          <th>Presente</th>
+          <th>Status</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for visitante in visitantes %}
+        <tr>
+          <td><strong>{{ visitante.nome_completo }}</strong></td>
+          <td>{{ visitante.data_nascimento|date:"d/m/Y" }}</td>
+          <td>{{ visitante.telefone|default:"-" }}</td>
+          <td>{{ visitante.convidado_por|default:"-" }}</td>
+          <td>
+            {% if not readonly %}
+              <input type="checkbox" class="form-check-input presenca-checkbox" 
+                     data-visitante-id="{{ visitante.id }}" 
+                     {% if visitante.presente %}checked{% endif %}>
+            {% else %}
+              {% if visitante.presente %}
+                <i class="fas fa-check text-success"></i>
+              {% else %}
+                <i class="fas fa-times text-danger"></i>
+              {% endif %}
+            {% endif %}
+          </td>
+          <td>
+            {% if visitante.migrado %}
+              <span class="badge bg-success">Migrado</span>
+            {% else %}
+              <span class="badge bg-secondary">Visitante</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if not readonly and perms.adolescentes.change_adolescente %}
+              <a href="{% url 'editar_visitante_evento' visitante.id %}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-edit"></i>
+              </a>
+            {% endif %}
+            {% if not readonly and perms.adolescentes.delete_adolescente %}
+              <button type="button" class="btn btn-sm btn-outline-danger" 
+                      data-bs-toggle="modal" data-bs-target="#modalExcluir{{ visitante.id }}">
+                <i class="fas fa-trash"></i>
+              </button>
+            {% endif %}
+          </td>
+        </tr>
+
+        <!-- Modal Excluir -->
+        {% if not readonly and perms.adolescentes.delete_adolescente %}
+        <div class="modal fade" id="modalExcluir{{ visitante.id }}" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                Tem certeza que deseja excluir <strong>{{ visitante.nome_completo }}</strong>?
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form method="post" action="{% url 'excluir_visitante_evento' visitante.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center text-muted">Nenhum visitante cadastrado</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginação -->
+  {% if visitantes.has_other_pages %}
+  <nav>
+    <ul class="pagination justify-content-center">
+      {% if visitantes.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page=1&busca={{ busca }}&filtro={{ filtro }}">«</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ visitantes.previous_page_number }}&busca={{ busca }}&filtro={{ filtro }}">‹</a></li>
+      {% endif %}
+      
+      <li class="page-item active"><span class="page-link">{{ visitantes.number }}</span></li>
+      
+      {% if visitantes.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ visitantes.next_page_number }}&busca={{ busca }}&filtro={{ filtro }}">›</a></li>
+        <li class="page-item"><a class="page-link" href="?page={{ visitantes.paginator.num_pages }}&busca={{ busca }}&filtro={{ filtro }}">»</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Atualizar presença via AJAX
+  document.querySelectorAll('.presenca-checkbox').forEach(function(checkbox) {
+    checkbox.addEventListener('change', function() {
+      const visitanteId = this.dataset.visitanteId;
+      const presente = this.checked;
+      
+      fetch('{% url "atualizar_presenca_visitante" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `visitante_id=${visitanteId}&presente=${presente}`
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (!data.ok) {
+          alert('Erro ao atualizar presença');
+          checkbox.checked = !presente;
+        }
+      })
+      .catch(error => {
+        alert('Erro de conexão');
+        checkbox.checked = !presente;
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

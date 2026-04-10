@@ -58,5 +58,16 @@ urlpatterns = [
     path('adolescentes/duplicados/sugestoes/', views.sugestoes_duplicados, name='sugestoes_duplicados'),
     path('adolescentes/duplicados/merge/', views.merge_duplicados, name='merge_duplicados'),
     path('adolescentes/duplicados/rejeitar/', views.rejeitar_duplicado, name='rejeitar_duplicado'),
+    
+    # Eventos Especiais
+    path('eventos/', views.lista_eventos_especiais, name='lista_eventos_especiais'),
+    path('eventos/novo/', views.criar_evento_especial, name='criar_evento_especial'),
+    path('eventos/<int:evento_id>/', views.checkin_evento_especial, name='checkin_evento_especial'),
+    path('eventos/<int:evento_id>/visitante/novo/', views.cadastrar_visitante_evento, name='cadastrar_visitante_evento'),
+    path('eventos/visitante/<int:visitante_id>/editar/', views.editar_visitante_evento, name='editar_visitante_evento'),
+    path('eventos/visitante/<int:visitante_id>/excluir/', views.excluir_visitante_evento, name='excluir_visitante_evento'),
+    path('eventos/visitante/atualizar-presenca/', views.atualizar_presenca_visitante, name='atualizar_presenca_visitante'),
+    path('eventos/<int:evento_id>/migrar/', views.migrar_visitantes, name='migrar_visitantes'),
+    path('eventos/<int:evento_id>/estatisticas/', views.estatisticas_convites, name='estatisticas_convites'),
 ]
 

@@ -1,0 +1,130 @@
+{% extends 'adolescentes/base.html' %}
+
+{% block content %}
+<div class="container">
+  <h2 class="mb-4">
+    <i class="fas fa-exchange-alt me-2"></i>Migrar Visitantes para Cadastro Principal
+  </h2>
+  <p class="text-muted">Evento: <strong>{{ evento.nome }}</strong> - {{ evento.data|date:"d/m/Y" }}</p>
+  
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle me-2"></i>
+    Selecione os visitantes que deseja mover para a tabela principal de Adolescentes. 
+    Após a migração, eles aparecerão na lista de adolescentes e poderão fazer check-in nos eventos regulares.
+  </div>
+
+  {% if total_disponiveis > 0 %}
+  <div class="card">
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+          <button type="button" class="btn btn-sm btn-outline-primary" id="btnSelecionarTodos">
+            Selecionar Todos
+          </button>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="btnDesmarcarTodos">
+            Desmarcar Todos
+          </button>
+        </div>
+        
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th width="50">
+                  <input type="checkbox" class="form-check-input" id="checkboxTodos">
+                </th>
+                <th>Nome</th>
+                <th>Data Nascimento</th>
+                <th>Telefone</th>
+                <th>Convidado por</th>
+                <th>Presente</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for visitante in visitantes %}
+              <tr>
+                <td>
+                  <input type="checkbox" class="form-check-input visitante-checkbox" 
+                         name="visitantes" value="{{ visitante.id }}">
+                </td>
+                <td><strong>{{ visitante.nome_completo }}</strong></td>
+                <td>{{ visitante.data_nascimento|date:"d/m/Y" }}</td>
+                <td>{{ visitante.telefone|default:"-" }}</td>
+                <td>{{ visitante.convidado_por|default:"-" }}</td>
+                <td>
+                  {% if visitante.presente %}
+                    <i class="fas fa-check text-success"></i>
+                  {% else %}
+                    <i class="fas fa-times text-danger"></i>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="d-flex justify-content-between mt-3">
+          <a href="{% url 'checkin_evento_especial' evento.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Voltar
+          </a>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-exchange-alt me-1"></i>Migrar Selecionados
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    Não há visitantes disponíveis para migração. Todos já foram migrados ou não há visitantes cadastrados.
+  </div>
+  <a href="{% url 'checkin_evento_especial' evento.id %}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left me-1"></i>Voltar
+  </a>
+  {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const checkboxTodos = document.getElementById('checkboxTodos');
+  const checkboxes = document.querySelectorAll('.visitante-checkbox');
+  const btnSelecionarTodos = document.getElementById('btnSelecionarTodos');
+  const btnDesmarcarTodos = document.getElementById('btnDesmarcarTodos');
+  
+  // Checkbox "todos"
+  if (checkboxTodos) {
+    checkboxTodos.addEventListener('change', function() {
+      checkboxes.forEach(cb => cb.checked = this.checked);
+    });
+  }
+  
+  // Botão selecionar todos
+  if (btnSelecionarTodos) {
+    btnSelecionarTodos.addEventListener('click', function() {
+      checkboxes.forEach(cb => cb.checked = true);
+      if (checkboxTodos) checkboxTodos.checked = true;
+    });
+  }
+  
+  // Botão desmarcar todos
+  if (btnDesmarcarTodos) {
+    btnDesmarcarTodos.addEventListener('click', function() {
+      checkboxes.forEach(cb => cb.checked = false);
+      if (checkboxTodos) checkboxTodos.checked = false;
+    });
+  }
+  
+  // Atualizar checkbox "todos" quando checkboxes individuais mudam
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', function() {
+      const todosChecked = Array.from(checkboxes).every(c => c.checked);
+      if (checkboxTodos) checkboxTodos.checked = todosChecked;
+    });
+  });
+});
+</script>
+{% endblock %}

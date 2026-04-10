@@ -109,15 +109,11 @@ if DATABASE_URL:
         )
     }
 else:
-    # Desenvolvimento local
+    # Desenvolvimento local - usar SQLite
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'checkin_jump',
-            'USER': 'felipecampelo',
-            'PASSWORD': '',
-            'HOST': 'localhost',
-            'PORT': '5432',
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 

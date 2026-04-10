@@ -151,3 +151,58 @@ class ContagemVisitantes(models.Model):
 
     def __str__(self):
         return f"{self.dia} - {self.quantidade_visitantes} visitantes (por {self.usuario_registro.username})"
+
+
+class EventoEspecial(models.Model):
+    nome = models.CharField(max_length=200, help_text="Nome do evento especial (ex: Conferência Jump, Retiro de Jovens)")
+    data = models.DateField(help_text="Data do evento")
+    ano = models.PositiveIntegerField(default=2026, db_index=True)
+    descricao = models.TextField(blank=True, null=True, help_text="Descrição opcional do evento")
+    criado_em = models.DateTimeField(auto_now_add=True)
+    criado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        unique_together = [('nome', 'data', 'ano')]
+        ordering = ['-data']
+        verbose_name = "Evento Especial"
+        verbose_name_plural = "Eventos Especiais"
+
+    def __str__(self):
+        return f"{self.nome} - {self.data.strftime('%d/%m/%Y')}"
+    
+    def total_visitantes(self):
+        """Retorna o total de visitantes cadastrados para este evento"""
+        return self.visitantes.count()
+    
+    def total_presentes(self):
+        """Retorna o total de visitantes presentes no evento"""
+        return self.visitantes.filter(presente=True).count()
+
+
+class VisitanteEvento(models.Model):
+    evento = models.ForeignKey(EventoEspecial, on_delete=models.CASCADE, related_name='visitantes')
+    nome = models.CharField(max_length=100)
+    sobrenome = models.CharField(max_length=100)
+    data_nascimento = models.DateField()
+    telefone = models.CharField(max_length=20, blank=True, null=True)
+    convidado_por = models.CharField(max_length=200, blank=True, null=True, help_text="Quem convidou este visitante")
+    presente = models.BooleanField(default=True, help_text="Marcou presença no evento")
+    migrado = models.BooleanField(default=False, help_text="Se já foi movido para a tabela de Adolescentes")
+    adolescente_migrado = models.ForeignKey(Adolescente, on_delete=models.SET_NULL, null=True, blank=True, help_text="Adolescente criado após migração")
+    criado_em = models.DateTimeField(auto_now_add=True)
+    observacoes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['nome', 'sobrenome']
+        verbose_name = "Visitante de Evento"
+        verbose_name_plural = "Visitantes de Eventos"
+        indexes = [
+            models.Index(fields=['evento', 'presente']),
+            models.Index(fields=['migrado']),
+        ]
+
+    def __str__(self):
+        return f"{self.nome} {self.sobrenome} - {self.evento.nome}"
+    
+    def nome_completo(self):
+        return f"{self.nome} {self.sobrenome}"

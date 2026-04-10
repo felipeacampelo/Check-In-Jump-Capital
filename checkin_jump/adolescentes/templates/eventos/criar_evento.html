@@ -1,0 +1,50 @@
+{% extends 'adolescentes/base.html' %}
+
+{% block content %}
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <h2 class="mb-4"><i class="fas fa-star text-warning me-2"></i>Criar Evento Especial</h2>
+      
+      <div class="card">
+        <div class="card-body">
+          <form method="post">
+            {% csrf_token %}
+            
+            <div class="mb-3">
+              {{ form.nome.label_tag }}
+              {{ form.nome }}
+              {% if form.nome.errors %}
+                <div class="text-danger">{{ form.nome.errors }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="mb-3">
+              {{ form.data.label_tag }}
+              {{ form.data }}
+              {% if form.data.errors %}
+                <div class="text-danger">{{ form.data.errors }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="mb-3">
+              {{ form.descricao.label_tag }}
+              {{ form.descricao }}
+              {% if form.descricao.errors %}
+                <div class="text-danger">{{ form.descricao.errors }}</div>
+              {% endif %}
+            </div>
+            
+            <div class="d-flex justify-content-between">
+              <a href="{% url 'pagina_checkin' %}" class="btn btn-secondary">Cancelar</a>
+              <button type="submit" class="btn btn-warning">
+                <i class="fas fa-star me-1"></i>Criar Evento
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Adolescente, DiaEvento, ContagemAuditorio, ContagemVisitantes
+from .models import Adolescente, DiaEvento, ContagemAuditorio, ContagemVisitantes, EventoEspecial, VisitanteEvento
 from django.core.exceptions import ValidationError
 from datetime import datetime, date
 
@@ -153,3 +153,86 @@ class ContagemVisitantesForm(forms.ModelForm):
         if quantidade <= 0:
             raise forms.ValidationError("A quantidade deve ser maior que zero.")
         return quantidade
+
+
+class EventoEspecialForm(forms.ModelForm):
+    class Meta:
+        model = EventoEspecial
+        fields = ['nome', 'data', 'descricao']
+        widgets = {
+            'nome': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Ex: Conferência Jump 2026'
+            }),
+            'data': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-control'
+            }),
+            'descricao': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Descrição opcional do evento'
+            })
+        }
+        labels = {
+            'nome': 'Nome do Evento',
+            'data': 'Data',
+            'descricao': 'Descrição'
+        }
+
+    def clean_data(self):
+        data = self.cleaned_data.get('data')
+        if data and data < datetime.now().date():
+            raise ValidationError("Não é possível criar evento com data no passado.")
+        return data
+
+
+class VisitanteEventoForm(forms.ModelForm):
+    class Meta:
+        model = VisitanteEvento
+        fields = ['nome', 'sobrenome', 'data_nascimento', 'telefone', 'convidado_por', 'presente', 'observacoes']
+        widgets = {
+            'nome': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nome'
+            }),
+            'sobrenome': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Sobrenome'
+            }),
+            'data_nascimento': forms.TextInput(attrs={
+                'class': 'form-control mascara-data',
+                'placeholder': 'dd/mm/aaaa'
+            }),
+            'telefone': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': '(00) 00000-0000'
+            }),
+            'convidado_por': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nome de quem convidou'
+            }),
+            'presente': forms.CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'observacoes': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 2,
+                'placeholder': 'Observações opcionais'
+            })
+        }
+        labels = {
+            'nome': 'Nome',
+            'sobrenome': 'Sobrenome',
+            'data_nascimento': 'Data de Nascimento',
+            'telefone': 'Telefone',
+            'convidado_por': 'Convidado por',
+            'presente': 'Presente no evento',
+            'observacoes': 'Observações'
+        }
+
+    def clean_data_nascimento(self):
+        data_nascimento = self.cleaned_data.get('data_nascimento')
+        if data_nascimento and data_nascimento > datetime.now().date():
+            raise ValidationError("A data de nascimento não pode ser no futuro.")
+        return data_nascimento
