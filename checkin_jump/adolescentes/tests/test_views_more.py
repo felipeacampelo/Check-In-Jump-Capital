@@ -1,3 +1,6 @@
+import csv
+from io import StringIO
+
 import json
 import pytest
 from django.urls import reverse
@@ -10,6 +13,8 @@ from adolescentes.models import (
     Imperio,
     DiaEvento,
     Presenca,
+    EventoEspecial,
+    VisitanteEvento,
 )
 
 
@@ -144,3 +149,56 @@ def test_checkin_dia_contagens(auth_client):
     # Contagem visitantes válida
     r3 = auth_client.post(url, {"contagem_visitantes": "1", "quantidade_visitantes": "7"})
     assert r3.status_code in (302, 200)
+
+
+@pytest.mark.django_db
+def test_exportar_visitantes_evento_csv_respeita_filtros(auth_client):
+    evento = EventoEspecial.objects.create(
+        nome="Noite Especial",
+        data=timezone.now().date(),
+        ano=2026,
+    )
+    VisitanteEvento.objects.create(
+        evento=evento,
+        nome="Ana",
+        sobrenome="Silva",
+        data_nascimento="2010-01-01",
+        telefone="1111-1111",
+        convidado_por="Maria",
+        presente=True,
+        migrado=False,
+        observacoes="Primeira visita",
+    )
+    VisitanteEvento.objects.create(
+        evento=evento,
+        nome="Bruno",
+        sobrenome="Souza",
+        data_nascimento="2011-02-02",
+        telefone="2222-2222",
+        convidado_por="Joao",
+        presente=False,
+        migrado=True,
+        observacoes="",
+    )
+
+    url = reverse("exportar_visitantes_evento_csv", args=[evento.id])
+    response = auth_client.get(url, {"filtro": "presentes"})
+
+    assert response.status_code == 200
+    assert response["Content-Type"].startswith("text/csv")
+
+    content = response.content.decode("utf-8-sig")
+    rows = list(csv.reader(StringIO(content)))
+    assert rows[0] == [
+        "Nome",
+        "Sobrenome",
+        "Data de Nascimento",
+        "Telefone",
+        "Convidado por",
+        "Presente",
+        "Migrado",
+        "Observações",
+    ]
+    assert len(rows) == 2
+    assert rows[1][0:2] == ["Ana", "Silva"]
+    assert rows[1][5:] == ["Sim", "Não", "Primeira visita"]

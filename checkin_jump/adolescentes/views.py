@@ -12,6 +12,7 @@ from django.views.decorators.http import require_http_methods
 from django.db.models import Count, Q, Avg, F, Case, When, Value
 from django.db.models import Prefetch
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils.text import slugify
 import csv
 from django.http import HttpResponse
 
@@ -1738,6 +1739,62 @@ def checkin_evento_especial(request, evento_id):
         'total_presentes': evento.total_presentes(),
     }
     return render(request, 'eventos/checkin_evento.html', context)
+
+
+@login_required
+def exportar_visitantes_evento_csv(request, evento_id):
+    """Exporta os visitantes de um evento especial em CSV."""
+    evento = get_object_or_404(EventoEspecial, pk=evento_id)
+
+    visitantes = evento.visitantes.all()
+    busca = request.GET.get('busca', '')
+    filtro = request.GET.get('filtro', 'todos')
+
+    if busca:
+        visitantes = visitantes.filter(
+            Q(nome__icontains=busca) | Q(sobrenome__icontains=busca)
+        )
+
+    if filtro == 'presentes':
+        visitantes = visitantes.filter(presente=True)
+    elif filtro == 'ausentes':
+        visitantes = visitantes.filter(presente=False)
+    elif filtro == 'nao_migrados':
+        visitantes = visitantes.filter(migrado=False)
+
+    visitantes = visitantes.order_by('nome', 'sobrenome')
+
+    nome_evento = slugify(evento.nome) or 'evento-especial'
+    data_evento = evento.data.strftime('%d_%m_%Y')
+    response = HttpResponse(content_type='text/csv; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="visitantes_{nome_evento}_{data_evento}.csv"'
+    response.write('\ufeff')
+
+    writer = csv.writer(response)
+    writer.writerow([
+        'Nome',
+        'Sobrenome',
+        'Data de Nascimento',
+        'Telefone',
+        'Convidado por',
+        'Presente',
+        'Migrado',
+        'Observações',
+    ])
+
+    for visitante in visitantes:
+        writer.writerow([
+            visitante.nome,
+            visitante.sobrenome,
+            visitante.data_nascimento.strftime('%Y-%m-%d') if visitante.data_nascimento else '',
+            visitante.telefone or '',
+            visitante.convidado_por or '',
+            'Sim' if visitante.presente else 'Não',
+            'Sim' if visitante.migrado else 'Não',
+            visitante.observacoes or '',
+        ])
+
+    return response
 
 
 @login_required
