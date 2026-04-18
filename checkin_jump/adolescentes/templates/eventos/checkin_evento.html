@@ -171,6 +171,11 @@
 </div>
 
 <script>
+function getCsrfToken() {
+  const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   // Atualizar presença via AJAX
   document.querySelectorAll('.presenca-checkbox').forEach(function(checkbox) {
@@ -182,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          'X-CSRFToken': '{{ csrf_token }}'
+          'X-CSRFToken': getCsrfToken()
         },
         body: `visitante_id=${visitanteId}&presente=${presente}`
       })

@@ -78,6 +78,11 @@
 {% if ordenar_por == 'manual' and not readonly %}
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
+function getCsrfToken() {
+  const match = document.cookie.match(/(?:^|; )csrftoken=([^;]+)/);
+  return match ? decodeURIComponent(match[1]) : '';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   const lista = document.getElementById('lista-pgs');
   if (lista && lista.children.length > 1) {
@@ -98,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
+            'X-CSRFToken': getCsrfToken()
           },
           body: JSON.stringify({ ordem: ordem })
         })

@@ -126,6 +126,7 @@ def trocar_ano(request, ano):
     return redirect(next_url)
 
 @login_required
+@ensure_csrf_cookie
 def listar_adolescentes(request):
     busca = request.GET.get('busca', '')
     pg_id = request.GET.get('pg')
@@ -744,6 +745,7 @@ def adicionar_dia_evento(request):
     return render(request, 'checkin/adicionar_dia.html', {'form': form})
 
 @login_required
+@ensure_csrf_cookie
 def checkin_dia(request, dia_id):
     dia = get_object_or_404(DiaEvento, pk=dia_id)
     ano = dia.ano  # Usar o ano do evento
@@ -1025,6 +1027,7 @@ def adicionar_pg(request):
 
 @permission_required('adolescentes.view_pgs_page', raise_exception=True)
 @login_required
+@ensure_csrf_cookie
 def lista_pgs(request):
     ano = get_ano_selecionado(request)
     readonly = is_ano_readonly(request)
@@ -1066,6 +1069,7 @@ def lista_pgs(request):
 
 @permission_required('adolescentes.view_pgs_page', raise_exception=True)
 @login_required
+@ensure_csrf_cookie
 def detalhes_pg(request, pg_id):
     ano = get_ano_selecionado(request)
     readonly = is_ano_readonly(request)
@@ -1121,6 +1125,7 @@ def bulk_remove_pg(request, pg_id):
 
 @permission_required('adolescentes.view_pgs_page', raise_exception=True)
 @login_required
+@ensure_csrf_cookie
 def lista_imperios(request):
     ano = get_ano_selecionado(request)
     readonly = is_ano_readonly(request)
@@ -1152,6 +1157,7 @@ def adicionar_imperio(request):
 
 @permission_required('adolescentes.view_pgs_page', raise_exception=True)
 @login_required
+@ensure_csrf_cookie
 def detalhes_imperio(request, imperio_id):
     ano = get_ano_selecionado(request)
     readonly = is_ano_readonly(request)
@@ -1639,6 +1645,7 @@ def contagem_auditorio(request):
 # ========== EVENTOS ESPECIAIS ==========
 
 @login_required
+@ensure_csrf_cookie
 def lista_eventos_especiais(request):
     """Lista todos os eventos especiais"""
     ano = get_ano_selecionado(request)
@@ -1692,6 +1699,7 @@ def criar_evento_especial(request):
 
 
 @login_required
+@ensure_csrf_cookie
 def checkin_evento_especial(request, evento_id):
     """Check-in de um evento especial"""
     evento = get_object_or_404(EventoEspecial, pk=evento_id)

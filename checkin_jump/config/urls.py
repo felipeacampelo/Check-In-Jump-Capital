@@ -8,6 +8,11 @@ from django.conf import settings
 
 from django.conf.urls.static import static
 
+from django.views.generic import RedirectView
+
+
+ICON_URL = settings.STATIC_URL + 'adolescentes/img/favicon.ico'
+APPLE_ICON_URL = settings.STATIC_URL + 'adolescentes/img/apple-touch-icon.png'
 
 
 urlpatterns = [
@@ -15,6 +20,12 @@ urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('', include('adolescentes.urls')),
+
+    path('favicon.ico', RedirectView.as_view(url=ICON_URL, permanent=False)),
+    path('apple-touch-icon.png', RedirectView.as_view(url=APPLE_ICON_URL, permanent=False)),
+    path('apple-touch-icon-precomposed.png', RedirectView.as_view(url=APPLE_ICON_URL, permanent=False)),
+    path('apple-touch-icon-120x120.png', RedirectView.as_view(url=APPLE_ICON_URL, permanent=False)),
+    path('apple-touch-icon-120x120-precomposed.png', RedirectView.as_view(url=APPLE_ICON_URL, permanent=False)),
 
     # Links para definir senha via token (usados pelos links gerados no admin)
 
