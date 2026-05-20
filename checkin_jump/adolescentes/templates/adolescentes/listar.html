@@ -791,9 +791,9 @@
           </div>
 
           <div class="form-check mb-2">
-            <input class="form-check-input" type="checkbox" name="campos" value="frequencia" id="campo_frequencia">
-            <label class="form-check-label" for="campo_frequencia">
-              Frequência
+            <input class="form-check-input" type="checkbox" name="campos" value="presencas" id="campo_presencas" checked>
+            <label class="form-check-label" for="campo_presencas">
+              Número de Presenças
             </label>
           </div>
           
@@ -927,7 +927,7 @@
     const formExportar = document.getElementById("formExportarCSV");
     const btnSelecionarTodos = document.getElementById("btnSelecionarTodos");
     const btnDesmarcarTodos = document.getElementById("btnDesmarcarTodos");
-    const campoFrequencia = document.getElementById("campo_frequencia");
+    const campoPresencas = document.getElementById("campo_presencas");
     const ordenacaoExportacao = document.getElementById("ordenacaoExportacao");
     
     // Selecionar todos os campos
@@ -948,10 +948,10 @@
       });
     }
 
-    if (ordenacaoExportacao && campoFrequencia) {
+    if (ordenacaoExportacao && campoPresencas) {
       ordenacaoExportacao.addEventListener("change", function () {
         if (ordenacaoExportacao.value === "mais_frequentes") {
-          campoFrequencia.checked = true;
+          campoPresencas.checked = true;
         }
       });
     }

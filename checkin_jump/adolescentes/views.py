@@ -1232,6 +1232,15 @@ def exportar_adolescentes_csv(request):
         campos_selecionados = ['nome', 'sobrenome', 'data_nascimento', 'genero', 'pg', 'imperio']
 
     ordenacao_exportacao = request.GET.get('ordenacao_exportacao', 'nome')
+
+    # Compatibilidade entre nomes antigos/novos do campo no formulário.
+    campos_normalizados = []
+    for campo in campos_selecionados:
+        if campo == 'frequencia':
+            campos_normalizados.append('presencas')
+        else:
+            campos_normalizados.append(campo)
+    campos_selecionados = campos_normalizados
     
     # Garantir que nome e sobrenome sempre estejam incluídos
     if 'nome' not in campos_selecionados:
@@ -1245,7 +1254,7 @@ def exportar_adolescentes_csv(request):
         'sobrenome': 'Sobrenome',
         'data_nascimento': 'Data de Nascimento',
         'genero': 'Sexo',
-        'frequencia': 'Frequência',
+        'presencas': 'Número de Presenças',
         'telefone': 'Telefone',
         'pg': 'PG',
         'imperio': 'Império',
@@ -1300,7 +1309,7 @@ def exportar_adolescentes_csv(request):
         elif presenca_filtro == 'nunca':
             adolescentes = adolescentes.filter(presenca__isnull=True).distinct()
 
-    incluir_frequencia = 'frequencia' in campos_selecionados or ordenacao_exportacao == 'mais_frequentes'
+    incluir_frequencia = 'presencas' in campos_selecionados or ordenacao_exportacao == 'mais_frequentes'
     if incluir_frequencia:
         adolescentes = adolescentes.annotate(
             frequencia=Count('presenca', filter=Q(presenca__presente=True))
@@ -1334,7 +1343,7 @@ def exportar_adolescentes_csv(request):
                 row.append(adolescente.data_nascimento.strftime('%d/%m/%Y'))
             elif campo == 'genero':
                 row.append(adolescente.get_genero_display())
-            elif campo == 'frequencia':
+            elif campo == 'presencas':
                 row.append(getattr(adolescente, 'frequencia', adolescente.presenca_set.filter(presente=True).count()))
             elif campo == 'telefone':
                 row.append(adolescente.telefone or '')
