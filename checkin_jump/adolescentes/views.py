@@ -1230,6 +1230,8 @@ def exportar_adolescentes_csv(request):
     if not campos_selecionados:
         # Padrão: todos os campos básicos
         campos_selecionados = ['nome', 'sobrenome', 'data_nascimento', 'genero', 'pg', 'imperio']
+
+    ordenacao_exportacao = request.GET.get('ordenacao_exportacao', 'nome')
     
     # Garantir que nome e sobrenome sempre estejam incluídos
     if 'nome' not in campos_selecionados:
@@ -1243,6 +1245,7 @@ def exportar_adolescentes_csv(request):
         'sobrenome': 'Sobrenome',
         'data_nascimento': 'Data de Nascimento',
         'genero': 'Sexo',
+        'frequencia': 'Frequência',
         'telefone': 'Telefone',
         'pg': 'PG',
         'imperio': 'Império',
@@ -1296,9 +1299,17 @@ def exportar_adolescentes_csv(request):
             ).distinct()
         elif presenca_filtro == 'nunca':
             adolescentes = adolescentes.filter(presenca__isnull=True).distinct()
-    
-    # Ordenar por nome
-    adolescentes = adolescentes.order_by('nome', 'sobrenome')
+
+    incluir_frequencia = 'frequencia' in campos_selecionados or ordenacao_exportacao == 'mais_frequentes'
+    if incluir_frequencia:
+        adolescentes = adolescentes.annotate(
+            frequencia=Count('presenca', filter=Q(presenca__presente=True))
+        )
+
+    if ordenacao_exportacao == 'mais_frequentes':
+        adolescentes = adolescentes.order_by('-frequencia', 'nome', 'sobrenome')
+    else:
+        adolescentes = adolescentes.order_by('nome', 'sobrenome')
     
     # Criar resposta CSV
     response = HttpResponse(content_type='text/csv')
@@ -1323,6 +1334,8 @@ def exportar_adolescentes_csv(request):
                 row.append(adolescente.data_nascimento.strftime('%d/%m/%Y'))
             elif campo == 'genero':
                 row.append(adolescente.get_genero_display())
+            elif campo == 'frequencia':
+                row.append(getattr(adolescente, 'frequencia', adolescente.presenca_set.filter(presente=True).count()))
             elif campo == 'telefone':
                 row.append(adolescente.telefone or '')
             elif campo == 'pg':
