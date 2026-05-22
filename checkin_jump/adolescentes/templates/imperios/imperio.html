@@ -115,7 +115,11 @@
     items.forEach(function(el){
       var matchNome = !q || el.dataset.nome.toLowerCase().includes(q);
       var matchAno = !ano || el.dataset.ano === ano;
-      el.style.display = (matchNome && matchAno) ? '' : 'none';
+      if (matchNome && matchAno) {
+        el.style.removeProperty('display');
+      } else {
+        el.style.setProperty('display', 'none', 'important');
+      }
     });
   }
 
@@ -132,7 +136,7 @@
 
   if (toggleAll) {
     toggleAll.addEventListener('click', function(){
-      var visible = Array.from(items).filter(function(el){ return el.style.display !== 'none'; });
+      var visible = Array.from(items).filter(function(el){ return window.getComputedStyle(el).display !== 'none'; });
       var allChecked = visible.every(function(el){ return el.querySelector('.chk-disponivel').checked; });
       visible.forEach(function(el){ el.querySelector('.chk-disponivel').checked = !allChecked; });
       updateCount();
